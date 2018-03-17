@@ -28,6 +28,19 @@ func repeatFunc(c *gin.Context) {
 	c.String(http.StatusOK, buffer.String())
 }
 
+/*
+func players(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("method:", r.Method)
+	if r.Method == "GET" {
+		t, _ := template.ParseFiles("forms/players.gtpl")
+		t.Execute(w, nil)
+	} else {
+		r.ParseForm()
+		fmt.Println("wolves:", r.Form["wolves"])
+		fmt.Println("seers:", r.Form["seers"])
+	}
+}
+*/
 func dbFunc(c *gin.Context) {
 	if _, err := db.Exec("CREATE TABLE IF NOT EXISTS ticks (tick timestamp)"); err != nil {
 		c.String(http.StatusInternalServerError,
@@ -71,7 +84,7 @@ func main() {
 	tStr := os.Getenv("REPEAT")
 	repeat, err = strconv.Atoi(tStr)
 	if err != nil {
-		log.Print("Error converting $REPEAT to an int: %q - Using default", err)
+		log.Printf("Error converting $REPEAT to an int: %q - Using default", err)
 		repeat = 5
 	}
 
@@ -80,13 +93,21 @@ func main() {
 		log.Fatalf("Error opening database: %q", err)
 	}
 
+	//	http.HandleFunc("/", players)
+	//	http.HandleFunc("/players", players)
+
 	router := gin.New()
 	router.Use(gin.Logger())
 	router.LoadHTMLGlob("templates/*.tmpl.html")
+	router.LoadHTMLGlob("forms/*.gtpl")
 	router.Static("/static", "static")
 
 	router.GET("/", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "index.tmpl.html", nil)
+	})
+
+	router.GET("/players", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "players.gtpl", nil)
 	})
 
 	router.GET("/mark", func(c *gin.Context) {
@@ -95,6 +116,13 @@ func main() {
 
 	router.GET("/repeat", repeatFunc)
 	router.GET("/db", dbFunc)
+
+	router.POST("/playersResult", func(c *gin.Context) {
+		c.Request.ParseForm()
+		for key, value := range c.Request.PostForm {
+			fmt.Println(key, value)
+		}
+	})
 
 	router.Run(":" + port)
 }
