@@ -78,7 +78,9 @@ func addPlayers(c *gin.Context) {
 	playerNum := 0
 	for key, value := range c.Request.PostForm {
 		if strings.Contains(key, "player") {
-			if _, err := db.Exec("INSERT INTO players (name, num) VALUES (" + strings.Join(value, "") + ", " + strconv.Itoa(playerNum) + ")"); err != nil {
+			insertStatement := "INSERT INTO players (name, num) VALUES (" + strings.Join(value, "") + ", " + strconv.Itoa(playerNum) + ")"
+			c.String(http.StatusOK, fmt.Sprintf(insertStatement+"\n"))
+			if _, err := db.Exec(insertStatement); err != nil {
 				c.String(http.StatusInternalServerError,
 					fmt.Sprintf("Error adding player: %q", err))
 				return
@@ -128,9 +130,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error opening database: %q", err)
 	}
-
-	//	http.HandleFunc("/", players)
-	//	http.HandleFunc("/players", players)
 
 	router := gin.New()
 	router.Use(gin.Logger())
