@@ -77,8 +77,9 @@ func addPlayers(c *gin.Context) {
 	c.Request.ParseForm()
 	playerNum := 0
 	for key, value := range c.Request.PostForm {
-		if strings.Contains(key, "player") {
-			insertStatement := "INSERT INTO players (name, num) VALUES (" + strings.Join(value, "") + ", " + strconv.Itoa(playerNum) + ")"
+		stringValue := strings.Join(value, "")
+		if stringValue != "" && strings.Contains(key, "player") {
+			insertStatement := "INSERT INTO players (name, num) VALUES (" + stringValue + ", " + strconv.Itoa(playerNum) + ")"
 			c.String(http.StatusOK, fmt.Sprintf(insertStatement+"\n"))
 			if _, err := db.Exec(insertStatement); err != nil {
 				c.String(http.StatusInternalServerError,
