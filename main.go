@@ -8,11 +8,11 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/lib/pq"
-	"github.com/russross/blackfriday"
 )
 
 var (
@@ -28,19 +28,6 @@ func repeatFunc(c *gin.Context) {
 	c.String(http.StatusOK, buffer.String())
 }
 
-/*
-func players(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("method:", r.Method)
-	if r.Method == "GET" {
-		t, _ := template.ParseFiles("forms/players.gtpl")
-		t.Execute(w, nil)
-	} else {
-		r.ParseForm()
-		fmt.Println("wolves:", r.Form["wolves"])
-		fmt.Println("seers:", r.Form["seers"])
-	}
-}
-*/
 func dbFunc(c *gin.Context) {
 	if _, err := db.Exec("CREATE TABLE IF NOT EXISTS ticks (tick timestamp)"); err != nil {
 		c.String(http.StatusInternalServerError,
@@ -71,6 +58,55 @@ func dbFunc(c *gin.Context) {
 		}
 		c.String(http.StatusOK, fmt.Sprintf("Read from the DB: %s\n", tick.String()))
 	}
+}
+
+func playersResult(c *gin.Context) {
+	c.Request.ParseForm()
+	for key, value := range c.Request.PostForm {
+		fmt.Println(key, value)
+	}
+}
+
+func addPlayers(c *gin.Context) {
+	if _, err := db.Exec("CREATE TABLE IF NOT EXISTS players (name varchar(40), num integer)"); err != nil {
+		c.String(http.StatusInternalServerError,
+			fmt.Sprintf("Error creating database table: %q", err))
+		return
+	}
+
+	c.Request.ParseForm()
+	playerNum := 0
+	for key, value := range c.Request.PostForm {
+		if strings.Contains(key, "player") {
+			if _, err := db.Exec("INSERT INTO players (name, num) VALUES (" + strings.Join(value, "") + ", " + strconv.Itoa(playerNum) + ")"); err != nil {
+				c.String(http.StatusInternalServerError,
+					fmt.Sprintf("Error adding player: %q", err))
+				return
+			}
+			playerNum++
+		}
+		fmt.Println(key, value)
+	}
+
+	/*
+		rows, err := db.Query("SELECT * FROM players")
+		if err != nil {
+			c.String(http.StatusInternalServerError,
+				fmt.Sprintf("Error reading ticks: %q", err))
+			return
+		}
+
+		defer rows.Close()
+		for rows.Next() {
+			var tick time.Time
+			if err := rows.Scan(&tick); err != nil {
+				c.String(http.StatusInternalServerError,
+					fmt.Sprintf("Error scanning players: %q", err))
+				return
+			}
+			c.String(http.StatusOK, fmt.Sprintf("Read from the DB: %s\n", tick.String()))
+		}
+	*/
 }
 
 func main() {
@@ -110,19 +146,10 @@ func main() {
 		c.HTML(http.StatusOK, "players.gtpl", nil)
 	})
 
-	router.GET("/mark", func(c *gin.Context) {
-		c.String(http.StatusOK, string(blackfriday.MarkdownBasic([]byte("**hi!**"))))
-	})
-
 	router.GET("/repeat", repeatFunc)
 	router.GET("/db", dbFunc)
 
-	router.POST("/playersResult", func(c *gin.Context) {
-		c.Request.ParseForm()
-		for key, value := range c.Request.PostForm {
-			fmt.Println(key, value)
-		}
-	})
+	router.POST("/playersResult", addPlayers)
 
 	router.Run(":" + port)
 }

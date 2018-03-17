@@ -4,7 +4,7 @@
     </head>
     <body>
         <form action="/playersResult" method="post">
-            Number of Players: <input type="text" name="players">
+            Number of Players: <input type="text" name="total">
             Number of Seers: <input type="text" name="seers">
             Number of Wolves: <input type="text" name="wolves">
 
