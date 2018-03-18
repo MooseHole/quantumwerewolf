@@ -57,6 +57,14 @@
       .then(birdList => {
         //Once we fetch the list, we iterate over it
         birdList.forEach(bird => {
+          document.write(bird.species)
+        }
+
+    fetch("/bird")
+      .then(response => response.json())
+      .then(birdList => {
+        //Once we fetch the list, we iterate over it
+        birdList.forEach(bird => {
           // Create the table row
           row = document.createElement("tr")
 

@@ -122,18 +122,14 @@ func main() {
 		c.HTML(http.StatusOK, "index.tmpl.html", nil)
 	})
 
-	router.GET("/players", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "players.gtpl", nil)
-	})
-	router.GET("/player", getPlayerHandler)
-	router.POST("/player", createPlayerHandler)
-
 	router.GET("/repeat", repeatFunc)
 	router.GET("/db", dbFunc)
 
-	router.GET("/birdy", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "bird.gtpl", nil)
-	})
+	router.GET("/roles", getRolesHandler)
+	router.POST("/roles", setRolesHandler)
+	router.GET("/players", getPlayerHandler)
+	router.POST("/players", createPlayerHandler)
+
 	router.GET("/bird", getBirdHandler)
 	router.POST("/bird", createBirdHandler)
 

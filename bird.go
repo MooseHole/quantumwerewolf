@@ -18,6 +18,11 @@ type Bird struct {
 var birds []Bird
 
 func getBirdHandler(c *gin.Context) {
+	if len(birds) == 0 {
+		c.HTML(http.StatusOK, "bird.gtpl", nil)
+		return
+	}
+
 	//Convert the "birds" variable to json
 	birdListBytes, err := json.Marshal(birds)
 
@@ -55,6 +60,7 @@ func createBirdHandler(c *gin.Context) {
 	// Append our existing list of birds with a new entry
 	birds = append(birds, bird)
 
+	c.String(http.StatusOK, bird.Species)
 	//Finally, we redirect the user to the original HTMl page
 	c.HTML(http.StatusOK, "bird.gtpl", nil)
 }
