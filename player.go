@@ -98,12 +98,14 @@ func createPlayerHandler(c *gin.Context) {
 	// Append our existing list of players with a new entry
 	players = append(players, player)
 
+	// Assign random player numbers
 	perm := rand.Perm(roles.Total)
-	i := 0
-	for _, p := range players {
+	var temp []Player
+	for i, p := range players {
 		p.Number = perm[i]
-		//		c.String(http.StatusOK, strconv.Itoa(i)+" "+strconv.Itoa(perm[i])+" / "+strconv.Itoa(roles.Total))
+		temp = append(temp, p)
 	}
+	players = temp
 
 	//	c.String(http.StatusOK, players[0].Number)
 	//Finally, we redirect the user to the original HTMl page
