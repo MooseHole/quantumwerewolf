@@ -42,7 +42,7 @@
    -->
   <script>
     birdTable = document.querySelector("table")
-
+ 
     /*
     Use the browsers `fetch` API to make a GET call to /bird
     We expect the response to be a JSON list of birds, of the
