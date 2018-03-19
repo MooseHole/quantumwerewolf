@@ -172,18 +172,18 @@ func startGame(c *gin.Context) {
 
 	dbStatement = "CREATE TABLE IF NOT EXISTS game ("
 	dbStatement += "id SERIAL PRIMARY KEY"
-	dbStatement += "name varchar(40)"
-	dbStatement += "players integer"
-	dbStatement += "seers integer"
-	dbStatement += "wolves integer"
+	dbStatement += ", name varchar(40)"
+	dbStatement += ", players integer"
+	dbStatement += ", seers integer"
+	dbStatement += ", wolves integer"
 	dbStatement += ")"
 	dbExec(c, dbStatement)
 
 	dbStatement = "CREATE TABLE IF NOT EXISTS player ("
 	dbStatement += "id BIGSERIAL PRIMARY KEY"
-	dbStatement += "name varchar(40)"
-	dbStatement += "num integer"
-	dbStatement += "gameid integer"
+	dbStatement += ", name varchar(40)"
+	dbStatement += ", num integer"
+	dbStatement += ", gameid integer"
 	dbStatement += ")"
 	dbExec(c, dbStatement)
 
