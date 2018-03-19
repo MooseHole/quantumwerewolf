@@ -130,7 +130,7 @@ func main() {
 	router.GET("/players", getPlayerHandler)
 	router.POST("/players", createPlayerHandler)
 	router.POST("/start", startGame)
-	router.POST("/drop", dropTables)
+	router.GET("/drop", dropTables)
 
 	router.GET("/bird", getBirdHandler)
 	router.POST("/bird", createBirdHandler)
