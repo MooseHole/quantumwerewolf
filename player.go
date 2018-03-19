@@ -203,5 +203,5 @@ func dropTables(c *gin.Context) {
 		return
 	}
 
-	c.Redirect(http.StatusOK, "/players")
+	c.String(http.StatusOK, "Done dropping")
 }
