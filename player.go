@@ -143,13 +143,13 @@ func setRolesHandler(c *gin.Context) {
 }
 
 func startGame(c *gin.Context) {
-	if _, err := db.Exec("CREATE TABLE IF NOT EXISTS game (id BIGSERIAL PRIMARY KEY, name varchar(40), numPlayers integer, numSeers integer, numWolves integer)"); err != nil {
+	if _, err := db.Exec("CREATE TABLE IF NOT EXISTS game (id SERIAL PRIMARY KEY, name varchar(40), numPlayers integer, numSeers integer, numWolves integer)"); err != nil {
 		c.String(http.StatusInternalServerError,
 			fmt.Sprintf("Error creating game table: %q", err))
 		return
 	}
 
-	if _, err := db.Exec("CREATE TABLE IF NOT EXISTS player (id BIGSERIAL PRIMARY KEY, name varchar(40), number integer, gameId bigint)"); err != nil {
+	if _, err := db.Exec("CREATE TABLE IF NOT EXISTS player (id BIGSERIAL PRIMARY KEY, name varchar(40), number integer, gameId integer)"); err != nil {
 		c.String(http.StatusInternalServerError,
 			fmt.Sprintf("Error creating player table: %q", err))
 		return
@@ -164,7 +164,7 @@ func startGame(c *gin.Context) {
 	}
 	players = temp
 
-	var gameID int64 = -1
+	var gameID = -1
 	insertStatement := "INSERT INTO game (name, numPlayers, numSeers, numWolves) VALUES ('" + roles.Name + "', " + strconv.Itoa(roles.Total) + ", " + strconv.Itoa(roles.Seers) + ", " + strconv.Itoa(roles.Wolves) + ") RETURNING id"
 	c.String(http.StatusOK, insertStatement)
 
@@ -177,7 +177,7 @@ func startGame(c *gin.Context) {
 	}
 
 	for _, p := range players {
-		insertStatement = "INSERT INTO players (name, num, gameId) VALUES ('" + p.Name + "', " + strconv.Itoa(p.Number) + ", " + strconv.FormatInt(gameID, 10) + ")"
+		insertStatement = "INSERT INTO players (name, num, gameId) VALUES ('" + p.Name + "', " + strconv.Itoa(p.Number) + ", " + strconv.Itoa(gameID) + ")"
 		c.String(http.StatusOK, insertStatement)
 		if _, err := db.Exec(insertStatement); err != nil {
 			c.String(http.StatusInternalServerError,
