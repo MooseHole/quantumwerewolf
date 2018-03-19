@@ -166,6 +166,7 @@ func startGame(c *gin.Context) {
 
 	var gameID int64 = -1
 	insertStatement := "INSERT INTO game (name, numPlayers, numSeers, numWolves) VALUES ('" + roles.Name + "', " + strconv.Itoa(roles.Total) + ", " + strconv.Itoa(roles.Seers) + ", " + strconv.Itoa(roles.Wolves) + ")"
+	c.String(http.StatusOK, insertStatement)
 	if res, err := db.Exec(insertStatement); err != nil {
 		c.String(http.StatusInternalServerError,
 			fmt.Sprintf("Error adding game: %q", err))
@@ -180,7 +181,8 @@ func startGame(c *gin.Context) {
 	}
 
 	for _, p := range players {
-		insertStatement := "INSERT INTO players (name, num, gameId) VALUES ('" + p.Name + "', " + strconv.Itoa(p.Number) + ", " + strconv.FormatInt(gameID, 10) + ")"
+		insertStatement = "INSERT INTO players (name, num, gameId) VALUES ('" + p.Name + "', " + strconv.Itoa(p.Number) + ", " + strconv.FormatInt(gameID, 10) + ")"
+		c.String(http.StatusOK, insertStatement)
 		if _, err := db.Exec(insertStatement); err != nil {
 			c.String(http.StatusInternalServerError,
 				fmt.Sprintf("Error adding player: %q", err))
