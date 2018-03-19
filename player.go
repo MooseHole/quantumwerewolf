@@ -190,3 +190,8 @@ func startGame(c *gin.Context) {
 
 	c.Redirect(http.StatusOK, "/players")
 }
+
+func dropTables(c *gin.Context) {
+	db.Exec("DROP TABLE IF EXISTS game;")
+	db.Exec("DROP TABLE IF EXISTS players;")
+}
