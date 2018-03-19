@@ -13,8 +13,7 @@ import (
 
 // Player holds a single player's name
 type Player struct {
-	Number int    `json:"number"`
-	Name   string `json:"playerName"`
+	Name string `json:"playerName"`
 }
 
 // Roles holds the role settings
@@ -93,7 +92,6 @@ func createPlayerHandler(c *gin.Context) {
 	}
 
 	// Get the information about the player from the form info
-	player.Number = -1
 	player.Name = c.Request.Form.Get("playerName")
 
 	// Append our existing list of players with a new entry
@@ -142,48 +140,65 @@ func setRolesHandler(c *gin.Context) {
 	c.HTML(http.StatusOK, "players.gtpl", nil)
 }
 
-func startGame(c *gin.Context) {
-	if _, err := db.Exec("CREATE TABLE IF NOT EXISTS game (id SERIAL PRIMARY KEY, name varchar(40), players integer, seers integer, wolves integer)"); err != nil {
+func dbExec(c *gin.Context, statement string) {
+	if _, err := db.Exec(statement); err != nil {
 		c.String(http.StatusInternalServerError,
-			fmt.Sprintf("Error creating game table: %q", err))
+			fmt.Sprintf("Error executing statement [%q] : %q", statement, err))
 		return
+	}
+}
+
+func dbExecReturn(c *gin.Context, statement string) (returnValue int) {
+	err := db.QueryRow(statement).Scan(&returnValue)
+	if err != nil {
+		c.String(http.StatusInternalServerError,
+			fmt.Sprintf("Error executing statement with return [%q]: %q", statement, err))
 	}
 
-	if _, err := db.Exec("CREATE TABLE IF NOT EXISTS player (id BIGSERIAL PRIMARY KEY, name varchar(40), num integer, gameid integer)"); err != nil {
-		c.String(http.StatusInternalServerError,
-			fmt.Sprintf("Error creating player table: %q", err))
-		return
-	}
+	return
+}
+
+func startGame(c *gin.Context) {
+	dbStatement := ""
+
+	dbStatement = "CREATE TABLE IF NOT EXISTS game ("
+	dbStatement += "id SERIAL PRIMARY KEY"
+	dbStatement += "name varchar(40)"
+	dbStatement += "players integer"
+	dbStatement += "seers integer"
+	dbStatement += "wolves integer"
+	dbStatement += ")"
+	dbExec(c, dbStatement)
+
+	dbStatement = "CREATE TABLE IF NOT EXISTS player ("
+	dbStatement += "id BIGSERIAL PRIMARY KEY"
+	dbStatement += "name varchar(40)"
+	dbStatement += "num integer"
+	dbStatement += "gameid integer"
+	dbStatement += ")"
+	dbExec(c, dbStatement)
+
+	dbStatement = "INSERT INTO game ("
+	dbStatement += "name, players, seers, wolves"
+	dbStatement += ") VALUES ("
+	dbStatement += "'" + roles.Name + "'"
+	dbStatement += ", " + strconv.Itoa(roles.Total)
+	dbStatement += ", " + strconv.Itoa(roles.Seers)
+	dbStatement += ", " + strconv.Itoa(roles.Wolves)
+	dbStatement += ") RETURNING id"
+	var gameID = dbExecReturn(c, dbStatement)
 
 	// Assign random player numbers
 	perm := rand.Perm(roles.Total)
-	var temp []Player
 	for i, p := range players {
-		p.Number = perm[i]
-		temp = append(temp, p)
-	}
-	players = temp
-
-	var gameID = -1
-	insertStatement := "INSERT INTO game (name, players, seers, wolves) VALUES ('" + roles.Name + "', " + strconv.Itoa(roles.Total) + ", " + strconv.Itoa(roles.Seers) + ", " + strconv.Itoa(roles.Wolves) + ") RETURNING id"
-	c.String(http.StatusOK, insertStatement)
-
-	err := db.QueryRow(insertStatement).Scan(&gameID)
-	if err != nil {
-		c.String(http.StatusInternalServerError,
-			fmt.Sprintf("Error adding game: %q", err))
-	} else {
-		c.String(http.StatusOK, "LastInsertId: %d", gameID)
-	}
-
-	for _, p := range players {
-		insertStatement = "INSERT INTO players (name, num, gameid) VALUES ('" + p.Name + "', " + strconv.Itoa(p.Number) + ", " + strconv.Itoa(gameID) + ")"
-		c.String(http.StatusOK, insertStatement)
-		if _, err := db.Exec(insertStatement); err != nil {
-			c.String(http.StatusInternalServerError,
-				fmt.Sprintf("Error adding player: %q", err))
-			return
-		}
+		dbStatement = "INSERT INTO players ("
+		dbStatement += "name, num, gameid"
+		dbStatement += ") VALUES ("
+		dbStatement += "'" + p.Name + "'"
+		dbStatement += ", " + strconv.Itoa(perm[i])
+		dbStatement += ", " + strconv.Itoa(gameID)
+		dbStatement += ")"
+		dbExec(c, dbStatement)
 	}
 
 	c.Redirect(http.StatusOK, "/players")

@@ -27,7 +27,7 @@
         </form>
  
         <table id="players">
-            <tr><th>Number</th><th>Name</th></tr>
+            <tr><th>Name</th></tr>
         </table>
         <script>
             playerTable = document.getElementById("players")
@@ -55,13 +55,10 @@
 
                 // Create the table data elements for the species and
                 // description columns
-                number = document.createElement("td")
-                number.innerHTML = player.number
                 playerName = document.createElement("td")
                 playerName.innerHTML = player.playerName
 
                 // Add the data elements to the row
-                row.appendChild(number)
                 row.appendChild(playerName)
                 // Finally, add the row element to the table itself
                 playerTable.appendChild(row)
