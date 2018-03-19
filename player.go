@@ -190,6 +190,18 @@ func startGame(c *gin.Context) {
 }
 
 func dropTables(c *gin.Context) {
-	db.Exec("DROP TABLE IF EXISTS game;")
-	db.Exec("DROP TABLE IF EXISTS players;")
+
+	if _, err := db.Exec("DROP TABLE IF EXISTS game"); err != nil {
+		c.String(http.StatusInternalServerError,
+			fmt.Sprintf("Error dropping game: %q", err))
+		return
+	}
+
+	if _, err := db.Exec("DROP TABLE IF EXISTS player"); err != nil {
+		c.String(http.StatusInternalServerError,
+			fmt.Sprintf("Error dropping player: %q", err))
+		return
+	}
+
+	c.Redirect(http.StatusOK, "/players")
 }
