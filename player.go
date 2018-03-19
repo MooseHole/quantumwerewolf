@@ -19,10 +19,11 @@ type Player struct {
 
 // Roles holds the role settings
 type Roles struct {
-	Total     int `json:"totalPlayers"`
-	Villagers int `json:"totalVillagers"`
-	Seers     int `json:"totalSeers"`
-	Wolves    int `json:"totalWolves"`
+	Name      string `json:"gameName"`
+	Total     int    `json:"totalPlayers"`
+	Villagers int    `json:"totalVillagers"`
+	Seers     int    `json:"totalSeers"`
+	Wolves    int    `json:"totalWolves"`
 }
 
 var players []Player
@@ -98,15 +99,6 @@ func createPlayerHandler(c *gin.Context) {
 	// Append our existing list of players with a new entry
 	players = append(players, player)
 
-	// Assign random player numbers
-	perm := rand.Perm(roles.Total)
-	var temp []Player
-	for i, p := range players {
-		p.Number = perm[i]
-		temp = append(temp, p)
-	}
-	players = temp
-
 	//	c.String(http.StatusOK, players[0].Number)
 	//Finally, we redirect the user to the original HTMl page
 	c.HTML(http.StatusOK, "players.gtpl", nil)
@@ -124,6 +116,8 @@ func setRolesHandler(c *gin.Context) {
 			fmt.Sprintf("Error setting roles: %v", err))
 		return
 	}
+
+	roles.Name = c.Request.FormValue("gameName")
 
 	s, err := strconv.ParseInt(c.Request.FormValue("seers")[0:], 10, 64)
 	if err != nil {
@@ -146,4 +140,53 @@ func setRolesHandler(c *gin.Context) {
 	//	c.String(http.StatusOK, players[0].Number)
 	//Finally, we redirect the user to the original HTMl page
 	c.HTML(http.StatusOK, "players.gtpl", nil)
+}
+
+func startGame(c *gin.Context) {
+	if _, err := db.Exec("CREATE TABLE IF NOT EXISTS game (id BIGSERIAL PRIMARY KEY, name varchar(40), numPlayers integer, numSeers integer, numWolves integer)"); err != nil {
+		c.String(http.StatusInternalServerError,
+			fmt.Sprintf("Error creating game table: %q", err))
+		return
+	}
+
+	if _, err := db.Exec("CREATE TABLE IF NOT EXISTS player (id BIGSERIAL PRIMARY KEY, name varchar(40), number integer, gameId bigint)"); err != nil {
+		c.String(http.StatusInternalServerError,
+			fmt.Sprintf("Error creating player table: %q", err))
+		return
+	}
+
+	// Assign random player numbers
+	perm := rand.Perm(roles.Total)
+	var temp []Player
+	for i, p := range players {
+		p.Number = perm[i]
+		temp = append(temp, p)
+	}
+	players = temp
+
+	var gameID int64 = -1
+	insertStatement := "INSERT INTO game (name, numPlayers, numSeers, numWolves) VALUES ('" + roles.Name + "', " + strconv.Itoa(roles.Total) + ", " + strconv.Itoa(roles.Seers) + ", " + strconv.Itoa(roles.Wolves) + ")"
+	if res, err := db.Exec(insertStatement); err != nil {
+		c.String(http.StatusInternalServerError,
+			fmt.Sprintf("Error adding game: %q", err))
+	} else {
+		id, err := res.LastInsertId()
+		if err != nil {
+			println("Error:", err.Error())
+		} else {
+			println("LastInsertId:", id)
+			gameID = id
+		}
+	}
+
+	for _, p := range players {
+		insertStatement := "INSERT INTO players (name, num, gameId) VALUES ('" + p.Name + "', " + strconv.Itoa(p.Number) + ", " + strconv.FormatInt(gameID, 10) + ")"
+		if _, err := db.Exec(insertStatement); err != nil {
+			c.String(http.StatusInternalServerError,
+				fmt.Sprintf("Error adding player: %q", err))
+			return
+		}
+	}
+
+	c.Redirect(http.StatusOK, "/players")
 }

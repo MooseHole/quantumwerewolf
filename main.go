@@ -129,6 +129,7 @@ func main() {
 	router.POST("/roles", setRolesHandler)
 	router.GET("/players", getPlayerHandler)
 	router.POST("/players", createPlayerHandler)
+	router.POST("/start", startGame)
 
 	router.GET("/bird", getBirdHandler)
 	router.POST("/bird", createBirdHandler)

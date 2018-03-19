@@ -1,21 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-    <title>Add Players</title>
+    <title>Setup New Game</title>
     </head>
     <body>
         <form action="/players" method="post">
-            Add player:
-            <input type="text" name="playerName">
+            <table>
+            <tr><th>Add player:</th><td><input type="text" name="playerName"></td></tr>
+            </table>
             <input type="submit" value="Submit">
         </form>
-            
+
         <form action="/roles" method="post">
-            Number of Players: <input type="text" name="total" id="totalPlayers" readonly><br>
-            Number of Villagers: <input type="text" name="villagers" id="totalVillagers" readonly><br>
-            Number of Seers: <input type="text" name="seers" id="totalSeers"><br>
-            Number of Wolves: <input type="text" name="wolves" id="totalWolves"><br>
+            <table>
+            <tr><th>Game Name:</th><td><input type="text" name="gameName" id="gameName"></td></tr>
+            <tr><th>Total Players:</th><td><span id="totalPlayers"></span></td></tr>
+            <tr><th>Number of Seers:</th><td><input type="text" name="seers" id="totalSeers"></td></tr>
+            <tr><th>Number of Wolves:</th><td><input type="text" name="wolves" id="totalWolves"></td></tr>
+            <tr><th>Remaining Villagers:</th><td><span id="totalVillagers"></span></td></tr>
+            </table>
             <input type="submit" value="Submit">
+        </form>
+
+        <form action="/start" method="post">
+            <input type="submit" value="Start Game">
         </form>
  
         <table id="players">
@@ -31,8 +39,8 @@
             fetch("/roles")
             .then(response => response.json())
             .then(rolesList => {
-                numPlayersField.value = rolesList.totalPlayers
-                numVillagersField.value = rolesList.totalVillagers
+                numPlayersField.innerHTML = rolesList.totalPlayers
+                numVillagersField.innerHTML = rolesList.totalVillagers
                 numSeersField.value = rolesList.totalSeers
                 numWolvesField.value = rolesList.totalWolves
             })
