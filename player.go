@@ -179,13 +179,16 @@ func startGame(c *gin.Context) {
 	dbStatement += ")"
 	dbExec(c, dbStatement)
 
-	dbStatement = "CREATE TABLE IF NOT EXISTS player ("
+	dbStatement = "CREATE TABLE IF NOT EXISTS players ("
 	dbStatement += "id BIGSERIAL PRIMARY KEY"
 	dbStatement += ", name varchar(40)"
 	dbStatement += ", num integer"
 	dbStatement += ", gameid integer"
 	dbStatement += ")"
 	dbExec(c, dbStatement)
+
+	outp, _ := db.Exec("Select * from players")
+	log.Printf("select %q", outp)
 
 	dbStatement = "INSERT INTO game ("
 	dbStatement += "name, players, seers, wolves"
@@ -223,7 +226,7 @@ func dropTables(c *gin.Context) {
 		return
 	}
 
-	if _, err := db.Exec("DROP TABLE IF EXISTS player"); err != nil {
+	if _, err := db.Exec("DROP TABLE IF EXISTS players"); err != nil {
 		c.String(http.StatusInternalServerError,
 			fmt.Sprintf("Error dropping player: %q", err))
 		return
