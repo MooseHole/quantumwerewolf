@@ -149,7 +149,7 @@ func startGame(c *gin.Context) {
 		return
 	}
 
-	if _, err := db.Exec("CREATE TABLE IF NOT EXISTS player (id BIGSERIAL PRIMARY KEY, name varchar(40), number integer, gameId integer)"); err != nil {
+	if _, err := db.Exec("CREATE TABLE IF NOT EXISTS player (id BIGSERIAL PRIMARY KEY, name varchar(40), num integer, gameId integer)"); err != nil {
 		c.String(http.StatusInternalServerError,
 			fmt.Sprintf("Error creating player table: %q", err))
 		return
@@ -177,7 +177,7 @@ func startGame(c *gin.Context) {
 	}
 
 	for _, p := range players {
-		insertStatement = "INSERT INTO players (name, number, gameId) VALUES ('" + p.Name + "', " + strconv.Itoa(p.Number) + ", " + strconv.Itoa(gameID) + ")"
+		insertStatement = "INSERT INTO players (name, num, gameId) VALUES ('" + p.Name + "', " + strconv.Itoa(p.Number) + ", " + strconv.Itoa(gameID) + ")"
 		c.String(http.StatusOK, insertStatement)
 		if _, err := db.Exec(insertStatement); err != nil {
 			c.String(http.StatusInternalServerError,
