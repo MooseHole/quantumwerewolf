@@ -212,7 +212,7 @@ func startGame(c *gin.Context) {
 		dbExec(c, dbStatement)
 	}
 
-	c.Redirect(http.StatusOK, "/players")
+	c.Get("/players")
 }
 
 func dropTables(c *gin.Context) {
