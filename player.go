@@ -143,13 +143,13 @@ func setRolesHandler(c *gin.Context) {
 }
 
 func startGame(c *gin.Context) {
-	if _, err := db.Exec("CREATE TABLE IF NOT EXISTS game (id SERIAL PRIMARY KEY, name varchar(40), numPlayers integer, numSeers integer, numWolves integer)"); err != nil {
+	if _, err := db.Exec("CREATE TABLE IF NOT EXISTS game (id SERIAL PRIMARY KEY, name varchar(40), players integer, seers integer, wolves integer)"); err != nil {
 		c.String(http.StatusInternalServerError,
 			fmt.Sprintf("Error creating game table: %q", err))
 		return
 	}
 
-	if _, err := db.Exec("CREATE TABLE IF NOT EXISTS player (id BIGSERIAL PRIMARY KEY, name varchar(40), num integer, gameId integer)"); err != nil {
+	if _, err := db.Exec("CREATE TABLE IF NOT EXISTS player (id BIGSERIAL PRIMARY KEY, name varchar(40), num integer, gameid integer)"); err != nil {
 		c.String(http.StatusInternalServerError,
 			fmt.Sprintf("Error creating player table: %q", err))
 		return
@@ -165,7 +165,7 @@ func startGame(c *gin.Context) {
 	players = temp
 
 	var gameID = -1
-	insertStatement := "INSERT INTO game (name, numPlayers, numSeers, numWolves) VALUES ('" + roles.Name + "', " + strconv.Itoa(roles.Total) + ", " + strconv.Itoa(roles.Seers) + ", " + strconv.Itoa(roles.Wolves) + ") RETURNING id"
+	insertStatement := "INSERT INTO game (name, players, seers, wolves) VALUES ('" + roles.Name + "', " + strconv.Itoa(roles.Total) + ", " + strconv.Itoa(roles.Seers) + ", " + strconv.Itoa(roles.Wolves) + ") RETURNING id"
 	c.String(http.StatusOK, insertStatement)
 
 	err := db.QueryRow(insertStatement).Scan(&gameID)
@@ -177,7 +177,7 @@ func startGame(c *gin.Context) {
 	}
 
 	for _, p := range players {
-		insertStatement = "INSERT INTO players (name, num, gameId) VALUES ('" + p.Name + "', " + strconv.Itoa(p.Number) + ", " + strconv.Itoa(gameID) + ")"
+		insertStatement = "INSERT INTO players (name, num, gameid) VALUES ('" + p.Name + "', " + strconv.Itoa(p.Number) + ", " + strconv.Itoa(gameID) + ")"
 		c.String(http.StatusOK, insertStatement)
 		if _, err := db.Exec(insertStatement); err != nil {
 			c.String(http.StatusInternalServerError,
