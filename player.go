@@ -187,9 +187,6 @@ func startGame(c *gin.Context) {
 	dbStatement += ")"
 	dbExec(c, dbStatement)
 
-	outp, _ := db.Exec("Select * from players")
-	log.Printf("select %q", outp)
-
 	dbStatement = "INSERT INTO game ("
 	dbStatement += "name, players, seers, wolves"
 	dbStatement += ") VALUES ("
