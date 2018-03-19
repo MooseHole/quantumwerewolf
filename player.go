@@ -177,7 +177,7 @@ func startGame(c *gin.Context) {
 	}
 
 	for _, p := range players {
-		insertStatement = "INSERT INTO players (name, num, gameId) VALUES ('" + p.Name + "', " + strconv.Itoa(p.Number) + ", " + strconv.Itoa(gameID) + ")"
+		insertStatement = "INSERT INTO players (name, number, gameId) VALUES ('" + p.Name + "', " + strconv.Itoa(p.Number) + ", " + strconv.Itoa(gameID) + ")"
 		c.String(http.StatusOK, insertStatement)
 		if _, err := db.Exec(insertStatement); err != nil {
 			c.String(http.StatusInternalServerError,
