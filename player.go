@@ -143,8 +143,9 @@ func setRolesHandler(c *gin.Context) {
 
 func dbExec(c *gin.Context, statement string) {
 	if _, err := db.Exec(statement); err != nil {
-		c.String(http.StatusInternalServerError,
-			fmt.Sprintf("Error executing statement [%q] : %q", statement, err))
+		errorString := fmt.Sprintf("Error executing statement [%q]: %q", statement, err)
+		log.Print(errorString)
+		c.String(http.StatusInternalServerError, errorString)
 		return
 	}
 
@@ -155,8 +156,9 @@ func dbExec(c *gin.Context, statement string) {
 func dbExecReturn(c *gin.Context, statement string) (returnValue int) {
 	err := db.QueryRow(statement).Scan(&returnValue)
 	if err != nil {
-		c.String(http.StatusInternalServerError,
-			fmt.Sprintf("Error executing statement with return [%q]: %q", statement, err))
+		errorString := fmt.Sprintf("Error executing statement with return [%q]: %q", statement, err)
+		log.Print(errorString)
+		c.String(http.StatusInternalServerError, errorString)
 		return
 	}
 
