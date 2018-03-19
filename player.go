@@ -173,9 +173,10 @@ func startGame(c *gin.Context) {
 	} else {
 		id, err := res.LastInsertId()
 		if err != nil {
-			println("Error:", err.Error())
+			c.String(http.StatusInternalServerError,
+				fmt.Sprintf("Error getting last insert id: %q", err))
 		} else {
-			println("LastInsertId:", id)
+			c.String(http.StatusOK, "LastInsertId: %d", id)
 			gameID = id
 		}
 	}
