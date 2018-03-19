@@ -165,20 +165,15 @@ func startGame(c *gin.Context) {
 	players = temp
 
 	var gameID int64 = -1
-	insertStatement := "INSERT INTO game (name, numPlayers, numSeers, numWolves) VALUES ('" + roles.Name + "', " + strconv.Itoa(roles.Total) + ", " + strconv.Itoa(roles.Seers) + ", " + strconv.Itoa(roles.Wolves) + ")"
+	insertStatement := "INSERT INTO game (name, numPlayers, numSeers, numWolves) VALUES ('" + roles.Name + "', " + strconv.Itoa(roles.Total) + ", " + strconv.Itoa(roles.Seers) + ", " + strconv.Itoa(roles.Wolves) + ") RETURNING id"
 	c.String(http.StatusOK, insertStatement)
-	if res, err := db.Exec(insertStatement); err != nil {
+
+	err := db.QueryRow(insertStatement).Scan(&gameID)
+	if err != nil {
 		c.String(http.StatusInternalServerError,
 			fmt.Sprintf("Error adding game: %q", err))
 	} else {
-		id, err := res.LastInsertId()
-		if err != nil {
-			c.String(http.StatusInternalServerError,
-				fmt.Sprintf("Error getting last insert id: %q", err))
-		} else {
-			c.String(http.StatusOK, "LastInsertId: %d", id)
-			gameID = id
-		}
+		c.String(http.StatusOK, "LastInsertId: %d", gameID)
 	}
 
 	for _, p := range players {
