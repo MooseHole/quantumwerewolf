@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"math/rand"
 	"net/http"
 	"strconv"
@@ -146,6 +147,9 @@ func dbExec(c *gin.Context, statement string) {
 			fmt.Sprintf("Error executing statement [%q] : %q", statement, err))
 		return
 	}
+
+	log.Printf("Executed %q", statement)
+	return
 }
 
 func dbExecReturn(c *gin.Context, statement string) (returnValue int) {
@@ -153,12 +157,15 @@ func dbExecReturn(c *gin.Context, statement string) (returnValue int) {
 	if err != nil {
 		c.String(http.StatusInternalServerError,
 			fmt.Sprintf("Error executing statement with return [%q]: %q", statement, err))
+		return
 	}
 
+	log.Printf("Executed %q  Returned %d", statement, returnValue)
 	return
 }
 
 func startGame(c *gin.Context) {
+	c.String(http.StatusOK, "Starting\nUp\n")
 	dbStatement := ""
 
 	dbStatement = "CREATE TABLE IF NOT EXISTS game ("
@@ -189,7 +196,8 @@ func startGame(c *gin.Context) {
 	var gameID = dbExecReturn(c, dbStatement)
 
 	// Assign random player numbers
-	perm := rand.Perm(roles.Total)
+	perm := rand.Perm(len(players))
+	log.Printf("len(players) %d", len(players))
 	for i, p := range players {
 		dbStatement = "INSERT INTO players ("
 		dbStatement += "name, num, gameid"
@@ -198,6 +206,7 @@ func startGame(c *gin.Context) {
 		dbStatement += ", " + strconv.Itoa(perm[i])
 		dbStatement += ", " + strconv.Itoa(gameID)
 		dbStatement += ")"
+		log.Printf("Going to execute %q", dbStatement)
 		dbExec(c, dbStatement)
 	}
 

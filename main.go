@@ -130,6 +130,9 @@ func main() {
 	router.GET("/players", getPlayerHandler)
 	router.POST("/players", createPlayerHandler)
 	router.POST("/start", startGame)
+	router.GET("/start", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "index.tmpl.html", nil)
+	})
 	router.GET("/drop", dropTables)
 
 	router.GET("/bird", getBirdHandler)
