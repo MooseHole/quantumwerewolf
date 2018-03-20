@@ -4,14 +4,14 @@
     <title>Setup New Game</title>
     </head>
     <body>
-        <form action="/players" method="post">
+        <form action="/setupPlayers" method="post">
             <table>
             <tr><th>Add player:</th><td><input type="text" name="playerName"></td></tr>
             </table>
             <input type="submit" value="Submit">
         </form>
 
-        <form action="/roles" method="post">
+        <form action="/setupGame" method="post">
             <table>
             <tr><th>Game Name:</th><td><input type="text" name="gameName" id="gameName"></td></tr>
             <tr><th>Total Players:</th><td><span id="totalPlayers"></span></td></tr>
@@ -22,7 +22,7 @@
             <input type="submit" value="Submit">
         </form>
 
-        <form action="/start" method="post">
+        <form action="/games" method="post">
             <input type="submit" value="Start Game">
         </form>
  
@@ -36,7 +36,7 @@
             numSeersField = document.getElementById("totalSeers")
             numWolvesField = document.getElementById("totalWolves")
 
-            fetch("/roles")
+            fetch("/setupGame")
             .then(response => response.json())
             .then(rolesList => {
                 numPlayersField.innerHTML = rolesList.totalPlayers
@@ -45,7 +45,7 @@
                 numWolvesField.value = rolesList.totalWolves
             })
 
-            fetch("/players")
+            fetch("/setupPlayers")
             .then(response => response.json())
             .then(playersList => {
                 //Once we fetch the list, we iterate over it
