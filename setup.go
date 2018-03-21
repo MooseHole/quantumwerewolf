@@ -167,7 +167,6 @@ func dbExecReturn(c *gin.Context, statement string) (returnValue int) {
 }
 
 func startGame(c *gin.Context) {
-	c.String(http.StatusOK, "Starting\nUp\n")
 	dbStatement := ""
 
 	dbStatement = "CREATE TABLE IF NOT EXISTS game ("
