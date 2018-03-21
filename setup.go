@@ -212,8 +212,6 @@ func startGame(c *gin.Context) {
 		dbExec(c, dbStatement)
 	}
 
-	c.Redirect(http.StatusOK, "/players")
-
 	c.HTML(http.StatusOK, "games.gtpl", nil)
 }
 
