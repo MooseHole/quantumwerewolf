@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -33,6 +34,8 @@ func getGamesHandler(c *gin.Context) {
 				fmt.Sprintf("Error scanning games: %v", err))
 			return
 		}
+
+		log.Printf("game.Number %d, game.Name %v", game.Number, game.Name)
 
 		games = append(games, game)
 	}
