@@ -16,8 +16,6 @@ type Game struct {
 	Number int    `json:"gameNumber"`
 }
 
-var games []Game
-
 func getGamesHandler(c *gin.Context) {
 	log.Printf("Going to query: SELECT id, name FROM game")
 	rows, err := db.Query("SELECT id, name FROM game")
@@ -29,6 +27,7 @@ func getGamesHandler(c *gin.Context) {
 		return
 	}
 
+	var games []Game
 	for rows.Next() {
 		log.Printf("rows next")
 		var game Game

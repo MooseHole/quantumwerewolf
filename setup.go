@@ -213,6 +213,8 @@ func startGame(c *gin.Context) {
 	}
 
 	c.Redirect(http.StatusOK, "/players")
+
+	c.HTML(http.StatusOK, "games.gtpl", nil)
 }
 
 func dropTables(c *gin.Context) {

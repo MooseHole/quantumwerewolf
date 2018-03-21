@@ -22,7 +22,7 @@
             <input type="submit" value="Submit">
         </form>
 
-        <form action="/games" method="get">
+        <form action="/startGame" method="get">
             <input type="submit" value="Start Game">
         </form>
  
