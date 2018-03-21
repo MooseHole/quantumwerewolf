@@ -13,7 +13,7 @@
         <script>
             gameTable = document.getElementById("games")
 
-            fetch("/getGamesHandler")
+            fetch("/getGames")
             .then(response => response.json())
             .then(gameList => {
                 gameList.forEach(game => {
