@@ -38,6 +38,13 @@ func main() {
 		c.HTML(http.StatusOK, "index.tmpl.html", nil)
 	})
 
+	router.GET("/startPlayersSetup", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "players.gtpl", nil)
+	})
+	router.GET("/startGameSetup", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "gameSetup.gtpl", nil)
+	})
+
 	router.GET("/setupPlayers", getPlayerHandler)
 	router.POST("/setupPlayers", createPlayerHandler)
 	router.GET("/setupGame", getRolesHandler)

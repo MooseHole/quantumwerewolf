@@ -36,7 +36,7 @@ func getPlayerHandler(c *gin.Context) {
 		roles.Villagers = 0
 		roles.Seers = 0
 		roles.Wolves = 0
-		c.HTML(http.StatusOK, "players.gtpl", nil)
+		//		c.HTML(http.StatusOK, "players.gtpl", nil)
 		return
 	}
 
@@ -136,9 +136,7 @@ func setRolesHandler(c *gin.Context) {
 		roles.Villagers = roles.Total - roles.Seers - roles.Wolves
 	}
 
-	//	c.String(http.StatusOK, players[0].Number)
-	//Finally, we redirect the user to the original HTMl page
-	c.HTML(http.StatusOK, "players.gtpl", nil)
+	c.HTML(http.StatusOK, "games.gtpl", nil)
 }
 
 func dbExec(c *gin.Context, statement string) {

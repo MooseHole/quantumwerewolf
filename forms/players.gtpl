@@ -4,46 +4,24 @@
     <title>Setup New Game</title>
     </head>
     <body>
-        <form action="/setupPlayers" method="post">
-            <table>
-            <tr><th>Add player:</th><td><input type="text" name="playerName"></td></tr>
-            </table>
-            <input type="submit" value="Submit">
+        <table>
+        <form name="playerForm" action="/setupPlayers" method="post" onsubmit="return validatePlayerForm()">
+        <tr><th>Add player:</th><td><input id="playerNameField" type="text" name="playerName"></td><td><input type="submit" value="Submit"></td></tr>
+        <tr><td></td><td id="playerNameAlert"></td><td></td></tr>
         </form>
-
-        <form action="/setupGame" method="post">
-            <table>
-            <tr><th>Game Name:</th><td><input type="text" name="gameName" id="gameName"></td></tr>
-            <tr><th>Total Players:</th><td><span id="totalPlayers"></span></td></tr>
-            <tr><th>Number of Seers:</th><td><input type="text" name="seers" id="totalSeers"></td></tr>
-            <tr><th>Number of Wolves:</th><td><input type="text" name="wolves" id="totalWolves"></td></tr>
-            <tr><th>Remaining Villagers:</th><td><span id="totalVillagers"></span></td></tr>
-            </table>
-            <input type="submit" value="Submit">
+        <form action="/startGameSetup" method="get" onsubmit="return validateStartGameSettingsForm()">
+        <tr><td></td><td><input type="submit" value="Start Game Settings"></td><td></td></tr>
+        <tr><td></td><td id="gameSettingsAlert"></td><td></td></tr>
         </form>
-
-        <form action="/startGame" method="post">
-            <input type="submit" value="Start Game">
-        </form>
+        </table>
  
         <table id="players">
             <tr><th>Name</th></tr>
         </table>
         <script>
-            playerTable = document.getElementById("players")
-            numPlayersField = document.getElementById("totalPlayers")
-            numVillagersField = document.getElementById("totalVillagers")
-            numSeersField = document.getElementById("totalSeers")
-            numWolvesField = document.getElementById("totalWolves")
+            var minPlayers = 3
 
-            fetch("/setupGame")
-            .then(response => response.json())
-            .then(rolesList => {
-                numPlayersField.innerHTML = rolesList.totalPlayers
-                numVillagersField.innerHTML = rolesList.totalVillagers
-                numSeersField.value = rolesList.totalSeers
-                numWolvesField.value = rolesList.totalWolves
-            })
+            playerTable = document.getElementById("players")
 
             fetch("/setupPlayers")
             .then(response => response.json())
@@ -64,6 +42,28 @@
                 playerTable.appendChild(row)
                 })
             })
+
+            function validatePlayerForm() {
+                var playerName = document.forms["playerForm"]["playerName"].value;
+                if (playerName == "") {
+                    document.getElementById("playerNameAlert").innerHTML = "Must input a name"
+                    document.getElementById("playerNameAlert").style.color = "red"
+                    document.getElementById("playerNameField").style.borderColor = "red"
+                    return false;
+                }
+            }
+
+            function validateStartGameSettingsForm() {
+                // Subtract 1 for the heading row
+                var totalPlayers = document.getElementById("players").rows.length - 1
+
+                if (totalPlayers < minPlayers) {
+                    document.getElementById("gameSettingsAlert").innerHTML = "Only " + totalPlayers + " players defined.  Need at least " + minPlayers
+                    document.getElementById("gameSettingsAlert").style.color = "red"
+                    document.getElementById("playerNameField").style.borderColor = "red"
+                    return false;
+                }
+            }
         </script>
     </body>
 </html>
