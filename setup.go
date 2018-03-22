@@ -136,6 +136,7 @@ func setRolesHandler(c *gin.Context) {
 		roles.Villagers = roles.Total - roles.Seers - roles.Wolves
 	}
 
+	startGame(c)
 	c.HTML(http.StatusOK, "games.gtpl", nil)
 }
 
@@ -208,8 +209,6 @@ func startGame(c *gin.Context) {
 		log.Printf("Going to execute %q", dbStatement)
 		dbExec(c, dbStatement)
 	}
-
-	c.HTML(http.StatusOK, "games.gtpl", nil)
 }
 
 func dropTables(c *gin.Context) {
