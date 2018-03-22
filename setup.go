@@ -32,11 +32,7 @@ var roles Roles
 func getPlayerHandler(c *gin.Context) {
 	// If first time
 	if len(players) == 0 {
-		roles.Total = 0
-		roles.Villagers = 0
-		roles.Seers = 0
-		roles.Wolves = 0
-		//		c.HTML(http.StatusOK, "players.gtpl", nil)
+		resetVars()
 		return
 	}
 
@@ -137,7 +133,17 @@ func setRolesHandler(c *gin.Context) {
 	}
 
 	startGame(c)
+	resetVars()
 	c.HTML(http.StatusOK, "games.gtpl", nil)
+}
+
+func resetVars() {
+	players = nil
+	roles.Name = ""
+	roles.Total = 0
+	roles.Villagers = 0
+	roles.Seers = 0
+	roles.Wolves = 0
 }
 
 func dbExec(c *gin.Context, statement string) {
