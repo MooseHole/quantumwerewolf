@@ -13,6 +13,8 @@
             <tr><td></td><td id="totalSeersAlert"></td><td></td></tr>
             <tr><th>Number of Wolves:</th><td><input onkeyup="validateWolves()" type="text" name="wolves" id="totalWolves"></td></tr>
             <tr><td></td><td id="totalWolvesAlert"></td><td></td></tr>
+            <tr><th>Symmetry (0-100)%:</th><td><input onkeyup="validateKeep()" type="text" name="keep" id="keepPercent"></td></tr>
+            <tr><td></td><td id="keepAlert"></td><td></td></tr>
             <tr><th>Remaining Villagers:</th><td><span id="totalVillagers"></span></td></tr>
             <tr><td></td><td><input type="submit" value="Start Game"></td></tr>
             </table>
@@ -55,10 +57,12 @@
             numVillagersField = document.getElementById("totalVillagers")
             numSeersField = document.getElementById("totalSeers")
             numWolvesField = document.getElementById("totalWolves")
+            keepField = document.getElementById("keepPercent")
             gameName = document.forms["gameForm"]["gameName"].value
             numPlayers = 0
             numSeers = 0
             numWolves = 0
+            keepPercent = 0
 
             fetch("/setupGame")
             .then(response => response.json())
@@ -67,10 +71,12 @@
                 numVillagersField.innerHTML = rolesList.totalVillagers
                 numSeersField.value = rolesList.totalSeers
                 numWolvesField.value = rolesList.totalWolves
+                keepField.value = rolesList.keepPercent
 
                 numPlayers = rolesList.totalPlayers
                 numSeers = rolesList.totalSeers
                 numWolves = rolesList.totalWolves
+                keepPercent = rolesList.keepPercent
             })
 
             fetch("/setupPlayers")
@@ -93,19 +99,53 @@
                 })
             })
 
-            function validateSeers() {
+            function updateRoleAmounts() {
+                numWolves = TryParseInt(numWolvesField.value, 0)
                 numSeers = TryParseInt(numSeersField.value, 0)
-                return formatValidation((numSeers <= numPlayers), "totalSeersAlert", "totalSeers", "Must not have more seers than total players")
+                numVillagersField.innerHTML = numPlayers - numSeers - numWolves
+            }
+
+            function validateSeers() {
+                updateRoleAmounts()
+                test = true
+
+                if (test) {
+                    test = numSeers <= numPlayers
+                    formatValidation(test, "totalSeersAlert", "totalSeers", "Must not have more seers than total players")
+                }
+
+                if (test) {
+                    test = !isNaN(numSeersField.value) && numSeers >= 0
+                    formatValidation(test, "totalSeersAlert", "totalSeers", "Insert a valid number")
+                }
+
+                return test
             }
 
             function validateWolves() {
-                numWolves = TryParseInt(numWolvesField.value, 0)
-                return formatValidation((numWolves <= numPlayers), "totalWolvesAlert", "totalWolves", "Must not have more wolves than total players")
+                updateRoleAmounts()
+                test = true
+
+                if (test) {
+                    test = numWolves <= numPlayers
+                    formatValidation(test, "totalWolvesAlert", "totalWolves", "Must not have more wolves than total players")
+                }
+
+                if (test) {
+                    test = !isNaN(numWolvesField.value) && numWolves >= 0
+                    formatValidation(test, "totalWolvesAlert", "totalWolves", "Insert a valid number")
+                }
+
+                return test
+            }
+
+            function validateKeep() {
+                keepPercent = TryParseInt(keepField.value, 0)
+                return formatValidation((!isNaN(keepField.value) && keepPercent >= 0 && keepPercent <= 100), "keepAlert", "keep", "Symmetry percent must be between 0 and 100 inclusive")
             }
 
             function validateSpecialRoles() {
-                numSeers = TryParseInt(numSeersField.value, 0)
-                numWolves = TryParseInt(numWolvesField.value, 0)
+                updateRoleAmounts()
                 test = ((numSeers + numWolves) <= numPlayers)
 
                 formatValidation(test, "totalSeersAlert", "totalSeers", "Must not have more wolves and seers than total players")
