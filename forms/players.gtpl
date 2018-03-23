@@ -43,28 +43,47 @@
                 })
             })
 
+            function formatValidation(test, alertField, inputField, alertMessage)
+            {
+                if (test) {
+                    document.getElementById(alertField).innerHTML = ""
+                    document.getElementById(alertField).style.color = "black"
+                    document.getElementById(inputField).style.borderColor = "black"
+                    return true
+                } else {
+                    document.getElementById(alertField).innerHTML = alertMessage
+                    document.getElementById(alertField).style.color = "red"
+                    document.getElementById(inputField).style.borderColor = "red"
+                    document.getElementById(inputField).focus()
+                    return false
+                }
+            }
+
             function validatePlayerForm() {
                 var playerName = document.forms["playerForm"]["playerName"].value;
-                if (playerName.length == 0 || !(/^[a-z0-9]+$/i.test(playerName))) {
-                    document.getElementById("playerNameAlert").innerHTML = "Must input a valid name"
-                    document.getElementById("playerNameAlert").style.color = "red"
-                    document.getElementById("playerNameField").style.borderColor = "red"
-                    document.getElementById("playerNameField").focus()
-                    return false;
+                test = (playerName.length != 0 && (/^[a-z0-9]+$/i.test(playerName)))
+                formatValidation(test, "playerNameAlert", "playerNameField", "Must input a valid name")
+                if (test)
+                {
+                    // Start at 1 to skip the header
+                    for (var i = 1, row; row = playerTable.rows[i]; i++) {
+                        previousName = row.cells[0].innerHTML
+                        if (previousName == playerName) {
+                            test = false
+                            break
+                        }
+                    }
+                    formatValidation(test, "playerNameAlert", "playerNameField", "Duplicate names not allowed")
                 }
+                return test
             }
 
             function validateStartGameSettingsForm() {
                 // Subtract 1 for the heading row
                 var totalPlayers = document.getElementById("players").rows.length - 1
-
-                if (totalPlayers < minPlayers) {
-                    document.getElementById("gameSettingsAlert").innerHTML = "Only " + totalPlayers + " players defined.  Need at least " + minPlayers
-                    document.getElementById("gameSettingsAlert").style.color = "red"
-                    document.getElementById("playerNameField").style.borderColor = "red"
-                    document.getElementById("playerNameField").focus()
-                    return false;
-                }
+                test = (totalPlayers >= minPlayers)
+                formatValidation(test, "gameSettingsAlert", "playerNameField", "Only " + totalPlayers + " players defined.  Need at least " + minPlayers)
+                return test
             }
         </script>
     </body>
