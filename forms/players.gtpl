@@ -45,7 +45,7 @@
 
             function validatePlayerForm() {
                 var playerName = document.forms["playerForm"]["playerName"].value;
-                if (playerName.length != 0 && !(/^[a-z0-9]+$/i.test(playerName))) {
+                if (playerName.length == 0 || !(/^[a-z0-9]+$/i.test(playerName))) {
                     document.getElementById("playerNameAlert").innerHTML = "Must input a valid name"
                     document.getElementById("playerNameAlert").style.color = "red"
                     document.getElementById("playerNameField").style.borderColor = "red"
