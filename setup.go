@@ -7,6 +7,7 @@ import (
 	"math/rand"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/lib/pq"
@@ -24,6 +25,7 @@ type Roles struct {
 	Villagers int    `json:"totalVillagers"`
 	Seers     int    `json:"totalSeers"`
 	Wolves    int    `json:"totalWolves"`
+	Keep      int    `json:"keepPercent"`
 }
 
 var players []Player
@@ -144,6 +146,7 @@ func resetVars() {
 	roles.Villagers = 0
 	roles.Seers = 0
 	roles.Wolves = 0
+	roles.Keep = 100
 }
 
 func dbExec(c *gin.Context, statement string) {
@@ -176,28 +179,38 @@ func startGame(c *gin.Context) {
 
 	dbStatement = "CREATE TABLE IF NOT EXISTS game ("
 	dbStatement += "id SERIAL PRIMARY KEY"
-	dbStatement += ", name varchar(40)"
+	dbStatement += ", name text"
 	dbStatement += ", players integer"
 	dbStatement += ", seers integer"
 	dbStatement += ", wolves integer"
+	dbStatement += ", keepPercent integer"
+	dbStatement += ", round integer"
+	dbStatement += ", nightPhase boolean"
+	dbStatement += ", randomSeed integer"
 	dbStatement += ")"
 	dbExec(c, dbStatement)
 
 	dbStatement = "CREATE TABLE IF NOT EXISTS players ("
 	dbStatement += "id BIGSERIAL PRIMARY KEY"
-	dbStatement += ", name varchar(40)"
+	dbStatement += ", name text"
 	dbStatement += ", num integer"
 	dbStatement += ", gameid integer"
+	dbStatement += ", actions text"
 	dbStatement += ")"
 	dbExec(c, dbStatement)
 
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	dbStatement = "INSERT INTO game ("
-	dbStatement += "name, players, seers, wolves"
+	dbStatement += "name, players, seers, wolves, keepPercent, round, nightPhase, randomSeed"
 	dbStatement += ") VALUES ("
 	dbStatement += "'" + roles.Name + "'"
 	dbStatement += ", " + strconv.Itoa(roles.Total)
 	dbStatement += ", " + strconv.Itoa(roles.Seers)
 	dbStatement += ", " + strconv.Itoa(roles.Wolves)
+	dbStatement += ", " + strconv.Itoa(roles.Keep)
+	dbStatement += ", " + strconv.Itoa(0)
+	dbStatement += ", TRUE"
+	dbStatement += ", " + strconv.Itoa(r.Int())
 	dbStatement += ") RETURNING id"
 	var gameID = dbExecReturn(c, dbStatement)
 
@@ -206,11 +219,12 @@ func startGame(c *gin.Context) {
 	log.Printf("len(players) %d", len(players))
 	for i, p := range players {
 		dbStatement = "INSERT INTO players ("
-		dbStatement += "name, num, gameid"
+		dbStatement += "name, num, gameid, actions"
 		dbStatement += ") VALUES ("
 		dbStatement += "'" + p.Name + "'"
 		dbStatement += ", " + strconv.Itoa(perm[i])
 		dbStatement += ", " + strconv.Itoa(gameID)
+		dbStatement += ", ''"
 		dbStatement += ")"
 		log.Printf("Going to execute %q", dbStatement)
 		dbExec(c, dbStatement)
