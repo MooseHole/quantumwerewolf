@@ -7,7 +7,6 @@ import (
 	"math/rand"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/lib/pq"
@@ -199,7 +198,6 @@ func startGame(c *gin.Context) {
 	dbStatement += ")"
 	dbExec(c, dbStatement)
 
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	dbStatement = "INSERT INTO game ("
 	dbStatement += "name, players, seers, wolves, keepPercent, round, nightPhase, randomSeed"
 	dbStatement += ") VALUES ("
@@ -210,7 +208,7 @@ func startGame(c *gin.Context) {
 	dbStatement += ", " + strconv.Itoa(roles.Keep)
 	dbStatement += ", " + strconv.Itoa(0)
 	dbStatement += ", TRUE"
-	dbStatement += ", " + strconv.Itoa(r.Int())
+	dbStatement += ", " + strconv.Itoa(int(rand.Int31()))
 	dbStatement += ") RETURNING id"
 	var gameID = dbExecReturn(c, dbStatement)
 
