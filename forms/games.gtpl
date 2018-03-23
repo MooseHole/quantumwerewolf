@@ -4,7 +4,7 @@
     <title>Games</title>
     </head>
     <body>
-        <form action="/startPlayersSetup" method="post">
+        <form action="/startPlayersSetup" method="get">
             <input type="submit" value="New Game">
         </form>
         <table id="games">
