@@ -7,6 +7,7 @@ import (
 	"math/rand"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/lib/pq"
@@ -133,6 +134,7 @@ func setRolesHandler(c *gin.Context) {
 }
 
 func resetVars() {
+	rand.Seed(time.Now().UTC().UnixNano())
 	players = nil
 	roles.Name = ""
 	roles.Total = 0

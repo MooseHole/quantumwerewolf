@@ -45,10 +45,11 @@
 
             function validatePlayerForm() {
                 var playerName = document.forms["playerForm"]["playerName"].value;
-                if (playerName == "") {
+                if (/^[a-z0-9]+$/i.test(playerName)) {
                     document.getElementById("playerNameAlert").innerHTML = "Must input a name"
                     document.getElementById("playerNameAlert").style.color = "red"
                     document.getElementById("playerNameField").style.borderColor = "red"
+                    document.getElementById("playerNameField").focus()
                     return false;
                 }
             }
@@ -61,6 +62,7 @@
                     document.getElementById("gameSettingsAlert").innerHTML = "Only " + totalPlayers + " players defined.  Need at least " + minPlayers
                     document.getElementById("gameSettingsAlert").style.color = "red"
                     document.getElementById("playerNameField").style.borderColor = "red"
+                    document.getElementById("playerNameField").focus()
                     return false;
                 }
             }
