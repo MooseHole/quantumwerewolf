@@ -39,6 +39,7 @@ func main() {
 	})
 
 	router.GET("/startPlayersSetup", func(c *gin.Context) {
+		resetVars()
 		c.HTML(http.StatusOK, "players.gtpl", nil)
 	})
 	router.GET("/startGameSetup", func(c *gin.Context) {

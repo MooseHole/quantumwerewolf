@@ -31,12 +31,6 @@ var players []Player
 var roles Roles
 
 func getPlayerHandler(c *gin.Context) {
-	// If first time
-	if len(players) == 0 {
-		resetVars()
-		return
-	}
-
 	//Convert the "players" variable to json
 	playerListBytes, err := json.Marshal(players)
 
