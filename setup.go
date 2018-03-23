@@ -128,6 +128,7 @@ func setRolesHandler(c *gin.Context) {
 		roles.Villagers = roles.Total - roles.Seers - roles.Wolves
 	}
 
+	createMultiverse()
 	startGame(c)
 	resetVars()
 	c.HTML(http.StatusOK, "games.gtpl", nil)
