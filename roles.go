@@ -4,9 +4,10 @@ import (
 	_ "github.com/lib/pq"
 )
 
+// Role holds attributes of each role type
 type Role struct {
 	Name         string
-	Id           int
+	ID           int
 	CanPeek      bool
 	CanAttack    bool
 	Evil         bool
@@ -20,28 +21,28 @@ var wolf Role
 
 func setupRoles() {
 	villager.Name = "Villager"
-	villager.Id = 0
+	villager.ID = 0
 	villager.CanPeek = false
 	villager.CanAttack = false
 	villager.Evil = false
 	villager.GoodMustKill = false
 
 	seer.Name = "Seer"
-	seer.Id = 1
+	seer.ID = 1
 	seer.CanPeek = true
 	seer.CanAttack = false
 	seer.Evil = false
 	seer.GoodMustKill = false
 
 	wolf.Name = "Wolf"
-	wolf.Id = -1
+	wolf.ID = -1
 	wolf.CanPeek = false
 	wolf.CanAttack = true
 	wolf.Evil = true
 	wolf.GoodMustKill = true
 
 	roleTypes = make(map[int]Role)
-	roleTypes[villager.Id] = villager
-	roleTypes[seer.Id] = seer
-	roleTypes[wolf.Id] = wolf
+	roleTypes[villager.ID] = villager
+	roleTypes[seer.ID] = seer
+	roleTypes[wolf.ID] = wolf
 }
