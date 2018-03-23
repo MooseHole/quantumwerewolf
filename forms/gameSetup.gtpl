@@ -6,7 +6,7 @@
     <body>
         <form name="gameForm" onsubmit="return validateGameForm()" action="/setupGame" method="post">
             <table>
-            <tr><th>Game Name:</th><td><input onkeyup="validateGameName()" type="text" name="gameName" id="gameName"></td></tr>
+            <tr><th>Game Name:</th><td><input onkeyup="validateGameName()" type="text" name="gameName" id="gameName" autofocus></td></tr>
             <tr><td></td><td id="gameNameAlert"></td><td></td></tr>
             <tr><th>Total Players:</th><td><span id="totalPlayers"></span></td></tr>
             <tr><th>Number of Seers:</th><td><input onkeyup="validateSeers()" type="text" name="seers" id="totalSeers"></td></tr>
@@ -45,6 +45,7 @@
                     document.getElementById(alertField).innerHTML = alertMessage
                     document.getElementById(alertField).style.color = "red"
                     document.getElementById(inputField).style.borderColor = "red"
+                    document.getElementById(inputField).focus()
                     return false
                 }
             }

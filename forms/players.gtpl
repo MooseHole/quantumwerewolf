@@ -6,7 +6,7 @@
     <body>
         <table>
         <form name="playerForm" action="/setupPlayers" method="post" onsubmit="return validatePlayerForm()">
-        <tr><th>Add player:</th><td><input id="playerNameField" type="text" name="playerName"></td><td><input type="submit" value="Submit"></td></tr>
+        <tr><th>Add player:</th><td><input id="playerNameField" type="text" name="playerName" autofocus></td><td><input type="submit" value="Submit"></td></tr>
         <tr><td></td><td id="playerNameAlert"></td><td></td></tr>
         </form>
         <form action="/startGameSetup" method="get" onsubmit="return validateStartGameSettingsForm()">
