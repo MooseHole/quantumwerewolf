@@ -5,7 +5,7 @@
     </head>
     <body>
         <table>
-        <form name="playerForm" action="/setupPlayers" method="post" onsubmit="return validatePlayerForm()">
+        <form name="playerForm" action="/setupPlayers" method="post" onsubmit="return validatePlayerForm()" autocomplete="off">
         <tr><th>Add player:</th><td><input id="playerNameField" type="text" name="playerName" autofocus></td><td><input type="submit" value="Submit"></td></tr>
         <tr><td></td><td id="playerNameAlert"></td><td></td></tr>
         </form>
@@ -45,8 +45,8 @@
 
             function validatePlayerForm() {
                 var playerName = document.forms["playerForm"]["playerName"].value;
-                if (/^[a-z0-9]+$/i.test(playerName)) {
-                    document.getElementById("playerNameAlert").innerHTML = "Must input a name"
+                if (!(/^[a-z0-9]+$/i.test(playerName)) {
+                    document.getElementById("playerNameAlert").innerHTML = "Must input a valid name"
                     document.getElementById("playerNameAlert").style.color = "red"
                     document.getElementById("playerNameField").style.borderColor = "red"
                     document.getElementById("playerNameField").focus()

@@ -4,7 +4,7 @@
     <title>Setup New Game</title>
     </head>
     <body>
-        <form name="gameForm" onsubmit="return validateGameForm()" action="/setupGame" method="post">
+        <form name="gameForm" onsubmit="return validateGameForm()" action="/setupGame" method="post" autocomplete="off">
             <table>
             <tr><th>Game Name:</th><td><input onkeyup="validateGameName()" type="text" name="gameName" id="gameName" autofocus></td></tr>
             <tr><td></td><td id="gameNameAlert"></td><td></td></tr>
