@@ -20,6 +20,7 @@
         </table>
         <script>
             var minPlayers = 3
+            var maxPlayers = 22 // Because 22! is the highest factorial that fits in uint64
 
             playerTable = document.getElementById("players")
 
@@ -75,6 +76,13 @@
                     }
                     formatValidation(test, "playerNameAlert", "playerNameField", "Duplicate names not allowed")
                 }
+
+                if (test) {
+                    var totalPlayers = document.getElementById("players").rows.length - 1
+                    test = (totalPlayers < maxPlayers)
+                    formatValidation(test, "gameSettingsAlert", "playerNameField", "Only " + maxPlayers + " may be added.")
+                }
+
                 return test
             }
 

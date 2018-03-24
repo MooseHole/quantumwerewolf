@@ -3,17 +3,19 @@ package main
 import (
 	"fmt"
 	"log"
+	"math"
 
 	_ "github.com/lib/pq"
 )
 
 // Universe is a single unit in multiverse
 type Universe struct {
-	assignment []int
-	active     bool
+	permutation uint64
+	active      bool
 }
 
 var multiverse []Universe
+var originalAssignments []int
 
 func (u Universe) String() string {
 	var universeString string
@@ -26,8 +28,12 @@ func (u Universe) String() string {
 	}
 
 	// Add roles display
+	universeAssignments := make([]int, len(originalAssignments))
+	copy(universeAssignments, originalAssignments)
+	universeAssignments = kthperm(universeAssignments, u.permutation)
+
 	universeString += "["
-	for i, v := range u.assignment {
+	for i, v := range universeAssignments {
 		if i > 0 {
 			universeString += " "
 		}
@@ -37,27 +43,35 @@ func (u Universe) String() string {
 	return fmt.Sprint(universeString)
 }
 
-func nextPerm(p []int) {
-	for i := len(p) - 1; i >= 0; i-- {
-		if i == 0 || p[i] < len(p)-i-1 {
-			p[i]++
-			return
+func factorial(n int) uint64 {
+	factVal := uint64(1)
+	if n < 0 {
+		fmt.Print("Factorial of negative number doesn't exist.")
+	} else {
+		for i := 1; i <= n; i++ {
+			factVal *= uint64(i) // mismatched types int64 and int
 		}
-		p[i] = 0
+
 	}
+	return factVal
 }
 
-func getPerm(orig, p []int) []int {
-	result := append([]int{}, orig...)
-	for i, v := range p {
-		result[i], result[i+v] = result[i+v], result[i]
+func kthperm(S []int, k uint64) []int {
+	var P []int
+	for len(S) > 0 {
+		f := factorial(len(S) - 1)
+		i := int(math.Floor(float64(k) / float64(f)))
+		x := S[i]
+		k = k % f
+		P = append(P, x)
+		S = append(S[:i], S[i+1:]...)
 	}
-	return result
+
+	return P
 }
 
 func createMultiverse() {
 	setupRoles()
-	var originalAssignments []int
 	for i := 0; i < roles.Villagers; i++ {
 		originalAssignments = append(originalAssignments, villager.ID)
 	}
@@ -68,11 +82,10 @@ func createMultiverse() {
 		originalAssignments = append(originalAssignments, wolf.ID)
 	}
 
-	for p := make([]int, len(originalAssignments)); p[0] < len(p); nextPerm(p) {
+	for i := uint64(0); i < factorial(roles.Total); i++ {
 		var universe Universe
-		universe.assignment = getPerm(originalAssignments, p)
+		universe.permutation = i
 		universe.active = true
-		multiverse = append(multiverse, universe)
 		log.Print(universe)
 	}
 }
