@@ -1,10 +1,8 @@
-package main
+package quantumwerewolf
 
 import (
 	"math/rand"
 	"time"
-
-	_ "github.com/lib/pq"
 )
 
 // Game holds a single game's information

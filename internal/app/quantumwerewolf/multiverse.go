@@ -1,11 +1,10 @@
-package main
+package quantumwerewolf
 
 import (
 	"fmt"
 	"log"
 	"math/rand"
-
-	_ "github.com/lib/pq"
+	"quantumwerewolf/pkg/quantumutilities"
 )
 
 func getUniverseString(universe uint64) string {
@@ -14,7 +13,7 @@ func getUniverseString(universe uint64) string {
 	// Add roles display
 	universeAssignments := make([]int, len(multiverse.originalAssignments))
 	copy(universeAssignments, multiverse.originalAssignments)
-	universeAssignments = kthperm(universeAssignments, universe)
+	universeAssignments = quantumutilities.Kthperm(universeAssignments, universe)
 
 	universeString += "["
 	for i, v := range universeAssignments {
@@ -42,8 +41,8 @@ func createMultiverse() {
 
 	randSource := rand.NewSource(game.Seed)
 	multiverseRandom := rand.New(randSource)
-	possibleUniverses := factorial(roles.Total)
-	multiverse.universes = PermUint64Trunc(multiverseRandom, possibleUniverses, 100000)
+	possibleUniverses := quantumutilities.Factorial(roles.Total)
+	multiverse.universes = quantumutilities.PermUint64Trunc(multiverseRandom, possibleUniverses, 100000)
 
 	for _, v := range multiverse.universes {
 		log.Printf(getUniverseString(v))
