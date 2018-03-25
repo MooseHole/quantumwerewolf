@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 
+	_ "github.com/MooseHole/quantumwerewolf/internal/app/quantumwerewolf"
 	"github.com/gin-gonic/gin"
 	_ "github.com/lib/pq"
 )
@@ -46,12 +47,12 @@ func main() {
 		c.HTML(http.StatusOK, "gameSetup.gtpl", nil)
 	})
 
-	router.GET("/setupPlayers", getPlayerHandler)
-	router.POST("/setupPlayers", createPlayerHandler)
+	router.GET("/setupPlayers", quantumwerewolf.getPlayerHandler)
+	router.POST("/setupPlayers", quantumwerewolf.createPlayerHandler)
 	router.GET("/setupGame", getRolesHandler)
 	router.POST("/setupGame", setRolesHandler)
 	router.POST("/startGame", startGame)
-	router.GET("/getGames", getGamesHandler)
+	router.GET("/getGames", games.getGamesHandler)
 	router.GET("/games", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "games.gtpl", nil)
 	})

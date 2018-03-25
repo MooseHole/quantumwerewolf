@@ -43,7 +43,7 @@ func createMultiverse() {
 	randSource := rand.NewSource(game.Seed)
 	multiverseRandom := rand.New(randSource)
 	possibleUniverses := factorial(roles.Total)
-	multiverse.universes = PermUint64(multiverseRandom, possibleUniverses, 100000)
+	multiverse.universes = PermUint64Trunc(multiverseRandom, possibleUniverses, 100000)
 
 	for _, v := range multiverse.universes {
 		log.Printf(getUniverseString(v))

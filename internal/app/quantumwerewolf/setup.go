@@ -136,7 +136,7 @@ func startGame(c *gin.Context) {
 	dbStatement += ", nightPhase boolean"
 	dbStatement += ", randomSeed integer"
 	dbStatement += ")"
-	dbExec(c, dbStatement)
+	dbExec(c, db, dbStatement)
 
 	dbStatement = "CREATE TABLE IF NOT EXISTS players ("
 	dbStatement += "id BIGSERIAL PRIMARY KEY"
@@ -145,7 +145,7 @@ func startGame(c *gin.Context) {
 	dbStatement += ", gameid integer"
 	dbStatement += ", actions text"
 	dbStatement += ")"
-	dbExec(c, dbStatement)
+	dbExec(c, db, dbStatement)
 
 	dbStatement = "INSERT INTO game ("
 	dbStatement += "name, players, seers, wolves, keepPercent, round, nightPhase, randomSeed"
@@ -159,7 +159,7 @@ func startGame(c *gin.Context) {
 	dbStatement += ", TRUE"
 	dbStatement += ", " + strconv.Itoa(int(rand.Int31()))
 	dbStatement += ") RETURNING id"
-	var gameID = dbExecReturn(c, dbStatement)
+	var gameID = dbExecReturn(c, db, dbStatement)
 
 	// Assign random player numbers
 	perm := rand.Perm(len(players))
@@ -174,7 +174,7 @@ func startGame(c *gin.Context) {
 		dbStatement += ", ''"
 		dbStatement += ")"
 		log.Printf("Going to execute %q", dbStatement)
-		dbExec(c, dbStatement)
+		dbExec(c, db, dbStatement)
 	}
 }
 

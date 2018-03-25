@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"math"
@@ -11,6 +12,8 @@ import (
 	_ "github.com/lib/pq"
 )
 
+// handleErr outputs messages based on the input error
+// returns true if there was an error
 func handleErr(c *gin.Context, err error, message string) bool {
 	if err != nil {
 		log.Printf("%s: %v", message, err)
@@ -22,17 +25,20 @@ func handleErr(c *gin.Context, err error, message string) bool {
 	return false
 }
 
-func dbExec(c *gin.Context, statement string) {
+// dbExec executes a database statement
+func dbExec(c *gin.Context, db *sql.DB, statement string) {
 	_, err := db.Exec(statement)
 	handleErr(c, err, fmt.Sprintf("Error executing statement [%s]", statement))
 }
 
-func dbExecReturn(c *gin.Context, statement string) (returnValue int) {
+// dbExecReturn executes a database statement and returns an int
+func dbExecReturn(c *gin.Context, db *sql.DB, statement string) (returnValue int) {
 	err := db.QueryRow(statement).Scan(&returnValue)
 	handleErr(c, err, fmt.Sprintf("Error executing statement with return [%s]", statement))
 	return
 }
 
+// factorial finds the factorial of the input number.  n!
 func factorial(n int) uint64 {
 	factVal := uint64(1)
 	if n < 0 {
@@ -46,22 +52,9 @@ func factorial(n int) uint64 {
 	return factVal
 }
 
-func factorialCap(n int, ceiling uint64) uint64 {
-	factVal := uint64(1)
-	if n < 0 {
-		fmt.Print("Factorial of negative number doesn't exist.")
-	} else {
-		for i := 1; i <= n; i++ {
-			if factVal >= ceiling {
-				return ceiling
-			}
-			factVal *= uint64(i) // mismatched types int64 and int
-		}
-
-	}
-	return factVal
-}
-
+// kthperm finds a specified lexical permutation of the input slice
+// S is an int slice that contains the values to be permutated
+// k is the index of the permutation to get
 func kthperm(S []int, k uint64) []int {
 	var P []int
 	for len(S) > 0 {
@@ -86,6 +79,7 @@ func Uint63n(r *rand.Rand, n uint64) uint64 {
 	return v % n
 }
 
+// minUint64 finds the minimum of two uint64 values
 func minUint64(a, b uint64) uint64 {
 	if a < b {
 		return a
@@ -94,9 +88,11 @@ func minUint64(a, b uint64) uint64 {
 	return b
 }
 
-// PermUint64 returns, as a slice of n uint64s, a pseudo-random permutation of the integers [0,n).
-func PermUint64(r *rand.Rand, n uint64, maxValues uint64) []uint64 {
-	log.Printf("n %d  maxValues %d  maxUint64 %d", n, maxValues, minUint64(n, maxValues))
+// PermUint64Trunc returns, as a slice of n uint64s, a pseudo-random, possibly truncated, permutation of the integers [0,n).
+// r is the random number generator.
+// n is the number of values in the slice.
+// maxValues is the maximum size of the slice.  Values that would be past this amount are truncated.
+func PermUint64Trunc(r *rand.Rand, n uint64, maxValues uint64) []uint64 {
 	size := minUint64(n, maxValues)
 	m := make([]uint64, size)
 	b := make(map[uint64]bool)
