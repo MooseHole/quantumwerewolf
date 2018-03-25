@@ -7,17 +7,6 @@ import (
 	_ "github.com/lib/pq"
 )
 
-// Game holds a single game's information
-type Game struct {
-	Name       string `json:"gameName"`
-	Number     int    `json:"gameNumber"`
-	RoundNum   int
-	RoundNight bool
-	Seed       int64
-}
-
-var game Game
-
 func getGamesHandler(c *gin.Context) {
 	rows, err := db.Query("SELECT id, name FROM game")
 	if handleErr(c, err, "Error selecting games") {

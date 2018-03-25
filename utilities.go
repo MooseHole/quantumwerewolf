@@ -6,7 +6,6 @@ import (
 	"math"
 	"math/rand"
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/lib/pq"
@@ -21,24 +20,6 @@ func handleErr(c *gin.Context, err error, message string) bool {
 	}
 
 	return false
-}
-
-func resetVars() {
-	rand.Seed(time.Now().UTC().UnixNano())
-	players = nil
-	roles.Name = ""
-	roles.Total = 0
-	roles.Villagers = 0
-	roles.Seers = 0
-	roles.Wolves = 0
-	roles.Keep = 100
-	game.Name = ""
-	game.Number = -1
-	game.RoundNight = true
-	game.RoundNum = 0
-	game.Seed = rand.Int63()
-	multiverse.universes = nil
-	multiverse.originalAssignments = nil
 }
 
 func dbExec(c *gin.Context, statement string) {

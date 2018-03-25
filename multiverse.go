@@ -8,16 +8,6 @@ import (
 	_ "github.com/lib/pq"
 )
 
-// Multiverse holds the state of all universes
-// universes contains the active universe permutation numbers
-// originalAssignments contains the permutation of the 0th universe
-type Multiverse struct {
-	universes           []uint64
-	originalAssignments []int
-}
-
-var multiverse Multiverse
-
 func getUniverseString(universe uint64) string {
 	var universeString string
 

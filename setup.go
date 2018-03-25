@@ -12,24 +12,6 @@ import (
 	_ "github.com/lib/pq"
 )
 
-// Player holds a single player's name
-type Player struct {
-	Name string `json:"playerName"`
-}
-
-// Roles holds the role settings
-type Roles struct {
-	Name      string `json:"gameName"`
-	Total     int    `json:"totalPlayers"`
-	Villagers int    `json:"totalVillagers"`
-	Seers     int    `json:"totalSeers"`
-	Wolves    int    `json:"totalWolves"`
-	Keep      int    `json:"keepPercent"`
-}
-
-var players []Player
-var roles Roles
-
 func getPlayerHandler(c *gin.Context) {
 	//Convert the "players" variable to json
 	playerListBytes, err := json.Marshal(players)
