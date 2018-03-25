@@ -7,7 +7,6 @@ import (
 	"math/rand"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/lib/pq"
@@ -128,46 +127,17 @@ func setRolesHandler(c *gin.Context) {
 		roles.Villagers = roles.Total - roles.Seers - roles.Wolves
 	}
 
+	k, err := strconv.ParseInt(c.Request.FormValue("keep")[0:], 10, 64)
+	if err != nil {
+		c.String(http.StatusInternalServerError,
+			fmt.Sprintf("Error converting keep: %v", err))
+	}
+	roles.Keep = int(k)
+
 	createMultiverse()
 	startGame(c)
 	resetVars()
 	c.HTML(http.StatusOK, "games.gtpl", nil)
-}
-
-func resetVars() {
-	rand.Seed(time.Now().UTC().UnixNano())
-	players = nil
-	roles.Name = ""
-	roles.Total = 0
-	roles.Villagers = 0
-	roles.Seers = 0
-	roles.Wolves = 0
-	roles.Keep = 100
-}
-
-func dbExec(c *gin.Context, statement string) {
-	if _, err := db.Exec(statement); err != nil {
-		errorString := fmt.Sprintf("Error executing statement [%q]: %q", statement, err)
-		log.Print(errorString)
-		c.String(http.StatusInternalServerError, errorString)
-		return
-	}
-
-	log.Printf("Executed %q", statement)
-	return
-}
-
-func dbExecReturn(c *gin.Context, statement string) (returnValue int) {
-	err := db.QueryRow(statement).Scan(&returnValue)
-	if err != nil {
-		errorString := fmt.Sprintf("Error executing statement with return [%q]: %q", statement, err)
-		log.Print(errorString)
-		c.String(http.StatusInternalServerError, errorString)
-		return
-	}
-
-	log.Printf("Executed %q  Returned %d", statement, returnValue)
-	return
 }
 
 func startGame(c *gin.Context) {
@@ -203,7 +173,7 @@ func startGame(c *gin.Context) {
 	dbStatement += ", " + strconv.Itoa(roles.Seers)
 	dbStatement += ", " + strconv.Itoa(roles.Wolves)
 	dbStatement += ", " + strconv.Itoa(roles.Keep)
-	dbStatement += ", " + strconv.Itoa(0)
+	dbStatement += ", " + strconv.Itoa(game.RoundNum)
 	dbStatement += ", TRUE"
 	dbStatement += ", " + strconv.Itoa(int(rand.Int31()))
 	dbStatement += ") RETURNING id"

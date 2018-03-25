@@ -3,89 +3,59 @@ package main
 import (
 	"fmt"
 	"log"
-	"math"
+	"math/rand"
 
 	_ "github.com/lib/pq"
 )
 
-// Universe is a single unit in multiverse
-type Universe struct {
-	permutation uint64
-	active      bool
+// Multiverse holds the state of all universes
+// universes contains the active universe permutation numbers
+// originalAssignments contains the permutation of the 0th universe
+type Multiverse struct {
+	universes           []uint64
+	originalAssignments []int
 }
 
-var multiverse []Universe
-var originalAssignments []int
+var multiverse Multiverse
 
-func (u Universe) String() string {
+func getUniverseString(universe uint64) string {
 	var universeString string
 
-	// Add active display
-	if u.active {
-		universeString = "A"
-	} else {
-		universeString = "I"
-	}
-
 	// Add roles display
-	universeAssignments := make([]int, len(originalAssignments))
-	copy(universeAssignments, originalAssignments)
-	universeAssignments = kthperm(universeAssignments, u.permutation)
+	universeAssignments := make([]int, len(multiverse.originalAssignments))
+	copy(universeAssignments, multiverse.originalAssignments)
+	universeAssignments = kthperm(universeAssignments, universe)
 
 	universeString += "["
 	for i, v := range universeAssignments {
 		if i > 0 {
 			universeString += " "
 		}
-		universeString += roleTypes[v].Name
+		universeString += roleTypes[v].Name[:1]
 	}
 	universeString += "]"
+
 	return fmt.Sprint(universeString)
-}
-
-func factorial(n int) uint64 {
-	factVal := uint64(1)
-	if n < 0 {
-		fmt.Print("Factorial of negative number doesn't exist.")
-	} else {
-		for i := 1; i <= n; i++ {
-			factVal *= uint64(i) // mismatched types int64 and int
-		}
-
-	}
-	return factVal
-}
-
-func kthperm(S []int, k uint64) []int {
-	var P []int
-	for len(S) > 0 {
-		f := factorial(len(S) - 1)
-		i := int(math.Floor(float64(k) / float64(f)))
-		x := S[i]
-		k = k % f
-		P = append(P, x)
-		S = append(S[:i], S[i+1:]...)
-	}
-
-	return P
 }
 
 func createMultiverse() {
 	setupRoles()
 	for i := 0; i < roles.Villagers; i++ {
-		originalAssignments = append(originalAssignments, villager.ID)
+		multiverse.originalAssignments = append(multiverse.originalAssignments, villager.ID)
 	}
 	for i := 0; i < roles.Seers; i++ {
-		originalAssignments = append(originalAssignments, seer.ID)
+		multiverse.originalAssignments = append(multiverse.originalAssignments, seer.ID)
 	}
 	for i := 0; i < roles.Wolves; i++ {
-		originalAssignments = append(originalAssignments, wolf.ID)
+		multiverse.originalAssignments = append(multiverse.originalAssignments, wolf.ID)
 	}
 
-	for i := uint64(0); i < factorial(roles.Total); i++ {
-		var universe Universe
-		universe.permutation = i
-		universe.active = true
-		log.Print(universe)
+	randSource := rand.NewSource(game.Seed)
+	multiverseRandom := rand.New(randSource)
+	possibleUniverses := factorial(roles.Total)
+	multiverse.universes = PermUint64(multiverseRandom, possibleUniverses, 100000)
+
+	for _, v := range multiverse.universes {
+		log.Printf(getUniverseString(v))
 	}
 }

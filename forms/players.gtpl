@@ -20,7 +20,7 @@
         </table>
         <script>
             var minPlayers = 3
-            var maxPlayers = 22 // Because 22! is the highest factorial that fits in uint64
+            var maxPlayers = 21 // Because 21! is the highest factorial that fits in uint64
 
             playerTable = document.getElementById("players")
 
