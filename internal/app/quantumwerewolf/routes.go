@@ -33,8 +33,6 @@ func SetupRoutes() bool {
 	router.LoadHTMLGlob("templates/*.tmpl.html")
 	router.LoadHTMLGlob("forms/*.gtpl")
 	router.Static("static", "static")
-	router.LoadHTMLGlob("../../templates/*.tmpl.html")
-	router.LoadHTMLGlob("../../forms/*.gtpl")
 
 	router.GET("/", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "index.tmpl.html", nil)
