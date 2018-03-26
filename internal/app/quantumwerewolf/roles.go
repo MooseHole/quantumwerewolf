@@ -10,6 +10,11 @@ type Role struct {
 	GoodMustKill bool
 }
 
+// RoleTypes is an interface
+type RoleTypes struct {
+	Names interface{}
+}
+
 var roleTypes map[int]Role
 var villager Role
 var seer Role
@@ -41,4 +46,8 @@ func setupRoles() {
 	roleTypes[villager.ID] = villager
 	roleTypes[seer.ID] = seer
 	roleTypes[wolf.ID] = wolf
+}
+
+func getRoleTypes() Role {
+	return Role{"Test", -2, false, true, false, true}
 }
