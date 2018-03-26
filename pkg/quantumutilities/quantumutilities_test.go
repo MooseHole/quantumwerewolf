@@ -1,4 +1,4 @@
-package test
+package quantumutilities_test
 
 import (
 	"quantumwerewolf/pkg/quantumutilities"
