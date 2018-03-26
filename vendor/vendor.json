@@ -1,6 +1,5 @@
 {
 	"comment": "",
-	"ignore": "test",
 	"heroku": {
 		"install": [
 			"./cmd/...",
@@ -8,6 +7,7 @@
 			"./pkg/..."
 		]
 	},
+	"ignore": "test",
 	"package": [
 		{
 			"checksumSHA1": "Qq7Gzany1n6gK6hpZQq9UXFhGGo=",
@@ -84,5 +84,5 @@
 			"revision": "d627af88ac021317a280d320986282a6dc97549a"
 		}
 	],
-	"rootPath": "github.com/heroku/go-getting-started"
+	"rootPath": "quantumwerewolf"
 }

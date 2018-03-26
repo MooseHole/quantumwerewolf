@@ -1,7 +1,7 @@
 package main
 
 import (
-	"internal/app/quantumwerewolf"
+	"quantumwerewolf/internal/app/quantumwerewolf"
 
 	_ "github.com/lib/pq"
 )
