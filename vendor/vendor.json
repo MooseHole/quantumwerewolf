@@ -3,7 +3,9 @@
 	"ignore": "test",
 	"heroku": {
 		"install": [
-			"./..."
+			"./cmd/...",
+			"./internal/...",
+			"./pkg/..."
 		]
 	},
 	"package": [
