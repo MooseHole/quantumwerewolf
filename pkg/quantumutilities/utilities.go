@@ -41,7 +41,7 @@ func DbExecReturn(c *gin.Context, db *sql.DB, statement string) (returnValue int
 func Factorial(n int) uint64 {
 	factVal := uint64(1)
 	if n < 0 {
-		fmt.Print("Factorial of negative number doesn't exist.")
+		panic("Factorial of negative number doesn't exist.")
 	} else {
 		for i := 1; i <= n; i++ {
 			factVal *= uint64(i) // mismatched types int64 and int

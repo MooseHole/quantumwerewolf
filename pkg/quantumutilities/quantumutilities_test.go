@@ -42,6 +42,18 @@ func TestFactorial(t *testing.T) {
 	}
 }
 
+func TestFactorialNegativeInput(t *testing.T) {
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("Factorial should panic when given a negative input.")
+		}
+	}()
+
+	quantumutilities.Factorial(-1)
+	quantumutilities.Factorial(-10)
+	quantumutilities.Factorial(-21354)
+}
+
 func copySlice(input []int) []int {
 	output := make([]int, len(input), len(input))
 	for i, v := range input {
@@ -52,21 +64,22 @@ func copySlice(input []int) []int {
 
 func TestKthperm(t *testing.T) {
 	original := make([]int, 0, 3)
+	output2 := make([]int, 0, 3)
+	output5 := make([]int, 0, 3)
 	original = append(original, 0, 1, 2)
 	input1 := copySlice(original)
 	input2 := copySlice(original)
 	input5 := copySlice(original)
-	output2 := make([]int, 0, 3)
+	output1 := copySlice(original)
 	output2 = append(output2, 0, 2, 1)
-	output5 := make([]int, 0, 3)
-	output5 = append(output5, 1, 1, 1)
+	output5 = append(output5, 2, 1, 0)
 
 	tables := []struct {
 		s []int
 		k uint64
 		p []int
 	}{
-		{input1, 0, original},
+		{input1, 0, output1},
 		{input2, 1, output2},
 		{input5, 5, output5},
 	}
