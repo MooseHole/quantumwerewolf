@@ -28,17 +28,17 @@ func getPlayerHandler(c *gin.Context) {
 }
 
 func getRolesHandler(c *gin.Context) {
-	//Convert the "roles" variable to json
-	roleListBytes, err := json.Marshal(roles)
+	//Convert the "gameSetup" variable to json
+	roleListBytes, err := json.Marshal(gameSetup)
 
 	// If there is an error, print it to the console, and return a server
 	// error response to the user
 	if err != nil {
 		c.String(http.StatusInternalServerError,
-			fmt.Sprintf("Error getting roles: %v", err))
+			fmt.Sprintf("Error getting gameSetup: %v", err))
 		return
 	}
-	// If all goes well, write the JSON list of roles to the response
+	// If all goes well, write the JSON list of gameSetup to the response
 	c.Writer.Write(roleListBytes)
 }
 
@@ -58,11 +58,11 @@ func createPlayerHandler(c *gin.Context) {
 		return
 	}
 
-	roles.Total++
-	if roles.Total > 2 {
-		roles.Seers = 1
-		roles.Wolves = roles.Total / 3
-		roles.Villagers = roles.Total - roles.Seers - roles.Wolves
+	gameSetup.Total++
+	if gameSetup.Total > 2 {
+		gameSetup.Seers = 1
+		gameSetup.Wolves = gameSetup.Total / 3
+		gameSetup.Villagers = gameSetup.Total - gameSetup.Seers - gameSetup.Wolves
 	}
 
 	// Get the information about the player from the form info
@@ -85,11 +85,11 @@ func setRolesHandler(c *gin.Context) {
 	// In case of any error, we respond with an error to the user
 	if err != nil {
 		c.String(http.StatusInternalServerError,
-			fmt.Sprintf("Error setting roles: %v", err))
+			fmt.Sprintf("Error setting gameSetup: %v", err))
 		return
 	}
 
-	roles.Name = c.Request.FormValue("gameName")
+	gameSetup.Name = c.Request.FormValue("gameName")
 
 	s, err := strconv.ParseInt(c.Request.FormValue("seers")[0:], 10, 64)
 	if err != nil {
@@ -103,10 +103,10 @@ func setRolesHandler(c *gin.Context) {
 			fmt.Sprintf("Error converting wolves: %v", err))
 	}
 
-	if int(s+w) <= roles.Total {
-		roles.Seers = int(s)
-		roles.Wolves = int(w)
-		roles.Villagers = roles.Total - roles.Seers - roles.Wolves
+	if int(s+w) <= gameSetup.Total {
+		gameSetup.Seers = int(s)
+		gameSetup.Wolves = int(w)
+		gameSetup.Villagers = gameSetup.Total - gameSetup.Seers - gameSetup.Wolves
 	}
 
 	k, err := strconv.ParseInt(c.Request.FormValue("keep")[0:], 10, 64)
@@ -114,7 +114,7 @@ func setRolesHandler(c *gin.Context) {
 		c.String(http.StatusInternalServerError,
 			fmt.Sprintf("Error converting keep: %v", err))
 	}
-	roles.Keep = int(k)
+	gameSetup.Keep = int(k)
 
 	createMultiverse()
 	startGame(c)
@@ -150,11 +150,11 @@ func startGame(c *gin.Context) {
 	dbStatement = "INSERT INTO game ("
 	dbStatement += "name, players, seers, wolves, keepPercent, round, nightPhase, randomSeed"
 	dbStatement += ") VALUES ("
-	dbStatement += "'" + roles.Name + "'"
-	dbStatement += ", " + strconv.Itoa(roles.Total)
-	dbStatement += ", " + strconv.Itoa(roles.Seers)
-	dbStatement += ", " + strconv.Itoa(roles.Wolves)
-	dbStatement += ", " + strconv.Itoa(roles.Keep)
+	dbStatement += "'" + gameSetup.Name + "'"
+	dbStatement += ", " + strconv.Itoa(gameSetup.Total)
+	dbStatement += ", " + strconv.Itoa(gameSetup.Seers)
+	dbStatement += ", " + strconv.Itoa(gameSetup.Wolves)
+	dbStatement += ", " + strconv.Itoa(gameSetup.Keep)
 	dbStatement += ", " + strconv.Itoa(game.RoundNum)
 	dbStatement += ", TRUE"
 	dbStatement += ", " + strconv.Itoa(int(rand.Int31()))

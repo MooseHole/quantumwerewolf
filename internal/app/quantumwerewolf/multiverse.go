@@ -10,7 +10,7 @@ import (
 func getUniverseString(universe uint64) string {
 	var universeString string
 
-	// Add roles display
+	// Add gameSetup display
 	universeAssignments := make([]int, len(multiverse.originalAssignments))
 	copy(universeAssignments, multiverse.originalAssignments)
 	universeAssignments = quantumutilities.Kthperm(universeAssignments, universe)
@@ -29,19 +29,19 @@ func getUniverseString(universe uint64) string {
 
 func createMultiverse() {
 	setupRoles()
-	for i := 0; i < roles.Villagers; i++ {
+	for i := 0; i < gameSetup.Villagers; i++ {
 		multiverse.originalAssignments = append(multiverse.originalAssignments, villager.ID)
 	}
-	for i := 0; i < roles.Seers; i++ {
+	for i := 0; i < gameSetup.Seers; i++ {
 		multiverse.originalAssignments = append(multiverse.originalAssignments, seer.ID)
 	}
-	for i := 0; i < roles.Wolves; i++ {
+	for i := 0; i < gameSetup.Wolves; i++ {
 		multiverse.originalAssignments = append(multiverse.originalAssignments, wolf.ID)
 	}
 
 	randSource := rand.NewSource(game.Seed)
 	multiverseRandom := rand.New(randSource)
-	possibleUniverses := quantumutilities.Factorial(roles.Total)
+	possibleUniverses := quantumutilities.Factorial(gameSetup.Total)
 	multiverse.universes = quantumutilities.PermUint64Trunc(multiverseRandom, possibleUniverses, 100000)
 
 	for _, v := range multiverse.universes {

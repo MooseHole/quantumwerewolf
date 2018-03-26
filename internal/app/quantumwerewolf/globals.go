@@ -19,8 +19,8 @@ type Player struct {
 	Name string `json:"playerName"`
 }
 
-// Roles holds the role settings
-type Roles struct {
+// GameSetup holds the game settings
+type GameSetup struct {
 	Name      string `json:"gameName"`
 	Total     int    `json:"totalPlayers"`
 	Villagers int    `json:"totalVillagers"`
@@ -39,18 +39,18 @@ type Multiverse struct {
 
 var multiverse Multiverse
 var players []Player
-var roles Roles
+var gameSetup GameSetup
 var game Game
 
 func resetVars() {
 	rand.Seed(time.Now().UTC().UnixNano())
 	players = nil
-	roles.Name = ""
-	roles.Total = 0
-	roles.Villagers = 0
-	roles.Seers = 0
-	roles.Wolves = 0
-	roles.Keep = 100
+	gameSetup.Name = ""
+	gameSetup.Total = 0
+	gameSetup.Villagers = 0
+	gameSetup.Seers = 0
+	gameSetup.Wolves = 0
+	gameSetup.Keep = 100
 	game.Name = ""
 	game.Number = -1
 	game.RoundNight = true
