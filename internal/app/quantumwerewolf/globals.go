@@ -21,12 +21,13 @@ type Player struct {
 
 // GameSetup holds the game settings
 type GameSetup struct {
-	Name      string `json:"gameName"`
-	Total     int    `json:"totalPlayers"`
-	Villagers int    `json:"totalVillagers"`
-	Seers     int    `json:"totalSeers"`
-	Wolves    int    `json:"totalWolves"`
-	Keep      int    `json:"keepPercent"`
+	Name      string         `json:"gameName"`
+	Roles     map[string]int `json:"roles"`
+	Total     int            `json:"totalPlayers"`
+	Villagers int            `json:"totalVillagers"`
+	Seers     int            `json:"totalSeers"`
+	Wolves    int            `json:"totalWolves"`
+	Keep      int            `json:"keepPercent"`
 }
 
 // Multiverse holds the state of all universes
@@ -46,6 +47,7 @@ func resetVars() {
 	rand.Seed(time.Now().UTC().UnixNano())
 	players = nil
 	gameSetup.Name = ""
+	gameSetup.Roles = make(map[string]int)
 	gameSetup.Total = 0
 	gameSetup.Villagers = 0
 	gameSetup.Seers = 0

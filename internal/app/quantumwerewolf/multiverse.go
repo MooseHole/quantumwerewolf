@@ -29,14 +29,10 @@ func getUniverseString(universe uint64) string {
 
 func createMultiverse() {
 	setupRoles()
-	for i := 0; i < gameSetup.Villagers; i++ {
-		multiverse.originalAssignments = append(multiverse.originalAssignments, villager.ID)
-	}
-	for i := 0; i < gameSetup.Seers; i++ {
-		multiverse.originalAssignments = append(multiverse.originalAssignments, seer.ID)
-	}
-	for i := 0; i < gameSetup.Wolves; i++ {
-		multiverse.originalAssignments = append(multiverse.originalAssignments, wolf.ID)
+	for _, v := range roleTypes {
+		for j := 0; j < gameSetup.Roles[v.Name]; j++ {
+			multiverse.originalAssignments = append(multiverse.originalAssignments, v.ID)
+		}
 	}
 
 	randSource := rand.NewSource(game.Seed)

@@ -63,6 +63,23 @@ func createPlayerHandler(c *gin.Context) {
 		gameSetup.Seers = 1
 		gameSetup.Wolves = gameSetup.Total / 3
 		gameSetup.Villagers = gameSetup.Total - gameSetup.Seers - gameSetup.Wolves
+		amountAssigned := 0
+		for _, v := range roleTypes {
+			// ID 0 is reserved for Villagers
+			if v.ID != 0 {
+				assign := 0
+				// If a whole number
+				if v.DefaultAmount >= 1 {
+					assign = int(v.DefaultAmount)
+				} else {
+					assign = int(float32(gameSetup.Total) * v.DefaultAmount)
+				}
+				gameSetup.Roles[v.Name] = assign
+				amountAssigned += assign
+			}
+		}
+
+		gameSetup.Roles[roleTypes[0].Name] = gameSetup.Total - amountAssigned
 	}
 
 	// Get the information about the player from the form info
@@ -107,6 +124,15 @@ func setRolesHandler(c *gin.Context) {
 		gameSetup.Seers = int(s)
 		gameSetup.Wolves = int(w)
 		gameSetup.Villagers = gameSetup.Total - gameSetup.Seers - gameSetup.Wolves
+	}
+
+	for _, v := range roleTypes {
+		value, err := strconv.ParseInt(c.Request.FormValue(v.Name)[0:], 10, 64)
+		if err != nil {
+			c.String(http.StatusInternalServerError,
+				fmt.Sprintf("Error converting seers: %v", err))
+		}
+		gameSetup.Roles[v.Name] = int(value)
 	}
 
 	k, err := strconv.ParseInt(c.Request.FormValue("keep")[0:], 10, 64)
