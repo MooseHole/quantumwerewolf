@@ -59,7 +59,7 @@ func TestKthperm(t *testing.T) {
 	output2 := make([]int, 0, 3)
 	output2 = append(output2, 0, 2, 1)
 	output5 := make([]int, 0, 3)
-	output5 = append(output5, 2, 2, 2)
+	output5 = append(output5, 1, 1, 1)
 
 	tables := []struct {
 		s []int
