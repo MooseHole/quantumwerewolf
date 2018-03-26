@@ -2,9 +2,7 @@
 	"comment": "",
 	"heroku": {
 		"install": [
-			"./cmd/...",
-			"./internal/...",
-			"./pkg/..."
+			"./cmd/..."
 		]
 	},
 	"ignore": "test",
