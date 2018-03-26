@@ -55,8 +55,11 @@ func TestKthperm(t *testing.T) {
 	original = append(original, 0, 1, 2)
 	input1 := copySlice(original)
 	input2 := copySlice(original)
+	input5 := copySlice(original)
 	output2 := make([]int, 0, 3)
 	output2 = append(output2, 0, 2, 1)
+	output5 := make([]int, 0, 3)
+	output5 = append(output5, 2, 2, 2)
 
 	tables := []struct {
 		s []int
@@ -65,6 +68,7 @@ func TestKthperm(t *testing.T) {
 	}{
 		{input1, 0, original},
 		{input2, 1, output2},
+		{input5, 5, output5},
 	}
 
 	for _, table := range tables {
