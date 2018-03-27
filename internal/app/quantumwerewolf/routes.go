@@ -51,7 +51,6 @@ func SetupRoutes() bool {
 	//		c.HTML(http.StatusOK, "gameSetup.gtpl", nil)
 	//	})
 	router.GET("/startGameSetup", func(c *gin.Context) {
-		c.Header("ContentType", "text/plain")
 		c.HTML(http.StatusOK, "gameSetupTemp.gtpl", gin.H{
 			"DefaultRoleName": roleTypes[0].Name,
 			"Roles":           gameSetup.Roles,

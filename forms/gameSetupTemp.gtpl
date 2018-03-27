@@ -5,23 +5,16 @@
     </head>
     <body>
         <form name="gameForm" onsubmit="return validateGameForm()" action="/setupGame" method="post" autocomplete="off">
-            <table type="text/template">
-
-            {{ range $key, $value := .Roles }}
-            <tr><th>{{ $key }}:</th><td><input onkeyup="validate{{ $key }}poop()" type="text" name="{{ $key }}" id="total{{ $key }}" value="{{ $value }}"></td></tr>
-            <tr><td></td><td id="total{{ $key }}Alert"></td><td></td></tr>
-            {{ end }}
-
+            <table>
             <tr><th>Game Name:</th><td><input onkeyup="validateGameName()" type="text" name="gameName" id="gameName" autofocus></td></tr>
             <tr><td></td><td id="gameNameAlert"></td><td></td></tr>
+            {{ range $key, $value := .Roles }}
+            <tr><th>{{ $key }}:</th><td><input onkeyup="validateInput('{{ $key }}')" type="text" name="{{ $key }}" id="{{ $key }}" value="{{ $value }}"></td></tr>
+            <tr><td></td><td id="{{ $key }}Alert"></td><td></td></tr>
+            {{ end }}
             <tr><th>Total Players:</th><td><span id="totalPlayers"></span></td></tr>
-            <tr><th>Number of Seers:</th><td><input onkeyup="validateSeers()" type="text" name="seers" id="totalSeers"></td></tr>
-            <tr><td></td><td id="totalSeersAlert"></td><td></td></tr>
-            <tr><th>Number of Wolves:</th><td><input onkeyup="validateWolves()" type="text" name="wolves" id="totalWolves"></td></tr>
-            <tr><td></td><td id="totalWolvesAlert"></td><td></td></tr>
             <tr><th>Symmetry (0-100)%:</th><td><input onkeyup="validateKeep()" type="text" name="keep" id="keepPercent"></td></tr>
             <tr><td></td><td id="keepAlert"></td><td></td></tr>
-            <tr><th>Remaining Villagers:</th><td><span id="totalVillagers"></span></td></tr>
             <tr><td></td><td><input type="submit" value="Start Game"></td></tr>
             </table>
         </form>
@@ -30,7 +23,7 @@
             <tr><th>Name</th></tr>
         </table>
 
-        <script type="text/template">
+        <script>
             function TryParseInt(str,defaultValue) {
                 var retValue = defaultValue;
                 if(str !== null) {
@@ -60,38 +53,22 @@
 
             playerTable = document.getElementById("players")
             numPlayersField = document.getElementById("totalPlayers")
-            numVillagersField = document.getElementById("totalVillagers")
-            numSeersField = document.getElementById("totalSeers")
-            numWolvesField = document.getElementById("totalWolves")
             keepField = document.getElementById("keepPercent")
             gameName = document.forms["gameForm"]["gameName"].value
             numPlayers = 0
-            numSeers = 0
-            numWolves = 0
             keepPercent = 0
-
-            {{ range $key, $value := .Roles }}
-            num{{ $key }}Field = document.getElementById("total{{ $key }}")
-            num{{ $key }} = 0
-            {{ end }}
 
             fetch("/setupGame")
             .then(response => response.json())
             .then(rolesList => {
                 numPlayersField.innerHTML = rolesList.totalPlayers
-                numVillagersField.innerHTML = rolesList.totalVillagers
-                numSeersField.value = rolesList.totalSeers
-                numWolvesField.value = rolesList.totalWolves
+                numPlayers = rolesList.totalPlayers
                 keepField.value = rolesList.keepPercent
 
-                numPlayers = rolesList.totalPlayers
-                numSeers = rolesList.totalSeers
-                numWolves = rolesList.totalWolves
                 keepPercent = rolesList.keepPercent
 
                 {{ range $key, $value := .Roles }}
-                num{{ $key }}Field.value = {{ $value }}
-                num{{ $key }} = {{ $value }}
+                document.getElementById({{ $key }}).innerHTML = {{ $value }}
                 {{ end }}
             })
 
@@ -116,70 +93,31 @@
             })
 
             function updateRoleAmounts() {
-                numWolves = TryParseInt(numWolvesField.value, 0)
-                numSeers = TryParseInt(numSeersField.value, 0)
-                numVillagersField.innerHTML = numPlayers - numSeers - numWolves
-
                 specialRoleAmount = 0
                 defaultRoleName = {{ .DefaultRoleName }}
                 {{ range $key, $value := .Roles }}
                 if ("{{ $key }}" != defaultRoleName) {
-                    num{{ $key }} = TryParseInt(num{{ $key }}Field.value, 0)
-                    specialRoleAmount += num{{ $key }}
+                    specialRoleAmount += TryParseInt(document.getElementById({{ $key }}).value, 0)
                 }
                 {{ end }}
-                num{{ .DefaultRoleName }} = numPlayers - specialRoleAmount
+                remainingDefaultRole = numPlayers - specialRoleAmount
+                if (remainingDefaultRole >= 0) {
+                    document.getElementById(defaultRoleName).value = (numPlayers - specialRoleAmount)
+                }
             }
 
-            {{ range $key, $value := .Roles }}
-            function validate{{ $key }}() {
+            function validateInput(inputType) {
                 updateRoleAmounts()
                 test = true
 
                 if (test) {
-                    test = num{{ $key }} <= numPlayers
-                    formatValidation(test, "total{{ $key }}Alert", "total{{ $key }}", "Must not have more {{ $key }} than total players")
+                    test = numPlayers >= TryParseInt(document.getElementById(inputType).value, 0)
+                    formatValidation(test, inputType + "Alert", inputType, "Must not have more " + inputType + " than total players")
                 }
 
                 if (test) {
-                    test = !isNaN(num{{ $key }}Field.value) && num{{ $key }} >= 0
-                    formatValidation(test, "total{{ $key }}Alert", "total{{ $key }}", "Insert a valid number")
-                }
-
-                return test
-            }
-            {{ end }}
-
-
-            function validateSeers() {
-                updateRoleAmounts()
-                test = true
-
-                if (test) {
-                    test = numSeers <= numPlayers
-                    formatValidation(test, "totalSeersAlert", "totalSeers", "Must not have more seers than total players")
-                }
-
-                if (test) {
-                    test = !isNaN(numSeersField.value) && numSeers >= 0
-                    formatValidation(test, "totalSeersAlert", "totalSeers", "Insert a valid number")
-                }
-
-                return test
-            }
-
-            function validateWolves() {
-                updateRoleAmounts()
-                test = true
-
-                if (test) {
-                    test = numWolves <= numPlayers
-                    formatValidation(test, "totalWolvesAlert", "totalWolves", "Must not have more wolves than total players")
-                }
-
-                if (test) {
-                    test = !isNaN(numWolvesField.value) && numWolves >= 0
-                    formatValidation(test, "totalWolvesAlert", "totalWolves", "Insert a valid number")
+                    test = !isNaN(document.getElementById(inputType).value) && TryParseInt(document.getElementById(inputType).value, 0) >= 0
+                    formatValidation(test, inputType + "Alert", inputType, "Insert a valid number")
                 }
 
                 return test
@@ -187,15 +125,21 @@
 
             function validateKeep() {
                 keepPercent = TryParseInt(keepField.value, 0)
-                return formatValidation((!isNaN(keepField.value) && keepPercent >= 0 && keepPercent <= 100), "keepAlert", "keep", "Symmetry percent must be between 0 and 100 inclusive")
+                return formatValidation((!isNaN(keepField.value) && keepPercent >= 0 && 100 >= keepPercent), "keepAlert", "keep", "Symmetry percent must be between 0 and 100 inclusive")
             }
 
-            function validateSpecialRoles() {
+            function validateRoleTotals() {
                 updateRoleAmounts()
-                test = ((numSeers + numWolves) <= numPlayers)
+                roleTotal = 0
+                {{ range $key, $value := .Roles }}
+                roleTotal += TryParseInt(document.getElementById({{ $key }}).value, 0)
+                {{ end }}
 
-                formatValidation(test, "totalSeersAlert", "totalSeers", "Must not have more wolves and seers than total players")
-                formatValidation(test, "totalWolvesAlert", "totalWolves", "Must not have more wolves and seers than total players")
+                test = (numPlayers == roleTotal)
+
+                {{ range $key, $value := .Roles }}
+                formatValidation(test, "{{ $key }}" + "Alert", "{{ $key }}", "Must not have more roles than total players")
+                {{ end }}
                 return test
             }
 
@@ -205,7 +149,7 @@
             }
 
             function validateGameForm() {
-                return (validateGameName() && validateSpecialRoles())
+                return (validateGameName() && validateRoleTotals())
             }
         </script>
     </body>
