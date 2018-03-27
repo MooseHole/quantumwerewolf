@@ -35,28 +35,22 @@ func SetupRoutes() bool {
 
 	router := gin.New()
 	router.Use(gin.Logger())
-	router.LoadHTMLGlob("templates/*.tmpl.html")
 	router.LoadHTMLGlob("forms/*.gtpl")
 	router.Static("static", "static")
 
 	router.GET("/", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "index.tmpl.html", nil)
+		c.HTML(http.StatusOK, "gameList.gtpl", nil)
 	})
-
 	router.GET("/startPlayersSetup", func(c *gin.Context) {
 		resetVars()
-		c.HTML(http.StatusOK, "players.gtpl", nil)
+		c.HTML(http.StatusOK, "playerSetup.gtpl", nil)
 	})
-	//	router.GET("/startGameSetup", func(c *gin.Context) {
-	//		c.HTML(http.StatusOK, "gameSetup.gtpl", nil)
-	//	})
 	router.GET("/startGameSetup", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "gameSetupTemp.gtpl", gin.H{
+		c.HTML(http.StatusOK, "gameSetup.gtpl", gin.H{
 			"DefaultRoleName": roleTypes[0].Name,
 			"Roles":           gameSetup.Roles,
 		})
 	})
-
 	router.GET("/setupPlayers", getPlayerHandler)
 	router.POST("/setupPlayers", createPlayerHandler)
 	router.GET("/setupGame", getRolesHandler)
@@ -64,7 +58,7 @@ func SetupRoutes() bool {
 	router.POST("/startGame", startGame)
 	router.GET("/getGames", getGamesHandler)
 	router.GET("/games", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "games.gtpl", nil)
+		c.HTML(http.StatusOK, "gameList.gtpl", nil)
 	})
 	router.GET("/drop", dropTables)
 

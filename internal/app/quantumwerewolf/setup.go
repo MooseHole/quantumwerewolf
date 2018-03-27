@@ -89,7 +89,7 @@ func createPlayerHandler(c *gin.Context) {
 
 	//	c.String(http.StatusOK, players[0].Number)
 	//Finally, we redirect the user to the original HTMl page
-	c.HTML(http.StatusOK, "players.gtpl", nil)
+	c.HTML(http.StatusOK, "playerSetup.gtpl", nil)
 }
 
 func setRolesHandler(c *gin.Context) {
