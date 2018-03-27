@@ -4,13 +4,14 @@
     <title>Setup New Game</title>
     </head>
     <body>
-        <ol>
-            {{range .Name}}
-            <li>{{.}}</li>
-            {{end}}
-        </ol>
         <form name="gameForm" onsubmit="return validateGameForm()" action="/setupGame" method="post" autocomplete="off">
-            <table>
+            <table type="text/template">
+
+            {{ range $key, $value := .Roles }}
+            <tr><th>{{ $key }}:</th><td><input onkeyup="validate{{ $key }}poop()" type="text" name="{{ $key }}" id="total{{ $key }}" value="{{ $value }}"></td></tr>
+            <tr><td></td><td id="total{{ $key }}Alert"></td><td></td></tr>
+            {{ end }}
+
             <tr><th>Game Name:</th><td><input onkeyup="validateGameName()" type="text" name="gameName" id="gameName" autofocus></td></tr>
             <tr><td></td><td id="gameNameAlert"></td><td></td></tr>
             <tr><th>Total Players:</th><td><span id="totalPlayers"></span></td></tr>
@@ -29,7 +30,7 @@
             <tr><th>Name</th></tr>
         </table>
 
-        <script>
+        <script type="text/template">
             function TryParseInt(str,defaultValue) {
                 var retValue = defaultValue;
                 if(str !== null) {
@@ -69,6 +70,11 @@
             numWolves = 0
             keepPercent = 0
 
+            {{ range $key, $value := .Roles }}
+            num{{ $key }}Field = document.getElementById("total{{ $key }}")
+            num{{ $key }} = 0
+            {{ end }}
+
             fetch("/setupGame")
             .then(response => response.json())
             .then(rolesList => {
@@ -82,6 +88,11 @@
                 numSeers = rolesList.totalSeers
                 numWolves = rolesList.totalWolves
                 keepPercent = rolesList.keepPercent
+
+                {{ range $key, $value := .Roles }}
+                num{{ $key }}Field.value = {{ $value }}
+                num{{ $key }} = {{ $value }}
+                {{ end }}
             })
 
             fetch("/setupPlayers")
@@ -108,7 +119,37 @@
                 numWolves = TryParseInt(numWolvesField.value, 0)
                 numSeers = TryParseInt(numSeersField.value, 0)
                 numVillagersField.innerHTML = numPlayers - numSeers - numWolves
+
+                specialRoleAmount = 0
+                defaultRoleName = {{ .DefaultRoleName }}
+                {{ range $key, $value := .Roles }}
+                if ("{{ $key }}" != defaultRoleName) {
+                    num{{ $key }} = TryParseInt(num{{ $key }}Field.value, 0)
+                    specialRoleAmount += num{{ $key }}
+                }
+                {{ end }}
+                num{{ .DefaultRoleName }} = numPlayers - specialRoleAmount
             }
+
+            {{ range $key, $value := .Roles }}
+            function validate{{ $key }}() {
+                updateRoleAmounts()
+                test = true
+
+                if (test) {
+                    test = num{{ $key }} <= numPlayers
+                    formatValidation(test, "total{{ $key }}Alert", "total{{ $key }}", "Must not have more {{ $key }} than total players")
+                }
+
+                if (test) {
+                    test = !isNaN(num{{ $key }}Field.value) && num{{ $key }} >= 0
+                    formatValidation(test, "total{{ $key }}Alert", "total{{ $key }}", "Insert a valid number")
+                }
+
+                return test
+            }
+            {{ end }}
+
 
             function validateSeers() {
                 updateRoleAmounts()

@@ -20,8 +20,13 @@ var roleTypes map[int]Role
 var villager Role
 var seer Role
 var wolf Role
+var rolesAreSet bool
 
 func setupRoles() {
+	if rolesAreSet {
+		return
+	}
+
 	villager.Name = "Villager"
 	villager.ID = 0 // 0 is reserved for the default type, Villager
 	villager.CanPeek = false
@@ -36,7 +41,7 @@ func setupRoles() {
 	seer.CanAttack = false
 	seer.Evil = false
 	seer.GoodMustKill = false
-	villager.DefaultAmount = 1 // Defaults to 1 of these
+	seer.DefaultAmount = 1 // Defaults to 1 of these
 
 	wolf.Name = "Wolf"
 	wolf.ID = -1
@@ -44,12 +49,13 @@ func setupRoles() {
 	wolf.CanAttack = true
 	wolf.Evil = true
 	wolf.GoodMustKill = true
-	villager.DefaultAmount = 0.33 // Defaults to 33% of total players
+	wolf.DefaultAmount = 1.0 / 3.0 // Defaults to 1/3 of total players
 
 	roleTypes = make(map[int]Role)
 	roleTypes[villager.ID] = villager
 	roleTypes[seer.ID] = seer
 	roleTypes[wolf.ID] = wolf
+	rolesAreSet = true
 }
 
 func getRoleTypes() Role {

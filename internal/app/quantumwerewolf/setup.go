@@ -43,6 +43,8 @@ func getRolesHandler(c *gin.Context) {
 }
 
 func createPlayerHandler(c *gin.Context) {
+	setupRoles()
+
 	// Create a new instance of Player
 	player := Player{}
 
@@ -60,9 +62,6 @@ func createPlayerHandler(c *gin.Context) {
 
 	gameSetup.Total++
 	if gameSetup.Total > 2 {
-		gameSetup.Seers = 1
-		gameSetup.Wolves = gameSetup.Total / 3
-		gameSetup.Villagers = gameSetup.Total - gameSetup.Seers - gameSetup.Wolves
 		amountAssigned := 0
 		for _, v := range roleTypes {
 			// ID 0 is reserved for Villagers
@@ -94,6 +93,8 @@ func createPlayerHandler(c *gin.Context) {
 }
 
 func setRolesHandler(c *gin.Context) {
+	setupRoles()
+
 	// We send all our data as HTML form data
 	// the `ParseForm` method of the request, parses the
 	// form values
@@ -108,32 +109,19 @@ func setRolesHandler(c *gin.Context) {
 
 	gameSetup.Name = c.Request.FormValue("gameName")
 
-	s, err := strconv.ParseInt(c.Request.FormValue("seers")[0:], 10, 64)
-	if err != nil {
-		c.String(http.StatusInternalServerError,
-			fmt.Sprintf("Error converting seers: %v", err))
-	}
-
-	w, err := strconv.ParseInt(c.Request.FormValue("wolves")[0:], 10, 64)
-	if err != nil {
-		c.String(http.StatusInternalServerError,
-			fmt.Sprintf("Error converting wolves: %v", err))
-	}
-
-	if int(s+w) <= gameSetup.Total {
-		gameSetup.Seers = int(s)
-		gameSetup.Wolves = int(w)
-		gameSetup.Villagers = gameSetup.Total - gameSetup.Seers - gameSetup.Wolves
-	}
-
+	specialRoles := 0
 	for _, v := range roleTypes {
-		value, err := strconv.ParseInt(c.Request.FormValue(v.Name)[0:], 10, 64)
-		if err != nil {
-			c.String(http.StatusInternalServerError,
-				fmt.Sprintf("Error converting seers: %v", err))
+		if v.ID != 0 {
+			value, err := strconv.ParseInt(c.Request.FormValue(v.Name)[0:], 10, 64)
+			if err != nil {
+				c.String(http.StatusInternalServerError,
+					fmt.Sprintf("Error converting seers: %v", err))
+			}
+			gameSetup.Roles[v.Name] = int(value)
+			specialRoles += int(value)
 		}
-		gameSetup.Roles[v.Name] = int(value)
 	}
+	gameSetup.Roles[roleTypes[0].Name] = gameSetup.Total - specialRoles
 
 	k, err := strconv.ParseInt(c.Request.FormValue("keep")[0:], 10, 64)
 	if err != nil {
@@ -173,13 +161,12 @@ func startGame(c *gin.Context) {
 	dbStatement += ")"
 	quantumutilities.DbExec(c, db, dbStatement)
 
+	// TODO: Add roles to this table
 	dbStatement = "INSERT INTO game ("
-	dbStatement += "name, players, seers, wolves, keepPercent, round, nightPhase, randomSeed"
+	dbStatement += "name, players, keepPercent, round, nightPhase, randomSeed"
 	dbStatement += ") VALUES ("
 	dbStatement += "'" + gameSetup.Name + "'"
 	dbStatement += ", " + strconv.Itoa(gameSetup.Total)
-	dbStatement += ", " + strconv.Itoa(gameSetup.Seers)
-	dbStatement += ", " + strconv.Itoa(gameSetup.Wolves)
 	dbStatement += ", " + strconv.Itoa(gameSetup.Keep)
 	dbStatement += ", " + strconv.Itoa(game.RoundNum)
 	dbStatement += ", TRUE"

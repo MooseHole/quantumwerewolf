@@ -2,12 +2,17 @@ package quantumwerewolf
 
 import (
 	"database/sql"
+	tt "html/template"
 	"log"
 	"net/http"
 	"os"
 
 	"github.com/gin-gonic/gin"
 )
+
+type TplCtx struct {
+	UserEmail tt.JS
+}
 
 var (
 	db *sql.DB
@@ -42,15 +47,14 @@ func SetupRoutes() bool {
 		resetVars()
 		c.HTML(http.StatusOK, "players.gtpl", nil)
 	})
+	//	router.GET("/startGameSetup", func(c *gin.Context) {
+	//		c.HTML(http.StatusOK, "gameSetup.gtpl", nil)
+	//	})
 	router.GET("/startGameSetup", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "gameSetup.gtpl", nil)
-	})
-	router.GET("/startGameSetupTemp", func(c *gin.Context) {
-		names := make([]string, 0, 3)
-		names = append(names, "0", "Yo", "2")
-
+		c.Header("ContentType", "text/plain")
 		c.HTML(http.StatusOK, "gameSetupTemp.gtpl", gin.H{
-			"Name": names,
+			"DefaultRoleName": roleTypes[0].Name,
+			"Roles":           gameSetup.Roles,
 		})
 	})
 

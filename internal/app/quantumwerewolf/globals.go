@@ -21,13 +21,10 @@ type Player struct {
 
 // GameSetup holds the game settings
 type GameSetup struct {
-	Name      string         `json:"gameName"`
-	Roles     map[string]int `json:"roles"`
-	Total     int            `json:"totalPlayers"`
-	Villagers int            `json:"totalVillagers"`
-	Seers     int            `json:"totalSeers"`
-	Wolves    int            `json:"totalWolves"`
-	Keep      int            `json:"keepPercent"`
+	Name  string         `json:"gameName"`
+	Roles map[string]int `json:"roles"`
+	Total int            `json:"totalPlayers"`
+	Keep  int            `json:"keepPercent"`
 }
 
 // Multiverse holds the state of all universes
@@ -49,9 +46,6 @@ func resetVars() {
 	gameSetup.Name = ""
 	gameSetup.Roles = make(map[string]int)
 	gameSetup.Total = 0
-	gameSetup.Villagers = 0
-	gameSetup.Seers = 0
-	gameSetup.Wolves = 0
 	gameSetup.Keep = 100
 	game.Name = ""
 	game.Number = -1
