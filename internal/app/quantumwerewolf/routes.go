@@ -2,17 +2,12 @@ package quantumwerewolf
 
 import (
 	"database/sql"
-	tt "html/template"
 	"log"
 	"net/http"
 	"os"
 
 	"github.com/gin-gonic/gin"
 )
-
-type TplCtx struct {
-	UserEmail tt.JS
-}
 
 var (
 	db *sql.DB

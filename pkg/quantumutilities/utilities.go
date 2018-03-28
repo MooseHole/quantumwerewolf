@@ -1,7 +1,9 @@
 package quantumutilities
 
 import (
+	"bytes"
 	"database/sql"
+	"encoding/gob"
 	"fmt"
 	"log"
 	"math"
@@ -105,4 +107,15 @@ func PermUint64Trunc(r *rand.Rand, n uint64, maxValues uint64) []uint64 {
 	}
 
 	return m
+}
+
+// GetBytes converts an arbitrary interface to a byte array
+func GetBytes(key interface{}) ([]byte, error) {
+	var buf bytes.Buffer
+	enc := gob.NewEncoder(&buf)
+	err := enc.Encode(key)
+	if err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
 }
