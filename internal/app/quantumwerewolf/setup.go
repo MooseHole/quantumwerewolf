@@ -133,7 +133,7 @@ func setRolesHandler(c *gin.Context) {
 	createMultiverse()
 	startGame(c)
 	resetVars()
-	c.HTML(http.StatusOK, "games.gtpl", nil)
+	c.HTML(http.StatusOK, "gameList.gtpl", nil)
 }
 
 func startGame(c *gin.Context) {
