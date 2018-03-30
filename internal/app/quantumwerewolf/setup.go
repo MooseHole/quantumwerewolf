@@ -95,15 +95,8 @@ func createPlayerHandler(c *gin.Context) {
 func setRolesHandler(c *gin.Context) {
 	setupRoles()
 
-	// We send all our data as HTML form data
-	// the `ParseForm` method of the request, parses the
-	// form values
 	err := c.Request.ParseForm()
-
-	// In case of any error, we respond with an error to the user
-	if err != nil {
-		c.String(http.StatusInternalServerError,
-			fmt.Sprintf("Error setting gameSetup: %v", err))
+	if quantumutilities.HandleErr(c, err, "Error setting gameSetup") {
 		return
 	}
 
@@ -160,7 +153,6 @@ func startGame(c *gin.Context) {
 	dbStatement += ")"
 	quantumutilities.DbExec(c, db, dbStatement)
 
-	// TODO: Add roles to this table
 	roleBlob, err := quantumutilities.GetBytes(gameSetup.Roles)
 	quantumutilities.HandleErr(c, err, "Error getting Roles as bytes")
 	roleBytesString := fmt.Sprintf("'\\x%x'", roleBlob)

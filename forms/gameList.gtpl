@@ -20,7 +20,7 @@
                     row = document.createElement("tr")
 
                     gameName = document.createElement("td")
-                    gameName.innerHTML = game.gameName
+                    gameName.innerHTML = "<a href='game.gtpl?gameId=" + game.gameNumber + "'>" + game.gameName + "</a>"
 
                     row.appendChild(gameName)
                     gameTable.appendChild(row)

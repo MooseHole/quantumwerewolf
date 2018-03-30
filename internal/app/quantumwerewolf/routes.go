@@ -52,6 +52,7 @@ func SetupRoutes() bool {
 	router.POST("/setupGame", setRolesHandler)
 	router.POST("/startGame", startGame)
 	router.GET("/getGames", getGamesHandler)
+	router.GET("/game", setGame)
 	router.GET("/games", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "gameList.gtpl", nil)
 	})

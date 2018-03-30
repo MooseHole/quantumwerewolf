@@ -119,3 +119,14 @@ func GetBytes(key interface{}) ([]byte, error) {
 	}
 	return buf.Bytes(), nil
 }
+
+// GetInterface converts abyte array to an arbitrary interface
+func GetInterface(bts []byte, data interface{}) error {
+	buf := bytes.NewBuffer(bts)
+	dec := gob.NewDecoder(buf)
+	err := dec.Decode(data)
+	if err != nil {
+		return err
+	}
+	return nil
+}
