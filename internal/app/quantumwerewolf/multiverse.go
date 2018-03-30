@@ -28,6 +28,7 @@ func getUniverseString(universe uint64) string {
 }
 
 func createMultiverse() {
+	setupRoles()
 	for _, v := range roleTypes {
 		for j := 0; j < gameSetup.Roles[v.Name]; j++ {
 			multiverse.originalAssignments = append(multiverse.originalAssignments, v.ID)

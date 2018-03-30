@@ -8,8 +8,6 @@ import (
 )
 
 func rebuildGame(c *gin.Context, gameID int) {
-	setupRoles()
-
 	gameQuery := "SELECT name, players, roles, keepPercent, round, nightPhase, randomSeed FROM game"
 	gameQuery += " WHERE id=" + strconv.Itoa(gameID)
 	gameQuery += " LIMIT 1"
