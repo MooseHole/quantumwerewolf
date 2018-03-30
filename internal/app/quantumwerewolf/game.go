@@ -24,7 +24,7 @@ func rebuildGame(c *gin.Context, gameID int) {
 		return
 	}
 
-	err = quantumutilities.GetInterface(rolesByteArray, gameSetup.Roles)
+	err = quantumutilities.GetInterface(rolesByteArray, &gameSetup.Roles)
 	if quantumutilities.HandleErr(c, err, "Error getting game roles interface") {
 		return
 	}
