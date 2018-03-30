@@ -162,9 +162,8 @@ func startGame(c *gin.Context) {
 
 	// TODO: Add roles to this table
 	roleBlob, err := quantumutilities.GetBytes(gameSetup.Roles)
-	//	roleBlob = nil
 	quantumutilities.HandleErr(c, err, "Error getting Roles as bytes")
-	roleBytesString := fmt.Sprintf("%s", roleBlob)
+	roleBytesString := fmt.Sprintf("'\\x%x'", roleBlob)
 	dbStatement = "INSERT INTO game ("
 	dbStatement += "name, players, roles, keepPercent, round, nightPhase, randomSeed"
 	dbStatement += ") VALUES ("
