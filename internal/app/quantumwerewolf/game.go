@@ -9,11 +9,11 @@ import (
 
 func rebuildGame(c *gin.Context, gameID int) {
 	gameQuery := "SELECT name, players, roles, keepPercent, round, nightPhase, randomSeed FROM game"
-	gameQuery += "WHERE id = " + strconv.Itoa(gameID)
-	gameQuery += "LIMIT 1"
+	gameQuery += " WHERE id=" + strconv.Itoa(gameID)
+	gameQuery += " LIMIT 1"
 
 	row, err := db.Query(gameQuery)
-	if quantumutilities.HandleErr(c, err, "Error selecting games") {
+	if quantumutilities.HandleErr(c, err, "Error selecting game") {
 		return
 	}
 
