@@ -18,9 +18,15 @@ func rebuildGame(c *gin.Context, gameID int) {
 	}
 
 	rolesByteArray := make([]byte, 0, 100)
-	row.Scan(&gameSetup.Name, &gameSetup.Total, &rolesByteArray, &gameSetup.Keep, &game.RoundNum, &game.RoundNight, &game.Seed)
+	err = row.Scan(&gameSetup.Name, &gameSetup.Total, &rolesByteArray, &gameSetup.Keep, &game.RoundNum, &game.RoundNight, &game.Seed)
+	if quantumutilities.HandleErr(c, err, "Error scanning game variables") {
+		return
+	}
 
-	quantumutilities.GetInterface(rolesByteArray, gameSetup.Roles)
+	err = quantumutilities.GetInterface(rolesByteArray, gameSetup.Roles)
+	if quantumutilities.HandleErr(c, err, "Error getting game roles interface") {
+		return
+	}
 
 	createMultiverse()
 }
