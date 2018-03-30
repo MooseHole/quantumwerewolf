@@ -94,3 +94,52 @@ func TestKthperm(t *testing.T) {
 		}
 	}
 }
+
+func TestGetBytesGetInterface(t *testing.T) {
+	var blob []byte
+	var err error
+	expectedInt := 53
+	actualInt := expectedInt
+	if expectedInt != actualInt {
+		t.Errorf("GetBytes for integer did not set up correctly. expectedInt %d != actualInt %d", expectedInt, actualInt)
+	}
+	blob, err = quantumutilities.GetBytes(actualInt)
+	if err != nil {
+		t.Errorf("GetBytes for integer resulted in an error: %v.", err)
+	}
+	actualInt++
+	if expectedInt == actualInt {
+		t.Errorf("TestGetBytesGetInterface for integer did not modify correctly. expectedInt %d == actualInt %d", expectedInt, actualInt)
+	}
+	err = quantumutilities.GetInterface(blob, &actualInt)
+	if err != nil {
+		t.Errorf("GetInterface for integer resulted in an error: %v.", err)
+	}
+	if expectedInt != actualInt {
+		t.Errorf("GetInterface for integer did not get correct result. expectedInt %d != actualInt %d", expectedInt, actualInt)
+	}
+
+	expectedMap := make(map[string]int)
+	expectedMap["testValueA"] = 1
+	expectedMap["testValueB"] = 2
+	expectedMap["testValueC"] = 3
+	blob, err = quantumutilities.GetBytes(expectedMap)
+	if err != nil {
+		t.Errorf("GetBytes for map resulted in an error: %v.", err)
+	}
+	actualMap := make(map[string]int)
+	for k, v := range expectedMap {
+		if v == actualMap[k] {
+			t.Errorf("TestGetBytesGetInterface for map did not modify correctly. expectedInt[%v] %d == actualInt[%v] %d", k, v, k, actualMap[k])
+		}
+	}
+	err = quantumutilities.GetInterface(blob, &actualMap)
+	if err != nil {
+		t.Errorf("GetInterface for map resulted in an error: %v.", err)
+	}
+	for k, v := range expectedMap {
+		if v != actualMap[k] {
+			t.Errorf("GetInterface for map did not get correct result. expectedInt[%v] %d != actualInt[%v] %d", k, v, k, actualMap[k])
+		}
+	}
+}
