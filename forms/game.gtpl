@@ -15,10 +15,10 @@
         <b>Players</b><br>
         {{ range .PlayersByName }}
             {{ .Name }}<br>
-            {{ range .PlayersByNum }}
+            {{ range _ctx.PlayersByNum }}
                 Player {{ .Num }}: {{ .Actions }}<br>
             {{ end }}    
         {{ end }}    
-    </body>
+     </body>
 </html>
 {{end}}
