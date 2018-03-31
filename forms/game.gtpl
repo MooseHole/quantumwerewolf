@@ -15,10 +15,19 @@
         <b>Players</b><br>
         {{ range .PlayersByName }}
             {{ .Name }}<br>
-            {{ range _ctx.PlayersByNum }}
-                Player {{ .Num }}: {{ .Actions }}<br>
-            {{ end }}    
-        {{ end }}    
+{{template "PlayersAgain"}}
+		{yield PLAYERSAGAINCONTENT}
+{{end}}
+
+        {{ end }}   
+
+        {{ range .PlayersByName }}
+
+		{{call PlayersAgain}}
+			{{container PLAYERSAGAINCONTENT = .Name}}
+        {{ end }}   
+	
+        {{ end }}   
      </body>
 </html>
 {{end}}
