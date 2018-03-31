@@ -1,3 +1,9 @@
+		{{ define "selectContent" }}
+			{{ range .PlayersByName }}
+				{{ template "selectContent" . }}
+			{{ end }}
+		{{ end }}
+
 {{define "game.gtpl"}}<!DOCTYPE html>
 <html lang="en">
     <head>
@@ -17,11 +23,6 @@
             {{ .Name }}<br>
         {{ end }}   
 
-		{{ define "selectContent" }}
-			{{ range .PlayersByName }}
-				{{ template "selectContent" . }}
-			{{ end }}
-		{{ end }}
 		<u>{{ template "selectContent" . }}</u>
      </body>
 </html>
