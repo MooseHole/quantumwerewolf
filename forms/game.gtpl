@@ -1,5 +1,8 @@
 		{{ define "selectContent" }}
 {{.}}
+        {{ range .PlayersByName }}
+            {{ .Name }}<br>
+        {{ end }}   
 		{{ end }}
 
 {{define "game.gtpl"}}<!DOCTYPE html>
