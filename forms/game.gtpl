@@ -15,6 +15,9 @@
         <b>Players</b><br>
         {{ range .PlayersByName }}
             {{ .Name }}<br>
+            {{ range .PlayersByNum }}
+                Player {{ .Num }}: {{ .Actions }}<br>
+            {{ end }}    
         {{ end }}    
     </body>
 </html>
