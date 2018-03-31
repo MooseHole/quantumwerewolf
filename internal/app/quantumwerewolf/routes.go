@@ -61,7 +61,7 @@ func SetupRoutes() bool {
 			playersByNum[i] = v
 		}
 
-		sort.Slice(playersByNum, func(i, j int) bool { return players[i].Num < players[j].Num })
+		sort.Slice(playersByNum, func(i, j int) bool { return playersByNum[i].Num < playersByNum[j].Num })
 		c.HTML(http.StatusOK, "game.gtpl", gin.H{
 			"Name":         gameSetup.Name,
 			"TotalPlayers": gameSetup.Total,
