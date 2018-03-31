@@ -61,6 +61,7 @@ func SetupRoutes() bool {
 			"Roles":        gameSetup.Roles,
 			"Round":        game.RoundNum,
 			"IsNight":      game.RoundNight,
+			"Players":      players,
 		})
 	})
 
