@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"sort"
 
 	"github.com/gin-gonic/gin"
 )
@@ -55,6 +56,8 @@ func SetupRoutes() bool {
 	// router.GET("/game", setGame)
 	router.GET("/game", func(c *gin.Context) {
 		setGame(c)
+		playersByNum := make([]Player, 0, gameSetup.Total)
+		sort.Slice(playersByNum, func(i, j int) bool { return players[i].Num < players[j].Num })
 		c.HTML(http.StatusOK, "game.gtpl", gin.H{
 			"Name":         gameSetup.Name,
 			"TotalPlayers": gameSetup.Total,
@@ -62,6 +65,7 @@ func SetupRoutes() bool {
 			"Round":        game.RoundNum,
 			"IsNight":      game.RoundNight,
 			"Players":      players,
+			"PlayerByNum":  playersByNum,
 		})
 	})
 

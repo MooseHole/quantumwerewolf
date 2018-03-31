@@ -8,7 +8,9 @@
         Number of Players: {{ .TotalPlayers }}<p>
         Round: {{ .IsNight }} {{ .Round }}<p>
         <b>Actions</b><br>
-        {{ range .Players }}
+
+
+        {{ range .PlayersByNum }}
             Player {{ .Num }}: {{ .Actions }}<br>
         {{ end }}    
         <p>

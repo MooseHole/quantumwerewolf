@@ -179,7 +179,7 @@ func startGame(c *gin.Context) {
 		dbStatement += "'" + p.Name + "'"
 		dbStatement += ", " + strconv.Itoa(perm[i])
 		dbStatement += ", " + strconv.Itoa(gameID)
-		dbStatement += ", ''"
+		dbStatement += ", 'actions go here'"
 		dbStatement += ")"
 		log.Printf("Going to execute %q", dbStatement)
 		quantumutilities.DbExec(c, db, dbStatement)
