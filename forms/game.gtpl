@@ -26,11 +26,13 @@
 
         <script>
             var selects = document.getElementsByTagName('select');
-            var option = document.createElement("option");
             for(var z=0; z<selects.length; z++){
                 {{ range .PlayersByName }}        
-                option.text = "{{ .Name }}";
-                selects[z].add(option);
+                {
+                    var option = document.createElement("option");
+                    option.text = "{{ .Name }}";
+                    selects[z].add(option);
+                }
                 {{ end }}
             }
         </script>
