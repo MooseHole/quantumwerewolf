@@ -4,18 +4,16 @@
     <title>Game</title>
     </head>
     <body>
-        Game: {{ .Name }}<p>
-        Number of Players: {{ .TotalPlayers }}<p>
+        Game: {{ .Name }}<br>
+        Number of Players: {{ .TotalPlayers }}<br>
         Round: {{ .IsNight }} {{ .Round }}<p>
         <b>Actions</b><br>
-
-
         {{ range .PlayersByNum }}
             Player {{ .Num }}: {{ .Actions }}<br>
         {{ end }}    
         <p>
         <b>Players</b><br>
-        {{ range .Players }}
+        {{ range .PlayersByName }}
             {{ .Name }}<br>
         {{ end }}    
     </body>

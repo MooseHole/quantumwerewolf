@@ -56,22 +56,22 @@ func SetupRoutes() bool {
 	// router.GET("/game", setGame)
 	router.GET("/game", func(c *gin.Context) {
 		setGame(c)
+		playersByName := make([]Player, gameSetup.Total, gameSetup.Total)
 		playersByNum := make([]Player, gameSetup.Total, gameSetup.Total)
 		for i, v := range players {
-			//			playersByNum[i].Name = v.Name
-			//			playersByNum[i].Num = v.Num
-			//			playersByNum[i].Actions = v.Actions
+			playersByName[i] = v
 			playersByNum[i] = v
 		}
+		sort.Slice(playersByName, func(i, j int) bool { return playersByName[i].Name < playersByNum[j].Name })
 		sort.Slice(playersByNum, func(i, j int) bool { return playersByNum[i].Num < playersByNum[j].Num })
 		c.HTML(http.StatusOK, "game.gtpl", gin.H{
-			"Name":         gameSetup.Name,
-			"TotalPlayers": gameSetup.Total,
-			"Roles":        gameSetup.Roles,
-			"Round":        game.RoundNum,
-			"IsNight":      game.RoundNight,
-			"Players":      players,
-			"PlayersByNum": playersByNum,
+			"Name":          gameSetup.Name,
+			"TotalPlayers":  gameSetup.Total,
+			"Roles":         gameSetup.Roles,
+			"Round":         game.RoundNum,
+			"IsNight":       game.RoundNight,
+			"PlayersByName": playersByName,
+			"PlayersByNum":  playersByNum,
 		})
 	})
 
