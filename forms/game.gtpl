@@ -23,6 +23,7 @@
             {{ .Name }}<br>
         {{ end }}   
 
+{{.}}
 		<u>{{ template "selectContent" . }}</u>
      </body>
 </html>
