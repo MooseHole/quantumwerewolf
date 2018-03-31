@@ -58,7 +58,9 @@ func SetupRoutes() bool {
 		setGame(c)
 		playersByNum := make([]Player, gameSetup.Total, gameSetup.Total)
 		for i, v := range players {
-			playersByNum[i] = v
+			playersByNum[i].Name = v.Name
+			playersByNum[i].Num = v.Num
+			playersByNum[i].Actions = v.Actions
 		}
 
 		sort.Slice(playersByNum, func(i, j int) bool { return playersByNum[i].Num < playersByNum[j].Num })
