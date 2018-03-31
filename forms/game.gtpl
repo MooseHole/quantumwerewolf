@@ -15,19 +15,14 @@
         <b>Players</b><br>
         {{ range .PlayersByName }}
             {{ .Name }}<br>
-{{template "PlayersAgain"}}
-		{yield PLAYERSAGAINCONTENT}
-{{end}}
-
         {{ end }}   
 
-        {{ range .PlayersByName }}
-
-		{{call PlayersAgain}}
-			{{container PLAYERSAGAINCONTENT = .Name}}
-        {{ end }}   
-	
-        {{ end }}   
+		{{ define "selectContent" }}
+			{{ range .PlayersByName }}
+				{{ template "selectContent" . }}
+			{{ end }}
+		{{ end }}
+		<u>{{ template "selectContent" . }}</u>
      </body>
 </html>
 {{end}}
