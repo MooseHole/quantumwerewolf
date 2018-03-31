@@ -1,9 +1,3 @@
-{{ define "selectContent" }}
-    {{ range .PlayersByName }}
-        <option value="{{ .Name }}">{{ .Name }}</option>
-    {{ end }}   
-{{ end }}
-
 {{define "game.gtpl"}}<!DOCTYPE html>
 <html lang="en">
     <head>
@@ -24,11 +18,22 @@
             <tr>
             <form name={{ .Name }}>
             <td>{{ .Name }}</td>
-            <td><select name="Attack">{{ template "selectContent" . }}</select></td>
-            <td><select name="Peek">{{ template "selectContent" . }}</select></td>
+            <td><select name="Attack"></select></td>
+            <td><select name="Peek"></select></td>
             </tr>
             </form>
-        {{ end }}   
+        {{ end }}
+
+        <script>
+            var selects = document.getElementsByTagName('select');
+            var option = document.createElement("option");
+            for(var z=0; z<selects.length; z++){
+                {{ range .PlayersByName }}        
+                option.text = "{{ .Name }}";
+                selects[z].add(option);
+                {{ end }}
+            }
+        </script>
      </body>
 </html>
 {{end}}
