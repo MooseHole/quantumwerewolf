@@ -8,13 +8,13 @@
         Number of Players: {{ .TotalPlayers }}<p>
         Round: {{ .IsNight }} {{ .Round }}<p>
         <b>Actions</b><br>
-        {{ range $name, $num, $actions := .Players }}
-            Player {{ $num }}: {{ $actions }}<br>
+        {{ range .Players }}
+            Player {{ .Num }}: {{ .Actions }}<br>
         {{ end }}    
         <p>
         <b>Players</b><br>
-        {{ range $name, $num, $actions := .Players }}
-            {{ $name }}<br>
+        {{ range .Players }}
+            {{ .Name }}<br>
         {{ end }}    
     </body>
 </html>
