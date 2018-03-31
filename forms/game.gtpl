@@ -1,9 +1,8 @@
-		{{ define "selectContent" }}
-{{.}}
-        {{ range .PlayersByName }}
-            {{ .Name }}<br>
-        {{ end }}   
-		{{ end }}
+{{ define "selectContent" }}
+    {{ range .PlayersByName }}
+        <option value="{{ .Name }}">{{ .Name }}</option>
+    {{ end }}   
+{{ end }}
 
 {{define "game.gtpl"}}<!DOCTYPE html>
 <html lang="en">
@@ -20,12 +19,16 @@
         {{ end }}    
         <p>
         <b>Players</b><br>
-        {{ range .PlayersByName }}
-            {{ .Name }}<br>
+        <table>
+        {{ range .PlayersByName }}        
+            <tr>
+            <form name={{ .Name }}>
+            <td>{{ .Name }}</td>
+            <td><select name="Attack">{{ template "selectContent" . }}</select></td>
+            <td><select name="Peek">{{ template "selectContent" . }}</select></td>
+            </tr>
+            </form>
         {{ end }}   
-
-{{.}}
-		<u>{{ template "selectContent" . }}</u>
      </body>
 </html>
 {{end}}
