@@ -5,7 +5,7 @@
     </head>
     <body>
         Game: {{ .Name }}<P>
-        Number of Players: {{ TotalPlayers }}<P>
+        Number of Players: {{ .TotalPlayers }}<P>
         Round: {{ .IsNight }} {{ .Round }}
     </body>
 </html>
