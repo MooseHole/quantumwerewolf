@@ -40,7 +40,10 @@
                     if (!allPlayers[{{ .Name }}].includes("|A:"+player+"|")) {
                         var option = document.createElement("option");
                         option.text = player;
-                        attackSelect.add(option);
+                        attackSelect.value
+                        .append($("<option></option>")
+                        .attr('value', player)
+                            .text(player.val())).val(player.val())
                     }
                     if (!allPlayers[{{ .Name }}].includes("|P:"+player+"|")) {
                         var option = document.createElement("option");
