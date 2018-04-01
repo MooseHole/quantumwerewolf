@@ -36,13 +36,13 @@
                     if (performingPlayer != targetPlayer && !allPlayers[targetPlayer].includes("|K|")) {
                         var form = document.getElementById(performingPlayer)
                         var attackSelect = form.elements["Attack"]
-                        if (!allPlayers[performingPlayer].includes("|A:"+player+"|")) {
+                        if (!allPlayers[performingPlayer].includes("|A:"+targetPlayer+"|")) {
                             var option = document.createElement("option");
                             option.text = targetPlayer;
                             attackSelect.add(option)
                         }
                         var peekSelect = form.elements["Peek"]
-                        if (!allPlayers[performingPlayer].includes("|P:"+player+"|")) {
+                        if (!allPlayers[performingPlayer].includes("|P:"+targetPlayer+"|")) {
                             var option = document.createElement("option");
                             option.text = targetPlayer;
                             peekSelect.add(option)
