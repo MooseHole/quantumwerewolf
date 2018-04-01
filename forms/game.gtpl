@@ -35,7 +35,7 @@
                 for (targetPlayer in allPlayers) {
                     if (performingPlayer != targetPlayer && !allPlayers[targetPlayer].includes("|K|")) {
                         var form = document.getElementById(performingPlayer)
-                        var selects = form.getElementsByTagName("select")
+                        var selects = form.getElementsByTagName("SELECT")
                         for (select in selects) {
                             if (select.Name == "Attack") {
                                 if (!allPlayers[performingPlayer].includes("|A:"+player+"|")) {
