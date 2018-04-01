@@ -25,6 +25,7 @@
             allPlayers["{{ .Name }}"] = "{{ .Actions }}"
             {{ end }}
 
+            actionsForm = document.getElementById("Actions")
             actionsTable = document.getElementById("ActionsTable")
             for (performingPlayer in allPlayers) {
                 row = document.createElement("tr")
@@ -53,6 +54,8 @@
                         }
                     }
                 }
+                actionsForm.appendChild(attackSelect)
+                actionsForm.appendChild(peekSelect)
                 attackCell.innerHTML = attackSelect
                 peekCell.innerHTML = peekSelect
                 row.appendChild(playerName)
