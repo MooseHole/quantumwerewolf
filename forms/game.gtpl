@@ -14,27 +14,42 @@
         <p>
         <b>Players</b><br>
         <table>
+        <tr><th>Player</th><th>Attack</th><th>Peek</th></tr>
         {{ range .PlayersByName }}        
-            <tr>
-            <form name={{ .Name }}>
-            <td>{{ .Name }}</td>
-            <td><select name="Attack"></select></td>
-            <td><select name="Peek"></select></td>
-            </tr>
-            </form>
+        <tr>
+        <form name={{ .Name }} id={{ .Name }}>
+        <td>{{ .Name }}</td>
+        <td><select name="Attack" id="Attack"></select></td>
+        <td><select name="Peek" id="Peek"></select></td>
+        </tr>
+        </form>
         {{ end }}
 
         <script>
-            var selects = document.getElementsByTagName('select');
-            for(var z=0; z<selects.length; z++){
-                {{ range .PlayersByName }}        
-                {
-                    var option = document.createElement("option");
-                    option.text = "{{ .Name }}";
-                    selects[z].add(option);
+            var allPlayers = {}
+            {{ range .PlayersByName }}   
+            allPlayers["{{ .Name }}"] = "{{ .Actions }}"
+            {{ end }}
+            
+            {{ range .PlayersByName }}        
+            var form = document.getElementById("{{ .Name }}")
+            var attackSelect = form.getElementById("Attack")
+            var peekSelect = form.getElementById("Peek")
+            for (player in allPlayers) {
+                if (!allPlayers[player].includes("|K|")) {
+                    if (!allPlayers[{{ .Name }}].includes("|A:"+player+"|")) {
+                        var option = document.createElement("option");
+                        option.text = player;
+                        attackSelect.add(option);
+                    }
+                    if (!allPlayers[{{ .Name }}].includes("|P:"+player+"|")) {
+                        var option = document.createElement("option");
+                        option.text = player;
+                        peekSelect.add(option);
+                    }
                 }
-                {{ end }}
             }
+            {{ end }}
         </script>
      </body>
 </html>
