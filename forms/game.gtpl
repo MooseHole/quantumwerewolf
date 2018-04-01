@@ -28,13 +28,13 @@
             actionsTable = document.getElementById("Actions")
             for (performingPlayer in allPlayers) {
                 row = document.createElement("tr")
-                playerName = document.CreateElement("td")
+                playerName = document.createElement("td")
                 playerName.innerHTML = performingPlayer
-                attackCell = document.CreateElement("td")
-                attackSelect = document.CreateElement("select")
+                attackCell = document.createElement("td")
+                attackSelect = document.createElement("select")
                 attackSelect.name = performingPlayer + "Attack"
-                peekCell = document.CreateElement("td")
-                peekSelect = document.CreateElement("select")
+                peekCell = document.createElement("td")
+                peekSelect = document.createElement("select")
                 peekSelect.name = performingPlayer + "Peek"
                 for (targetPlayer in allPlayers) {
                     if (performingPlayer != targetPlayer && !allPlayers[targetPlayer].includes("|K|")) {
