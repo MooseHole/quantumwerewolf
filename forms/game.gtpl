@@ -31,28 +31,30 @@
             allPlayers["{{ .Name }}"] = "{{ .Actions }}"
             {{ end }}
             
-            {{ range .PlayersByName }}        
-            var form = document.getElementById("{{ .Name }}")
-            var attackSelect = form.getElementsByClassName("Attack")[0]
-            var peekSelect = form.getElementsByClassName("Peek")[0]
-            for (player in allPlayers) {
-                if (!allPlayers[player].includes("|K|")) {
-                    if (!allPlayers[{{ .Name }}].includes("|A:"+player+"|")) {
-                        var option = document.createElement("option");
-                        option.text = player;
-                        attackSelect.value
-                        .append($("<option></option>")
-                        .attr('value', player)
-                            .text(player.val())).val(player.val())
-                    }
-                    if (!allPlayers[{{ .Name }}].includes("|P:"+player+"|")) {
-                        var option = document.createElement("option");
-                        option.text = player;
-                        peekSelect.add(option);
+            for (performingPlayer in allPlayers) {
+                for (targetPlayer in allPlayers) {
+                    if (performingPlayer != targetPlayer && !allPlayers[targetPlayer].includes("|K|")) {
+                        var form = document.getElementById(performingPlayer)
+                        var selects = form.getElementsByTagName("select")
+                        for (select in selects) {
+                            if (select.Name == "Attack") {
+                                if (!allPlayers[performingPlayer].includes("|A:"+player+"|")) {
+                                    var option = document.createElement("option");
+                                    option.text = targetPlayer;
+                                    select.add(option)
+                                }
+                            }
+                            else if (select.Name == "Peek") {
+                                if (!allPlayers[performingPlayer].includes("|P:"+player+"|")) {
+                                    var option = document.createElement("option");
+                                    option.text = targetPlayer;
+                                    select.add(option)
+                                }
+                            }
+                        }
                     }
                 }
             }
-            {{ end }}
         </script>
      </body>
 </html>
