@@ -12,43 +12,49 @@
             Player {{ .Num }}: {{ .Actions }}<br>
         {{ end }}    
         <p>
-        <b>Players</b><br>
+        <b>Actions</b><br>
+        <form name="Actions" id="Actions">
         <table>
         <tr><th>Player</th><th>Attack</th><th>Peek</th></tr>
-        {{ range .PlayersByName }}        
-        <tr>
-        <form name={{ .Name }} id={{ .Name }}>
-        <td>{{ .Name }}</td>
-        <td><select name="Attack"></select></td>
-        <td><select name="Peek"></select></td>
-        </tr>
+        </table>
         </form>
-        {{ end }}
 
         <script>
             var allPlayers = {}
             {{ range .PlayersByName }}   
             allPlayers["{{ .Name }}"] = "{{ .Actions }}"
             {{ end }}
-            
+
+            actionsTable = document.getElementById("Actions")
             for (performingPlayer in allPlayers) {
+                row = document.createElement("tr")
+                playerName = document.CreateElement("td")
+                playerName.innerHTML = performingPlayer
+                attackCell = document.CreateElement("td")
+                attackSelect = document.CreateElement("select")
+                attackSelect.name = performingPlayer + "Attack"
+                peekCell = document.CreateElement("td")
+                peekSelect = document.CreateElement("select")
+                peekSelect.name = performingPlayer + "Peek"
                 for (targetPlayer in allPlayers) {
                     if (performingPlayer != targetPlayer && !allPlayers[targetPlayer].includes("|K|")) {
-                        var form = document.getElementById(performingPlayer)
-                        var attackSelect = form.elements["Attack"]
                         if (!allPlayers[performingPlayer].includes("|A:"+targetPlayer+"|")) {
                             var option = document.createElement("option");
                             option.text = targetPlayer;
                             attackSelect.add(option)
                         }
-                        var peekSelect = form.elements["Peek"]
                         if (!allPlayers[performingPlayer].includes("|P:"+targetPlayer+"|")) {
                             var option = document.createElement("option");
                             option.text = targetPlayer;
-                            peekSelect.add(option)
+                            peek.add(option)
                         }
                     }
                 }
+                attackCell.innerHTML = attackSelect
+                row.appendChild(playerName)
+                row.appendChild(attackCell)
+                row.appendChild(peekCell)
+                actionsTable.appendChild(row)
             }
         </script>
      </body>
