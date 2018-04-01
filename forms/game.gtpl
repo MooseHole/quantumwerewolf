@@ -46,7 +46,7 @@
                         if (!allPlayers[performingPlayer].includes("|P:"+targetPlayer+"|")) {
                             var option = document.createElement("option");
                             option.text = targetPlayer;
-                            peek.add(option)
+                            peekSelect.add(option)
                         }
                     }
                 }
