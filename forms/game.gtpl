@@ -19,8 +19,8 @@
         <tr>
         <form name={{ .Name }} id={{ .Name }}>
         <td>{{ .Name }}</td>
-        <td><select name="Attack" id="Attack"></select></td>
-        <td><select name="Peek" id="Peek"></select></td>
+        <td><select name="Attack"></select></td>
+        <td><select name="Peek"></select></td>
         </tr>
         </form>
         {{ end }}
@@ -33,8 +33,8 @@
             
             {{ range .PlayersByName }}        
             var form = document.getElementById("{{ .Name }}")
-            var attackSelect = form.getElementById("Attack")
-            var peekSelect = form.getElementById("Peek")
+            var attackSelect = form.getElementsByName("Attack")[0]
+            var peekSelect = form.getElementsByName("Peek")[0]
             for (player in allPlayers) {
                 if (!allPlayers[player].includes("|K|")) {
                     if (!allPlayers[{{ .Name }}].includes("|A:"+player+"|")) {
