@@ -54,8 +54,8 @@
                         }
                     }
                 }
-                actionsForm.appendChild(attackSelect)
-                actionsForm.appendChild(peekSelect)
+                attackSelect.form = actionsForm
+                peekSelect.form = actionsForm
                 attackCell.innerHTML = attackSelect
                 peekCell.innerHTML = peekSelect
                 row.appendChild(playerName)
