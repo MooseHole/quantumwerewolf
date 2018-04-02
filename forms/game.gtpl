@@ -14,10 +14,10 @@
         <p>
         <b>Actions</b><br>
         <form name="Actions" id="Actions">
+        </form>
         <table name="ActionsTable" id="ActionsTable">
         <tr><th>Player</th><th>Attack</th><th>Peek</th></tr>
         </table>
-        </form>
 
         <script>
             var allPlayers = {}
@@ -54,8 +54,8 @@
                         }
                     }
                 }
-                attackSelect.form = actionsForm
-                peekSelect.form = actionsForm
+                attackSelect.form = "Actions"
+                peekSelect.form = "Actions"
                 attackCell.innerHTML = attackSelect
                 peekCell.innerHTML = peekSelect
                 row.appendChild(playerName)
