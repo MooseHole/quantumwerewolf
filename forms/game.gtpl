@@ -56,8 +56,8 @@
                 }
                 attackSelect.form = "Actions"
                 peekSelect.form = "Actions"
-                attackCell.innerHTML = attackSelect
-                peekCell.innerHTML = peekSelect
+                attackCell.value = attackSelect
+                peekCell.value = peekSelect
                 row.appendChild(playerName)
                 row.appendChild(attackCell)
                 row.appendChild(peekCell)
