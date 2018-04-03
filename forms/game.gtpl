@@ -12,12 +12,12 @@
             Player {{ .Num }}: {{ .Actions }}<br>
         {{ end }}    
         <p>
-        <b>Actions</b><br>
+        <b>Actions for {{ .IsNight }} {{ .Round }}</b><br>
         <form name="Actions" id="Actions">
-        </form>
         <table name="ActionsTable" id="ActionsTable">
         <tr><th>Player</th><th>Attack</th><th>Peek</th></tr>
         </table>
+        </form>
 
         <script>
             var allPlayers = {}
@@ -38,6 +38,14 @@
                 peekCell = document.createElement("td")
                 peekSelect = document.createElement("select")
                 peekSelect.name = performingPlayer + "Peek"
+                var noAttackOption = document.createElement("option");
+                noAttackOption.value = "";
+                noAttackOption.text = "--NONE--";
+                attackSelect.appendChild(noAttackOption)
+                var noPeekkOption = document.createElement("option");
+                noPeekkOption.value = "";
+                noPeekkOption.text = "--NONE--";
+                peekkSelect.appendChild(noPeekOption)
                 for (targetPlayer in allPlayers) {
                     if (performingPlayer != targetPlayer && !allPlayers[targetPlayer].includes("|K|")) {
                         if (!allPlayers[performingPlayer].includes("|A:"+targetPlayer+"|")) {
