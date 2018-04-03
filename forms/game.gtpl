@@ -45,7 +45,7 @@
                 var noPeekOption = document.createElement("option");
                 noPeekOption.value = "";
                 noPeekOption.text = "--NONE--";
-                peekkSelect.appendChild(noPeekOption)
+                peekSelect.appendChild(noPeekOption)
                 for (targetPlayer in allPlayers) {
                     if (performingPlayer != targetPlayer && !allPlayers[targetPlayer].includes("|K|")) {
                         if (!allPlayers[performingPlayer].includes("|A:"+targetPlayer+"|")) {
