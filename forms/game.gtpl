@@ -42,9 +42,9 @@
                 noAttackOption.value = "";
                 noAttackOption.text = "--NONE--";
                 attackSelect.appendChild(noAttackOption)
-                var noPeekkOption = document.createElement("option");
-                noPeekkOption.value = "";
-                noPeekkOption.text = "--NONE--";
+                var noPeekOption = document.createElement("option");
+                noPeekOption.value = "";
+                noPeekOption.text = "--NONE--";
                 peekkSelect.appendChild(noPeekOption)
                 for (targetPlayer in allPlayers) {
                     if (performingPlayer != targetPlayer && !allPlayers[targetPlayer].includes("|K|")) {
