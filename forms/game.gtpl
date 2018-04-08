@@ -6,16 +6,16 @@
     <body>
         Game: {{ .Name }}<br>
         Number of Players: {{ .TotalPlayers }}<br>
-        Round: {{ .IsNight }} {{ .Round }}<p>
+        Round: {{ .Round }}<p>
         <b>Actions</b><br>
         {{ range .PlayersByNum }}
             Player {{ .Num }}: {{ .Actions }}<br>
         {{ end }}    
         <p>
-        <b>Actions for {{ .IsNight }} {{ .Round }}</b><br>
+        <b>Actions for {{ .Round }}</b><br>
         <form name="Actions" id="Actions">
         <table name="ActionsTable" id="ActionsTable">
-        <tr><th>Player</th><th>Attack</th><th>Peek</th></tr>
+        <tr><th>Player</th>{{ if .IsNight }}<th>Attack</th><th>Peek</th>{{ fi }}</tr>
         </table>
         </form>
 
