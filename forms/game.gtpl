@@ -15,7 +15,7 @@
         <b>Actions for {{ .Round }}</b><br>
         <form name="Actions" id="Actions">
         <table name="ActionsTable" id="ActionsTable">
-        <tr><th>Player</th>{{ if .IsNight }}<th>Attack</th><th>Peek</th>{{ end }}</tr>
+        <tr><th>Player</th>{{ if .IsNight }}<th>Attack</th><th>Peek</th>{{ else }}<th>Lynch</th>{{ end }}</tr>
         </table>
         </form>
 
@@ -31,6 +31,8 @@
                 row = document.createElement("tr")
                 playerName = document.createElement("td")
                 playerName.innerHTML = performingPlayer
+                row.appendChild(playerName)
+                {{ if .IsNight }}
                 attackCell = document.createElement("td")
                 attackSelect = document.createElement("select")
                 attackSelect.id = performingPlayer + "Attack"
@@ -66,9 +68,29 @@
                 peekSelect.form = "Actions"
                 attackCell.appendChild(attackSelect)
                 peekCell.appendChild(peekSelect)
-                row.appendChild(playerName)
                 row.appendChild(attackCell)
                 row.appendChild(peekCell)
+                {{ else }}
+                lynchCell = document.createElement("td")
+                lynchSelect = document.createElement("select")
+                lynchSelect.id = performingPlayer + "Lynch"
+                lynchSelect.name = performingPlayer + "Lynch"
+                var noLynchOption = document.createElement("option");
+                noLynchOption.value = "";
+                noLynchOption.text = "--NONE--";
+                lynchSelect.appendChild(noLynchOption)
+                for (targetPlayer in allPlayers) {
+                    if (performingPlayer != targetPlayer && !allPlayers[targetPlayer].includes("|K|")) {
+                        var option = document.createElement("option");
+                        option.value = targetPlayer;
+                        option.text = targetPlayer;
+                        lynchSelect.appendChild(option)
+                    }
+                }
+                lynchSelect.form = "Actions"
+                lynchCell.appendChild(lynchSelect)
+                row.appendChild(lynchCell)
+                {{ end }}
                 actionsTable.appendChild(row)
             }
         </script>
