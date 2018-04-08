@@ -13,7 +13,9 @@
         {{ end }}    
         <p>
         <b>Actions for {{ .Round }}</b><br>
-        <form name="Actions" id="Actions">
+        <form name="Actions" id="Actions" action="/processActions" method="post">
+        <input type="submit">
+        <input type="checkbox" name="advance" value="advance">Advance to next round<br>
         <table name="ActionsTable" id="ActionsTable">
         <tr><th>Player</th>{{ if .IsNight }}<th>Attack</th><th>Peek</th>{{ else }}<th>Lynch</th>{{ end }}</tr>
         </table>
