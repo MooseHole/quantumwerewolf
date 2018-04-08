@@ -62,3 +62,49 @@ func setGame(c *gin.Context) {
 
 	rebuildGame(c, int(gameID))
 }
+
+func processActions(c *gin.Context) {
+	err := c.Request.ParseForm()
+	if quantumutilities.HandleErr(c, err, "Error processing actions") {
+		return
+	}
+
+	var advance = c.Request.FormValue("advance")
+
+	for _, p := range players {
+		var attackSelection = p.Name + "Attack"
+		var peekSelection = p.Name + "Peek"
+		var lynchSelection = p.Name + "Lynch"
+		if attackSelection != "" {
+			p.Actions += "A:" + c.Request.FormValue(attackSelection) + "|"
+		}
+		if peekSelection != "" {
+			p.Actions += "P:" + c.Request.FormValue(peekSelection) + "|"
+		}
+		if lynchSelection != "" {
+			p.Actions += "L:" + c.Request.FormValue(lynchSelection) + "|"
+		}
+		var dbStatement = "UPDATE players SET"
+		dbStatement += "actions = "
+		dbStatement += "'" + p.Actions + "'"
+		dbStatement += " WHERE num=" + strconv.Itoa(p.Num) + " AND gameId=" + strconv.Itoa(game.Number)
+		quantumutilities.DbExec(c, db, dbStatement)
+	}
+
+	if advance == "advance" {
+		var nightBoolString = ""
+		if game.RoundNight {
+			game.RoundNum++
+			game.RoundNight = false
+			nightBoolString = "FALSE"
+		} else {
+			game.RoundNight = true
+			nightBoolString = "TRUE"
+		}
+
+		var dbStatement = "UPDATE game SET"
+		dbStatement += "round=" + strconv.Itoa(game.RoundNum)
+		dbStatement += ", nightPhase=" + nightBoolString
+		dbStatement += "WHERE id=" + strconv.Itoa(game.Number)
+	}
+}

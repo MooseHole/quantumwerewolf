@@ -82,6 +82,7 @@ func SetupRoutes() bool {
 			"PlayersByNum":  playersByNum,
 		})
 	})
+	router.POST("/processActions", processActions)
 
 	router.GET("/games", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "gameList.gtpl", nil)
