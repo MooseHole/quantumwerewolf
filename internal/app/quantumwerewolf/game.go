@@ -75,16 +75,16 @@ func processActions(c *gin.Context) {
 		var attackSelection = p.Name + "Attack"
 		var peekSelection = p.Name + "Peek"
 		var lynchSelection = p.Name + "Lynch"
-		if attackSelection != "" {
+		if len(attackSelection) > 0 {
 			p.Actions += "A:" + c.Request.FormValue(attackSelection) + "|"
 		}
-		if peekSelection != "" {
+		if len(peekSelection) > 0 {
 			p.Actions += "P:" + c.Request.FormValue(peekSelection) + "|"
 		}
-		if lynchSelection != "" {
+		if len(lynchSelection) > 0 {
 			p.Actions += "L:" + c.Request.FormValue(lynchSelection) + "|"
 		}
-		var dbStatement = "UPDATE players SET"
+		var dbStatement = "UPDATE players SET "
 		dbStatement += "actions = "
 		dbStatement += "'" + p.Actions + "'"
 		dbStatement += " WHERE num=" + strconv.Itoa(p.Num) + " AND gameId=" + strconv.Itoa(game.Number)
@@ -102,7 +102,7 @@ func processActions(c *gin.Context) {
 			nightBoolString = "TRUE"
 		}
 
-		var dbStatement = "UPDATE game SET"
+		var dbStatement = "UPDATE game SET "
 		dbStatement += "round=" + strconv.Itoa(game.RoundNum)
 		dbStatement += ", nightPhase=" + nightBoolString
 		dbStatement += "WHERE id=" + strconv.Itoa(game.Number)
