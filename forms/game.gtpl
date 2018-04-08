@@ -15,7 +15,7 @@
         <b>Actions for {{ .Round }}</b><br>
         <form name="Actions" id="Actions">
         <table name="ActionsTable" id="ActionsTable">
-        <tr><th>Player</th>{{ if .IsNight }}<th>Attack</th><th>Peek</th>{{ /if }}</tr>
+        <tr><th>Player</th>{{ if .IsNight }}<th>Attack</th><th>Peek</th>{{ end }}</tr>
         </table>
         </form>
 
