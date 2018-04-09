@@ -14,6 +14,7 @@
         <p>
         <b>Actions for {{ .Round }}</b><br>
         <form name="Actions" id="Actions" action="/processActions" method="post">
+        <input type="hidden" name="gameId" value={{ .gameID }}>
         <input type="submit">
         <input type="checkbox" name="advance" value="advance">Advance to next round<br>
         <table name="ActionsTable" id="ActionsTable">

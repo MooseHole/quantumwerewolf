@@ -73,6 +73,7 @@ func SetupRoutes() bool {
 		}
 		roundString += strconv.Itoa(game.RoundNum)
 		c.HTML(http.StatusOK, "game.gtpl", gin.H{
+			"GameID":        game.Number,
 			"Name":          gameSetup.Name,
 			"TotalPlayers":  gameSetup.Total,
 			"Roles":         gameSetup.Roles,

@@ -71,6 +71,7 @@ func processActions(c *gin.Context) {
 	}
 
 	var advance = c.Request.FormValue("advance")
+	var gameID = c.Request.FormValue("gameID")
 
 	for _, p := range players {
 		var attackSelection = p.Name + "Attack"
@@ -88,7 +89,7 @@ func processActions(c *gin.Context) {
 		var dbStatement = "UPDATE players SET "
 		dbStatement += "actions = "
 		dbStatement += "'" + p.Actions + "'"
-		dbStatement += " WHERE num=" + strconv.Itoa(p.Num) + " AND gameId=" + strconv.Itoa(game.Number)
+		dbStatement += " WHERE num=" + strconv.Itoa(p.Num) + " AND gameId=" + gameID
 		quantumutilities.DbExec(c, db, dbStatement)
 	}
 
@@ -106,7 +107,7 @@ func processActions(c *gin.Context) {
 		var dbStatement = "UPDATE game SET "
 		dbStatement += "round=" + strconv.Itoa(game.RoundNum)
 		dbStatement += ", nightPhase=" + nightBoolString
-		dbStatement += "WHERE id=" + strconv.Itoa(game.Number)
+		dbStatement += "WHERE id=" + gameID
 	}
 
 	c.HTML(http.StatusOK, "game.gtpl?gameId="+strconv.Itoa(game.Number), nil)
