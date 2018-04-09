@@ -71,7 +71,7 @@ func processActions(c *gin.Context) {
 	}
 
 	var advance = c.Request.FormValue("advance")
-	var gameID = c.Request.FormValue("gameID")
+	var gameID = c.Request.FormValue("gameId")
 
 	for _, p := range players {
 		var attackSelection = p.Name + "Attack"
