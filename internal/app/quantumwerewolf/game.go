@@ -11,7 +11,7 @@ import (
 func rebuildGame(c *gin.Context, gameID int) {
 	resetVars()
 
-	gameQuery := "SELECT name, players, roles, keepPercent, round, nightPhase, randomSeed FROM game"
+	gameQuery := "SELECT id, name, players, roles, keepPercent, round, nightPhase, randomSeed FROM game"
 	gameQuery += " WHERE id=" + strconv.Itoa(gameID)
 	gameQuery += " LIMIT 1"
 
@@ -22,7 +22,7 @@ func rebuildGame(c *gin.Context, gameID int) {
 
 	row.Next()
 	rolesByteArray := make([]byte, 0, 100)
-	err = row.Scan(&gameSetup.Name, &gameSetup.Total, &rolesByteArray, &gameSetup.Keep, &game.RoundNum, &game.RoundNight, &game.Seed)
+	err = row.Scan(&game.Number, &gameSetup.Name, &gameSetup.Total, &rolesByteArray, &gameSetup.Keep, &game.RoundNum, &game.RoundNight, &game.Seed)
 	if quantumutilities.HandleErr(c, err, "Error scanning game variables") {
 		return
 	}
