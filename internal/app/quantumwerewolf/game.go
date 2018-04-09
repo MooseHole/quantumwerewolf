@@ -1,6 +1,7 @@
 package quantumwerewolf
 
 import (
+	"net/http"
 	"quantumwerewolf/pkg/quantumutilities"
 	"strconv"
 
@@ -107,4 +108,6 @@ func processActions(c *gin.Context) {
 		dbStatement += ", nightPhase=" + nightBoolString
 		dbStatement += "WHERE id=" + strconv.Itoa(game.Number)
 	}
+
+	c.HTML(http.StatusOK, "game.gtpl?gameId="+strconv.Itoa(game.Number), nil)
 }
