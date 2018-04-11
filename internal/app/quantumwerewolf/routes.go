@@ -5,8 +5,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"sort"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -57,31 +55,7 @@ func SetupRoutes() bool {
 	// router.GET("/game", setGame)
 	router.GET("/game", func(c *gin.Context) {
 		setGame(c)
-		playersByName := make([]Player, gameSetup.Total, gameSetup.Total)
-		playersByNum := make([]Player, gameSetup.Total, gameSetup.Total)
-		for i, v := range players {
-			playersByName[i] = v
-			playersByNum[i] = v
-		}
-		sort.Slice(playersByName, func(i, j int) bool { return playersByName[i].Name < playersByNum[j].Name })
-		sort.Slice(playersByNum, func(i, j int) bool { return playersByNum[i].Num < playersByNum[j].Num })
-		var roundString = ""
-		if game.RoundNight {
-			roundString += "Night "
-		} else {
-			roundString += "Day "
-		}
-		roundString += strconv.Itoa(game.RoundNum)
-		c.HTML(http.StatusOK, "game.gtpl", gin.H{
-			"GameID":        game.Number,
-			"Name":          gameSetup.Name,
-			"TotalPlayers":  gameSetup.Total,
-			"Roles":         gameSetup.Roles,
-			"Round":         roundString,
-			"IsNight":       game.RoundNight,
-			"PlayersByName": playersByName,
-			"PlayersByNum":  playersByNum,
-		})
+		showGame(c)
 	})
 	router.POST("/processActions", processActions)
 

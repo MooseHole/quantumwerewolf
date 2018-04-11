@@ -3,10 +3,39 @@ package quantumwerewolf
 import (
 	"net/http"
 	"quantumwerewolf/pkg/quantumutilities"
+	"sort"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
+
+func showGame(c *gin.Context) {
+	playersByName := make([]Player, gameSetup.Total, gameSetup.Total)
+	playersByNum := make([]Player, gameSetup.Total, gameSetup.Total)
+	for i, v := range players {
+		playersByName[i] = v
+		playersByNum[i] = v
+	}
+	sort.Slice(playersByName, func(i, j int) bool { return playersByName[i].Name < playersByNum[j].Name })
+	sort.Slice(playersByNum, func(i, j int) bool { return playersByNum[i].Num < playersByNum[j].Num })
+	var roundString = ""
+	if game.RoundNight {
+		roundString += "Night "
+	} else {
+		roundString += "Day "
+	}
+	roundString += strconv.Itoa(game.RoundNum)
+	c.HTML(http.StatusOK, "game.gtpl", gin.H{
+		"GameID":        game.Number,
+		"Name":          gameSetup.Name,
+		"TotalPlayers":  gameSetup.Total,
+		"Roles":         gameSetup.Roles,
+		"Round":         roundString,
+		"IsNight":       game.RoundNight,
+		"PlayersByName": playersByName,
+		"PlayersByNum":  playersByNum,
+	})
+}
 
 func rebuildGame(c *gin.Context, gameID int) {
 	resetVars()
