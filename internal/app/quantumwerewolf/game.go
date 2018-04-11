@@ -152,6 +152,7 @@ func processActions(c *gin.Context) {
 		quantumutilities.DbExec(c, db, dbStatement)
 	}
 
-	setGame(c)
+	gameIDNum, err := strconv.ParseInt(gameID, 10, 32)
+	rebuildGame(c, int(gameIDNum))
 	showGame(c)
 }
