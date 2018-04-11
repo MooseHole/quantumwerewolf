@@ -147,5 +147,6 @@ func processActions(c *gin.Context) {
 	}
 
 	//	c.HTML(http.StatusOK, "game.gtpl?gameId="+strconv.Itoa(game.Number), nil)
-	c.HTML(http.StatusOK, "/game", gameID)
+	//	c.HTML(http.StatusOK, "/game", gameID)
+	showGame(c)
 }
