@@ -74,17 +74,17 @@ func processActions(c *gin.Context) {
 	var gameID = c.Request.FormValue("gameId")
 
 	for _, p := range players {
-		var attackSelection = p.Name + "Attack"
-		var peekSelection = p.Name + "Peek"
-		var lynchSelection = p.Name + "Lynch"
+		var attackSelection = c.Request.FormValue(p.Name + "Attack")
+		var peekSelection = c.Request.FormValue(p.Name + "Peek")
+		var lynchSelection = c.Request.FormValue(p.Name + "Lynch")
 		if len(attackSelection) > 0 {
-			p.Actions += "A:" + c.Request.FormValue(attackSelection) + "|"
+			p.Actions += "A:" + attackSelection + "|"
 		}
 		if len(peekSelection) > 0 {
-			p.Actions += "P:" + c.Request.FormValue(peekSelection) + "|"
+			p.Actions += "P:" + peekSelection + "|"
 		}
 		if len(lynchSelection) > 0 {
-			p.Actions += "L:" + c.Request.FormValue(lynchSelection) + "|"
+			p.Actions += "L:" + lynchSelection + "|"
 		}
 		var dbStatement = "UPDATE players SET "
 		dbStatement += "actions = "
