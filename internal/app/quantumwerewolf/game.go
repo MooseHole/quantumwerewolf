@@ -70,7 +70,6 @@ func processActions(c *gin.Context) {
 		return
 	}
 
-	var advance = c.Request.Form["advance"]
 	var gameID = c.Request.FormValue("gameId")
 
 	for _, p := range players {
@@ -93,7 +92,15 @@ func processActions(c *gin.Context) {
 		quantumutilities.DbExec(c, db, dbStatement)
 	}
 
-	if advance[0] == "true" {
+	var advance = c.Request.Form["advance"]
+	var advanceRound = false
+	for _, s := range advance {
+		if s == "true" {
+			advanceRound = true
+		}
+	}
+
+	if advanceRound {
 		var nightBoolString = ""
 		if game.RoundNight {
 			game.RoundNum++
@@ -110,5 +117,6 @@ func processActions(c *gin.Context) {
 		dbStatement += "WHERE id=" + gameID
 	}
 
-	c.HTML(http.StatusOK, "game.gtpl?gameId="+strconv.Itoa(game.Number), nil)
+	//	c.HTML(http.StatusOK, "game.gtpl?gameId="+strconv.Itoa(game.Number), nil)
+	c.HTML(http.StatusOK, "game.gtpl", gameID)
 }
