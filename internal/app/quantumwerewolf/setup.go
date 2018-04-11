@@ -174,11 +174,12 @@ func startGame(c *gin.Context) {
 	log.Printf("len(players) %d", len(players))
 	for i, p := range players {
 		dbStatement = "INSERT INTO players ("
-		dbStatement += "name, num, gameid"
+		dbStatement += "name, num, gameid, action"
 		dbStatement += ") VALUES ("
 		dbStatement += "'" + p.Name + "'"
 		dbStatement += ", " + strconv.Itoa(perm[i])
 		dbStatement += ", " + strconv.Itoa(gameID)
+		dbStatement += ", ''"
 		dbStatement += ")"
 		log.Printf("Going to execute %q", dbStatement)
 		quantumutilities.DbExec(c, db, dbStatement)
