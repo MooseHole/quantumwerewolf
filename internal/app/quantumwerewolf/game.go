@@ -78,13 +78,13 @@ func processActions(c *gin.Context) {
 		var peekSelection = c.Request.FormValue(p.Name + "Peek")
 		var lynchSelection = c.Request.FormValue(p.Name + "Lynch")
 		if len(attackSelection) > 0 {
-			p.Actions += "A:" + attackSelection + "|"
+			p.Actions += strconv.Itoa(game.RoundNum) + tokenAttack + attackSelection + tokenEndAction
 		}
 		if len(peekSelection) > 0 {
-			p.Actions += "P:" + peekSelection + "|"
+			p.Actions += strconv.Itoa(game.RoundNum) + tokenPeek + peekSelection + tokenEndAction
 		}
 		if len(lynchSelection) > 0 {
-			p.Actions += "L:" + lynchSelection + "|"
+			p.Actions += strconv.Itoa(game.RoundNum) + tokenLynch + lynchSelection + tokenEndAction
 		}
 		var dbStatement = "UPDATE players SET "
 		dbStatement += "actions = "

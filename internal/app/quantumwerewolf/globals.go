@@ -5,6 +5,15 @@ import (
 	"time"
 )
 
+// Tokens for the actions
+// 3@Alice| means the player attacked Alice in round 3
+// 0%Bob|2&Carol|3&Carol|4#| means the player peeked at Bob in round 0, voted to lynch Carol in rounds 2 and 3, and died in round 4
+const tokenAttack = "@"
+const tokenPeek = "%"
+const tokenLynch = "&"
+const tokenKilled = "#"
+const tokenEndAction = "|"
+
 // Game holds a single game's information
 type Game struct {
 	Name       string `json:"gameName"`

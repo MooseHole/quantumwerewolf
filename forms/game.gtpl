@@ -53,13 +53,13 @@
                 peekSelect.appendChild(noPeekOption)
                 for (targetPlayer in allPlayers) {
                     if (performingPlayer != targetPlayer && !allPlayers[targetPlayer].includes("|K|")) {
-                        if (!allPlayers[performingPlayer].includes("|A:"+targetPlayer+"|")) {
+                        if (!allPlayers[performingPlayer].includes("@"+targetPlayer+"|")) {
                             var option = document.createElement("option");
                             option.value = targetPlayer;
                             option.text = targetPlayer;
                             attackSelect.appendChild(option)
                         }
-                        if (!allPlayers[performingPlayer].includes("|P:"+targetPlayer+"|")) {
+                        if (!allPlayers[performingPlayer].includes("%"+targetPlayer+"|")) {
                             var option = document.createElement("option");
                             option.value = targetPlayer;
                             option.text = targetPlayer;
