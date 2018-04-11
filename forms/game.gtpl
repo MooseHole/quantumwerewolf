@@ -16,7 +16,7 @@
         <form name="Actions" id="Actions" action="/processActions" method="post">
         <input type="hidden" name="gameId" value={{ .GameID }}>
         <input type="submit">
-        <input type="checkbox" name="advance" value="advance">Advance to next round<br>
+        <input type="checkbox" name="advance" value="true">Advance to next round<br>
         <table name="ActionsTable" id="ActionsTable">
         <tr><th>Player</th>{{ if .IsNight }}<th>Attack</th><th>Peek</th>{{ else }}<th>Lynch</th>{{ end }}</tr>
         </table>

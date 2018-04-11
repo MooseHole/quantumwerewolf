@@ -70,7 +70,7 @@ func processActions(c *gin.Context) {
 		return
 	}
 
-	var advance = c.Request.FormValue("advance")
+	var advance = c.Request.Form["advance"]
 	var gameID = c.Request.FormValue("gameId")
 
 	for _, p := range players {
@@ -93,7 +93,7 @@ func processActions(c *gin.Context) {
 		quantumutilities.DbExec(c, db, dbStatement)
 	}
 
-	if advance == "advance" {
+	if advance[0] == "true" {
 		var nightBoolString = ""
 		if game.RoundNight {
 			game.RoundNum++
