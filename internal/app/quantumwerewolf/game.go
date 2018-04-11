@@ -145,7 +145,7 @@ func processActions(c *gin.Context) {
 		var dbStatement = "UPDATE game SET "
 		dbStatement += "round=" + strconv.Itoa(game.RoundNum)
 		dbStatement += ", nightPhase=" + nightBoolString
-		dbStatement += "WHERE id=" + gameID
+		dbStatement += " WHERE id=" + gameID
 		quantumutilities.DbExec(c, db, dbStatement)
 	}
 
