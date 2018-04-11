@@ -52,6 +52,7 @@ func rebuildGame(c *gin.Context, gameID int) {
 	row.Next()
 	rolesByteArray := make([]byte, 0, 100)
 	err = row.Scan(&game.Number, &gameSetup.Name, &gameSetup.Total, &rolesByteArray, &gameSetup.Keep, &game.RoundNum, &game.RoundNight, &game.Seed)
+	row.Close()
 	if quantumutilities.HandleErr(c, err, "Error scanning game variables") {
 		return
 	}
@@ -78,6 +79,7 @@ func rebuildGame(c *gin.Context, gameID int) {
 		}
 		players = append(players, player)
 	}
+	row.Close()
 
 	createMultiverse()
 }
@@ -144,10 +146,9 @@ func processActions(c *gin.Context) {
 		dbStatement += "round=" + strconv.Itoa(game.RoundNum)
 		dbStatement += ", nightPhase=" + nightBoolString
 		dbStatement += "WHERE id=" + gameID
+		quantumutilities.DbExec(c, db, dbStatement)
 	}
 
-	//	c.HTML(http.StatusOK, "game.gtpl?gameId="+strconv.Itoa(game.Number), nil)
-	//	c.HTML(http.StatusOK, "/game", gameID)
 	setGame(c)
 	showGame(c)
 }
