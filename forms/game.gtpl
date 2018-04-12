@@ -52,7 +52,7 @@
                 noPeekOption.text = "--NONE--";
                 peekSelect.appendChild(noPeekOption)
                 for (targetPlayer in allPlayers) {
-                    if (performingPlayer != targetPlayer && !allPlayers[targetPlayer].includes("|K|")) {
+                    if (performingPlayer != targetPlayer && !allPlayers[targetPlayer].includes("#")) {
                         if (!allPlayers[performingPlayer].includes("@"+targetPlayer+"|")) {
                             var option = document.createElement("option");
                             option.value = targetPlayer;
@@ -83,7 +83,7 @@
                 noLynchOption.text = "--NONE--";
                 lynchSelect.appendChild(noLynchOption)
                 for (targetPlayer in allPlayers) {
-                    if (performingPlayer != targetPlayer && !allPlayers[targetPlayer].includes("|K|")) {
+                    if (performingPlayer != targetPlayer && !allPlayers[targetPlayer].includes("#")) {
                         var option = document.createElement("option");
                         option.value = targetPlayer;
                         option.text = targetPlayer;

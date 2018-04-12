@@ -6,6 +6,7 @@ import (
 	"math/rand"
 	"quantumwerewolf/pkg/quantumutilities"
 	"strconv"
+	"strings"
 )
 
 func getUniverseString(universe uint64) string {
@@ -48,9 +49,29 @@ func createMultiverse() {
 	multiverseRandom := rand.New(randSource)
 	possibleUniverses := quantumutilities.Factorial(gameSetup.Total)
 	multiverse.universes = quantumutilities.PermUint64Trunc(multiverseRandom, possibleUniverses, 100000)
+	updateFixedRoles()
+	updateRoleTotals()
 
 	for _, v := range multiverse.universes {
 		log.Printf(getUniverseString(v))
+	}
+}
+
+func updateFixedRoles() {
+	for _, p := range players {
+		actionStrings := strings.Split(p.Actions, tokenEndAction)
+		for _, a := range actionStrings {
+			killedIndex := strings.Index(a, tokenKilled)
+			if killedIndex >= 0 {
+				fixedRoleIDString := a[killedIndex+1:]
+				fixedRoleID, err := strconv.ParseInt(fixedRoleIDString, 10, 64)
+				if err == nil {
+					collapse(p.Num, int(fixedRoleID))
+				} else {
+					log.Printf("updateFixedRoles had error when parsing role id: %v", err)
+				}
+			}
+		}
 	}
 }
 
@@ -87,19 +108,30 @@ func getFixedRole(playerNumber int) int {
 	return foundUniverse[playerNumber]
 }
 
-func collapseToFixedRole(playerNumber int) {
-	roleID := getFixedRole(playerNumber)
-
+func collapse(playerNumber int, fixedRoleID int) {
 	// TODO: Eliminate cases for peeks and attacks
 	universeLength := len(multiverse.originalAssignments)
 	universeRoleIDs := make([]int, universeLength)
-	for i, v := range multiverse.universes {
+	newUniverses := make([]uint64, 0, len(multiverse.universes))
+
+	for _, v := range multiverse.universes {
 		copy(universeRoleIDs, multiverse.originalAssignments)
 		universeRoleIDs = quantumutilities.Kthperm(universeRoleIDs, v)
-		if universeRoleIDs[playerNumber] != roleID {
-			multiverse.universes = append(multiverse.universes[:i], multiverse.universes[i+1:]...)
+		if universeRoleIDs[playerNumber] == fixedRoleID {
+			newUniverses = append(newUniverses, v)
 		}
 	}
+
+	multiverse.universes = make([]uint64, 0, len(newUniverses))
+	for _, v := range newUniverses {
+		multiverse.universes = append(multiverse.universes, v)
+	}
+}
+
+func collapseToFixedRole(playerNumber int) int {
+	roleID := getFixedRole(playerNumber)
+	collapse(playerNumber, roleID)
+	return roleID
 }
 
 // peek returns true if the playernumber is evil

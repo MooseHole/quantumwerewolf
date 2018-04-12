@@ -1,6 +1,7 @@
 package quantumwerewolf
 
 import (
+	"log"
 	"math/rand"
 	"time"
 )
@@ -66,4 +67,16 @@ func resetVars() {
 	game.Seed = rand.Int63()
 	multiverse.universes = nil
 	multiverse.originalAssignments = nil
+}
+
+func getPlayerByName(playerName string) Player {
+	for _, p := range players {
+		if p.Name == playerName {
+			return p
+		}
+	}
+
+	log.Printf("Attempted to get unknown player: %v", playerName)
+	var unknownPlayer Player
+	return unknownPlayer
 }

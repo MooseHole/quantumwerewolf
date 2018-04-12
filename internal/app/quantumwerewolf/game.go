@@ -5,6 +5,7 @@ import (
 	"quantumwerewolf/pkg/quantumutilities"
 	"sort"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -74,12 +75,14 @@ func rebuildGame(c *gin.Context, gameID int) {
 		return
 	}
 
+	players = nil
 	for row.Next() {
 		var player Player
 		err = row.Scan(&player.Name, &player.Num, &player.Actions)
 		if quantumutilities.HandleErr(c, err, "Error scanning player variables ["+playerQuery+"]") {
 			return
 		}
+		player.Role = make(map[int]int)
 		players = append(players, player)
 	}
 	row.Close()
@@ -105,6 +108,7 @@ func processActions(c *gin.Context) {
 	}
 
 	var gameID = c.Request.FormValue("gameId")
+	gameIDNum, err := strconv.ParseInt(gameID, 10, 32)
 
 	for _, p := range players {
 		var attackSelection = c.Request.FormValue(p.Name + "Attack")
@@ -135,6 +139,36 @@ func processActions(c *gin.Context) {
 	}
 
 	if advanceRound {
+		rebuildGame(c, int(gameIDNum))
+		lynchSubstring := strconv.Itoa(game.RoundNum) + tokenLynch
+		lynchSubstringLength := len(lynchSubstring)
+		var lynchTargets = make(map[string]int)
+		for _, p := range players {
+			actionStrings := strings.Split(p.Actions, tokenEndAction)
+			for _, a := range actionStrings {
+				if len(a) >= lynchSubstringLength && a[0:lynchSubstringLength] == lynchSubstring {
+					lynchTarget := a[lynchSubstringLength:]
+					lynchTargets[lynchTarget]++
+				}
+			}
+		}
+
+		for t, n := range lynchTargets {
+			if n > len(players)/2 {
+				lynchedPlayer := getPlayerByName(t)
+
+				fixedRole := collapseToFixedRole(lynchedPlayer.Num)
+
+				var dbStatement = "UPDATE players SET "
+				dbStatement += "actions = "
+				dbStatement += "'" + lynchedPlayer.Actions + strconv.Itoa(game.RoundNum) + tokenKilled + strconv.Itoa(fixedRole) + tokenEndAction + "'"
+				dbStatement += " WHERE num=" + strconv.Itoa(lynchedPlayer.Num) + " AND gameId=" + gameID
+				quantumutilities.DbExec(c, db, dbStatement)
+
+				break
+			}
+		}
+
 		var nightBoolString = ""
 		if game.RoundNight {
 			game.RoundNum++
@@ -152,7 +186,6 @@ func processActions(c *gin.Context) {
 		quantumutilities.DbExec(c, db, dbStatement)
 	}
 
-	gameIDNum, err := strconv.ParseInt(gameID, 10, 32)
 	rebuildGame(c, int(gameIDNum))
 	showGame(c)
 }
