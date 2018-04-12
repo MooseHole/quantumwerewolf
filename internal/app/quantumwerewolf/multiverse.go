@@ -5,15 +5,23 @@ import (
 	"log"
 	"math/rand"
 	"quantumwerewolf/pkg/quantumutilities"
+	"strconv"
 )
 
 func getUniverseString(universe uint64) string {
 	var universeString string
 
 	// Add gameSetup display
-	universeAssignments := make([]int, len(multiverse.originalAssignments))
+	universeLength := len(multiverse.originalAssignments)
+	universeAssignments := make([]int, universeLength)
 	copy(universeAssignments, multiverse.originalAssignments)
 	universeAssignments = quantumutilities.Kthperm(universeAssignments, universe)
+
+	universeRanks := make([]int, universeLength)
+	for i := range universeRanks {
+		universeRanks[i] = i
+	}
+	universeRanks = quantumutilities.Kthperm(universeRanks, universe)
 
 	universeString += "["
 	for i, v := range universeAssignments {
@@ -21,6 +29,7 @@ func getUniverseString(universe uint64) string {
 			universeString += " "
 		}
 		universeString += roleTypes[v].Name[:1]
+		universeString += strconv.Itoa(universeRanks[i])
 	}
 	universeString += "]"
 
