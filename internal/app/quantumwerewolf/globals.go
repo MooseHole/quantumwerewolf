@@ -25,9 +25,10 @@ type Game struct {
 
 // Player holds a single player's name
 type Player struct {
-	Name    string `json:"playerName"`
-	Num     int    `json:"playerNumber"`
-	Actions string `json:"actions"`
+	Name    string      `json:"playerName"`
+	Num     int         `json:"playerNumber"`
+	Actions string      `json:"actions"`
+	Role    map[int]int `json:"role"`
 }
 
 // GameSetup holds the game settings
