@@ -69,7 +69,7 @@ func updateFixedRoles() {
 				fixedRoleIDString := a[killedIndex+1:]
 				fixedRoleID, err := strconv.ParseInt(fixedRoleIDString, 10, 64)
 				if err == nil {
-					collapse(p.Num, int(fixedRoleID))
+					collapseForFixedRole(p.Num, int(fixedRoleID))
 				} else {
 					log.Printf("updateFixedRoles had error when parsing role id: %v", err)
 				}
@@ -121,8 +121,7 @@ func getFixedRole(playerNumber int) int {
 	return foundUniverse[playerNumber]
 }
 
-func collapse(playerNumber int, fixedRoleID int) {
-	// TODO: Eliminate cases for peeks and attacks
+func collapseForFixedRole(playerNumber int, fixedRoleID int) {
 	universeLength := len(multiverse.originalAssignments)
 	universeRoleIDs := make([]int, universeLength)
 	newUniverses := make([]uint64, 0, len(multiverse.universes))
@@ -145,11 +144,155 @@ func collapse(playerNumber int, fixedRoleID int) {
 			multiverse.universes = append(multiverse.universes, v)
 		}
 	}
+
+	if roleTypes[fixedRoleID].CanAttack {
+		collapseForAttack(playerNumber)
+	}
+
+	if roleTypes[fixedRoleID].CanPeek {
+		collapseForPeek(playerNumber)
+	}
+}
+
+// collapseForAttack should only be called if role is fixed to attacker
+func collapseForAttack(attacker int) {
+	universeLength := len(multiverse.originalAssignments)
+	evaluationUniverse := make([]int, universeLength)
+	evaluationRanks := make([]int, universeLength)
+	newUniverses := make([]uint64, 0, len(multiverse.universes))
+	universesEliminated := false
+
+	attackTargets := make([]int, 0, len(players))
+	actionStrings := strings.Split(players[attacker].Actions, tokenEndAction)
+	for _, a := range actionStrings {
+		attackIndex := strings.Index(a, tokenAttack)
+		if attackIndex < 0 {
+			// This is not an attack action
+			continue
+		}
+		attackTarget := a[attackIndex:len(a)]
+		attackTargets = append(attackTargets, getPlayerByName(attackTarget).Num)
+	}
+
+	for _, v := range multiverse.universes {
+		copy(evaluationUniverse, multiverse.originalAssignments)
+		for i := range evaluationRanks {
+			evaluationRanks[i] = i
+		}
+		evaluationUniverse = quantumutilities.Kthperm(evaluationUniverse, v)
+		evaluationRanks = quantumutilities.Kthperm(evaluationRanks, v)
+
+		attackSucceeds := false
+		if roleTypes[evaluationUniverse[attacker]].CanAttack {
+			highestRankedAttacker := true
+			// Check if potential is highest ranked attacker in this universe
+			for i := range evaluationUniverse {
+				// If same role ID
+				if evaluationUniverse[i] == evaluationUniverse[attacker] {
+					// If someone else has higher rank
+					if evaluationRanks[i] < evaluationRanks[attacker] {
+						// If higher ranked was still alive when attack was made TODO CHECK WHEN
+						if strings.Index(players[i].Actions, tokenKilled) < 0 {
+							// Can't attack due to low rank
+							highestRankedAttacker = false
+							break
+						}
+					}
+				}
+			}
+
+			if highestRankedAttacker {
+				for _, target := range attackTargets {
+					// Can attack if on other side
+					if roleTypes[evaluationUniverse[target]].Evil != roleTypes[evaluationUniverse[attacker]].Evil {
+						attackSucceeds = true
+					}
+				}
+			}
+		}
+
+		if attackSucceeds {
+			newUniverses = append(newUniverses, v)
+		} else {
+			universesEliminated = true
+		}
+	}
+
+	if universesEliminated {
+		dirtyMultiverse = true
+		multiverse.universes = make([]uint64, 0, len(newUniverses))
+		for _, v := range newUniverses {
+			multiverse.universes = append(multiverse.universes, v)
+		}
+	}
+}
+
+// collapseForPeek should only be called if role is fixed to peeker
+func collapseForPeek(peeker int) {
+	universeLength := len(multiverse.originalAssignments)
+	evaluationUniverse := make([]int, universeLength)
+	newUniverses := make([]uint64, 0, len(multiverse.universes))
+	universesEliminated := false
+
+	type PeekAction struct {
+		Target int
+		IsEvil bool
+	}
+
+	peekActions := make([]PeekAction, 0, len(players))
+	actionStrings := strings.Split(players[peeker].Actions, tokenEndAction)
+	for _, a := range actionStrings {
+		peekIndex := strings.Index(a, tokenPeek)
+		if peekIndex < 0 {
+			// This is not a peek action
+			continue
+		}
+		peekTarget := a[peekIndex : len(a)-1]
+		peekResult := a[len(a)-1 : len(a)]
+
+		peekAction := PeekAction{}
+		peekAction.Target = getPlayerByName(peekTarget).Num
+		peekAction.IsEvil = peekResult == tokenEvil
+		peekActions = append(peekActions, peekAction)
+	}
+
+	for _, v := range multiverse.universes {
+		copy(evaluationUniverse, multiverse.originalAssignments)
+		evaluationUniverse = quantumutilities.Kthperm(evaluationUniverse, v)
+
+		peekSucceeds := false
+		if roleTypes[evaluationUniverse[peeker]].CanPeek {
+			peekSucceeds = true
+			for _, a := range peekActions {
+				targetIsEvil := roleTypes[evaluationUniverse[a.Target]].Evil
+
+				// Observation doesn't match this universe's reality
+				if a.IsEvil != targetIsEvil {
+					peekSucceeds = false
+					break
+				}
+			}
+		}
+
+		if peekSucceeds {
+			newUniverses = append(newUniverses, v)
+		} else {
+			universesEliminated = true
+		}
+	}
+
+	if universesEliminated {
+		dirtyMultiverse = true
+		multiverse.universes = make([]uint64, 0, len(newUniverses))
+		for _, v := range newUniverses {
+			multiverse.universes = append(multiverse.universes, v)
+		}
+	}
 }
 
 func collapseToFixedRole(playerNumber int) int {
 	roleID := getFixedRole(playerNumber)
-	collapse(playerNumber, roleID)
+	collapseForFixedRole(playerNumber, roleID)
 	return roleID
 }
 
@@ -163,14 +306,13 @@ func Peek(potentialSeer int, target int) bool {
 	}
 
 	universeLength := len(multiverse.originalAssignments)
-	foundUniverse := make([]int, universeLength)
+	evaluationUniverse := make([]int, universeLength)
 	// Keep trying until a universe is found where this player is a seer
 	for true {
-		copy(foundUniverse, multiverse.originalAssignments)
-		foundUniverse = quantumutilities.Kthperm(foundUniverse, randomUniverse())
-		if foundUniverse[potentialSeer] == seer.ID {
-			dirtyMultiverse = true
-			return roleTypes[foundUniverse[target]].Evil
+		copy(evaluationUniverse, multiverse.originalAssignments)
+		evaluationUniverse = quantumutilities.Kthperm(evaluationUniverse, randomUniverse())
+		if evaluationUniverse[potentialSeer] == seer.ID {
+			return roleTypes[evaluationUniverse[target]].Evil
 		}
 	}
 

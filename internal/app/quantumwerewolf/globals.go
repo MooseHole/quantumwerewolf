@@ -14,6 +14,8 @@ const tokenPeek = "%"
 const tokenLynch = "&"
 const tokenKilled = "#"
 const tokenEndAction = "|"
+const tokenGood = "^"
+const tokenEvil = "~"
 
 // Game holds a single game's information
 type Game struct {
