@@ -41,7 +41,8 @@ var attackObservations []AttackObservation
 var lynchObservations []LynchObservation
 var killObservations []KillObservation
 
-func resetObservations() {
+// ResetObservations destroys all saved observation instances
+func ResetObservations() {
 	dirtyObservations = true
 	peekObservations = nil
 	attackObservations = nil
@@ -51,7 +52,11 @@ func resetObservations() {
 
 // FillObservations fills all observations with current player actions
 func FillObservations() {
-	resetObservations()
+	if !dirtyObservations {
+		return
+	}
+
+	ResetObservations()
 	for _, p := range players {
 		actionStrings := strings.Split(p.Actions, tokenEndAction)
 		for _, action := range actionStrings {
@@ -59,7 +64,6 @@ func FillObservations() {
 			fillAttackObservation(p.Num, action)
 			fillLynchObservation(p.Num, action)
 			fillKillObservation(p.Num, action)
-
 		}
 	}
 	dirtyObservations = false

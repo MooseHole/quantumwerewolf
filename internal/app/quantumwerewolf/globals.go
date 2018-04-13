@@ -70,6 +70,7 @@ func ResetVars() {
 	game.Seed = rand.Int63()
 	multiverse.universes = nil
 	multiverse.originalAssignments = nil
+	ResetObservations()
 }
 
 func getPlayerByName(playerName string) Player {

@@ -122,6 +122,7 @@ func getFixedRole(playerNumber int) int {
 }
 
 func collapseForFixedRole(playerNumber int, fixedRoleID int) {
+	FillObservations()
 	universeLength := len(multiverse.originalAssignments)
 	universeRoleIDs := make([]int, universeLength)
 	newUniverses := make([]uint64, 0, len(multiverse.universes))
@@ -184,28 +185,32 @@ func collapseForAttack(attacker int) {
 
 		attackSucceeds := false
 		if roleTypes[evaluationUniverse[attacker]].CanAttack {
-			highestRankedAttacker := true
-			// Check if potential is highest ranked attacker in this universe
-			for i := range evaluationUniverse {
-				// If same role ID
-				if evaluationUniverse[i] == evaluationUniverse[attacker] {
-					// If someone else has higher rank
-					if evaluationRanks[i] < evaluationRanks[attacker] {
-						// If higher ranked was still alive when attack was made TODO CHECK WHEN
-						if strings.Index(players[i].Actions, tokenKilled) < 0 {
-							// Can't attack due to low rank
-							highestRankedAttacker = false
-							break
-						}
-					}
-				}
-			}
 
-			if highestRankedAttacker {
-				for _, target := range attackTargets {
-					// Can attack if on other side
-					if roleTypes[evaluationUniverse[target]].Evil != roleTypes[evaluationUniverse[attacker]].Evil {
-						attackSucceeds = true
+			for _, attack := range attackObservations {
+				// Can only attack if on other side from target
+				if roleTypes[evaluationUniverse[attack.Target]].Evil != roleTypes[evaluationUniverse[attacker]].Evil {
+					attackSucceeds = true
+
+					// Check if potential is highest ranked attacker in this universe
+					for teammateIndex := range evaluationUniverse {
+						// If same role ID
+						if evaluationUniverse[teammateIndex] == evaluationUniverse[attacker] {
+							// If someone else has higher rank
+							if evaluationRanks[teammateIndex] < evaluationRanks[attacker] {
+								wasTeammateDead := false
+								for _, teammateKilled := range killObservations {
+									// If higher ranked was dead when attack was made
+									if teammateKilled.Subject == teammateIndex && teammateKilled.Round > attack.Subject {
+										wasTeammateDead = true
+										break
+									}
+								}
+								if !wasTeammateDead {
+									attackSucceeds = false
+									break
+								}
+							}
+						}
 					}
 				}
 			}
