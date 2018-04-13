@@ -118,7 +118,7 @@ func processActions(c *gin.Context) {
 			p.Actions += strconv.Itoa(game.RoundNum) + tokenAttack + attackSelection + tokenEndAction
 		}
 		if len(peekSelection) > 0 {
-			p.Actions += strconv.Itoa(game.RoundNum) + tokenPeek + peekSelection + tokenEndAction
+			p.Actions += strconv.Itoa(game.RoundNum) + tokenPeek + peekSelection + Peek(p.Num, getPlayerByName(peekSelection).Num) + tokenEndAction
 		}
 		if len(lynchSelection) > 0 {
 			p.Actions += strconv.Itoa(game.RoundNum) + tokenLynch + lynchSelection + tokenEndAction
