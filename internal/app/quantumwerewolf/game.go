@@ -39,7 +39,7 @@ func showGame(c *gin.Context) {
 }
 
 func rebuildGame(c *gin.Context, gameID int) {
-	resetVars()
+	ResetVars()
 
 	gameQuery := "SELECT id, name, players, roles, keepPercent, round, nightPhase, randomSeed FROM game"
 	gameQuery += " WHERE id=" + strconv.Itoa(gameID)
@@ -87,7 +87,7 @@ func rebuildGame(c *gin.Context, gameID int) {
 	}
 	row.Close()
 
-	createMultiverse()
+	CreateMultiverse()
 }
 
 func setGame(c *gin.Context) {

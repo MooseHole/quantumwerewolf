@@ -53,7 +53,8 @@ var players []Player
 var gameSetup GameSetup
 var game Game
 
-func resetVars() {
+// ResetVars reinitializes all global variables
+func ResetVars() {
 	rand.Seed(time.Now().UTC().UnixNano())
 	players = nil
 	gameSetup.Name = ""

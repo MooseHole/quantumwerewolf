@@ -123,13 +123,13 @@ func setRolesHandler(c *gin.Context) {
 	}
 	gameSetup.Keep = int(k)
 
-	createMultiverse()
-	startGame(c)
-	resetVars()
+	CreateGame(c)
+	ResetVars()
 	c.HTML(http.StatusOK, "gameList.gtpl", nil)
 }
 
-func startGame(c *gin.Context) {
+// CreateGame sets up and stores the initial game parameters in the database
+func CreateGame(c *gin.Context) {
 	dbStatement := ""
 
 	dbStatement = "CREATE TABLE IF NOT EXISTS game ("
