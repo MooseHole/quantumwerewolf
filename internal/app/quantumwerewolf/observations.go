@@ -1,7 +1,7 @@
 package quantumwerewolf
 
 import (
-	"fmt"
+	"log"
 	"strconv"
 	"strings"
 )
@@ -79,11 +79,11 @@ func fillPeekObservation(subject int, action string) {
 
 	round, err := strconv.ParseInt(action[0:indexOfActionToken], 10, 64)
 	if err != nil {
-		fmt.Sprintf("Error converting round for peek observation: %v", err)
+		log.Printf("Error converting round for peek observation: %v", err)
 	}
 	target, err := strconv.ParseInt(action[indexOfActionToken:len(action)-1], 10, 64)
 	if err != nil {
-		fmt.Sprintf("Error converting target for peek observation: %v", err)
+		log.Printf("Error converting target for peek observation: %v", err)
 	}
 
 	observation := PeekObservation{}
@@ -104,11 +104,11 @@ func fillAttackObservation(subject int, action string) {
 
 	round, err := strconv.ParseInt(action[0:indexOfActionToken], 10, 64)
 	if err != nil {
-		fmt.Sprintf("Error converting round for attack observation: %v", err)
+		log.Printf("Error converting round for attack observation: %v", err)
 	}
 	target, err := strconv.ParseInt(action[indexOfActionToken:len(action)-1], 10, 64)
 	if err != nil {
-		fmt.Sprintf("Error converting target for attack observation: %v", err)
+		log.Printf("Error converting target for attack observation: %v", err)
 	}
 
 	observation := AttackObservation{}
@@ -128,11 +128,11 @@ func fillLynchObservation(subject int, action string) {
 
 	round, err := strconv.ParseInt(action[0:indexOfActionToken], 10, 64)
 	if err != nil {
-		fmt.Sprintf("Error converting round for lynch observation: %v", err)
+		log.Printf("Error converting round for lynch observation: %v", err)
 	}
 	target, err := strconv.ParseInt(action[indexOfActionToken:len(action)-1], 10, 64)
 	if err != nil {
-		fmt.Sprintf("Error converting target for lynch observation: %v", err)
+		log.Printf("Error converting target for lynch observation: %v", err)
 	}
 
 	observation := LynchObservation{}
@@ -152,7 +152,7 @@ func fillKillObservation(subject int, action string) {
 
 	round, err := strconv.ParseInt(action[0:indexOfActionToken], 10, 64)
 	if err != nil {
-		fmt.Sprintf("Error converting round for kill observation: %v", err)
+		log.Printf("Error converting round for kill observation: %v", err)
 	}
 
 	observation := KillObservation{}
