@@ -31,6 +31,9 @@
             actionsForm = document.getElementById("Actions")
             actionsTable = document.getElementById("ActionsTable")
             for (performingPlayer in allPlayers) {
+                if (allPlayers[performingPlayer].includes("#")) {
+                    continue
+                }
                 row = document.createElement("tr")
                 playerName = document.createElement("td")
                 playerName.innerHTML = performingPlayer
