@@ -35,22 +35,22 @@ func showGame(c *gin.Context) {
 			if o.IsEvil {
 				resultString = "evil"
 			}
-			actionMessages += fmt.Sprintf("%s peeked at %s and found them %s.<br>", players[o.Subject].Name, players[o.Target].Name, resultString)
+			actionMessages += fmt.Sprintf("%s peeked at %s and found them %s.<br>", playersByNum[o.Subject].Name, playersByNum[o.Target].Name, resultString)
 		}
 	}
 	for _, o := range attackObservations {
 		if o.Round == game.RoundNum-1 {
-			actionMessages += fmt.Sprintf("%s attacked %s.<br>", players[o.Subject].Name, players[o.Target].Name)
+			actionMessages += fmt.Sprintf("%s attacked %s.<br>", playersByNum[o.Subject].Name, playersByNum[o.Target].Name)
 		}
 	}
 	for _, o := range lynchObservations {
 		if o.Round == game.RoundNum {
-			actionMessages += fmt.Sprintf("%s voted to lynch %s.<br>", players[o.Subject].Name, players[o.Target].Name)
+			actionMessages += fmt.Sprintf("%s voted to lynch %s.<br>", playersByNum[o.Subject].Name, playersByNum[o.Target].Name)
 		}
 	}
 	for _, o := range killObservations {
 		if o.Round == game.RoundNum || (o.Round == game.RoundNum-1 && !game.RoundNight) {
-			actionMessages += fmt.Sprintf("%s died and was a %s.<br>", players[o.Subject].Name, roleTypes[o.Role].Name)
+			actionMessages += fmt.Sprintf("%s died and was a %s.<br>", playersByNum[o.Subject].Name, roleTypes[o.Role].Name)
 		}
 	}
 
