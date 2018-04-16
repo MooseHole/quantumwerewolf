@@ -61,6 +61,7 @@ func showGame(c *gin.Context) {
 		Lynch   map[string][]string `json:"Lynch"`
 	}
 	var actionSelections ActionSelections
+	actionSelections.Subject = make([]string, 0, len(players))
 	actionSelections.Peek = make(map[string][]string)
 	actionSelections.Attack = make(map[string][]string)
 	actionSelections.Lynch = make(map[string][]string)
@@ -77,6 +78,7 @@ func showGame(c *gin.Context) {
 		actionSelections.Attack[s.Name] = make([]string, 0, len(players)+1)
 		actionSelections.Lynch[s.Name] = make([]string, 0, len(players)+1)
 
+		actionSelections.Subject = append(actionSelections.Subject, s.Name)
 		actionSelections.Peek[s.Name] = append(actionSelections.Peek[s.Name], "")
 		actionSelections.Attack[s.Name] = append(actionSelections.Attack[s.Name], "")
 		actionSelections.Lynch[s.Name] = append(actionSelections.Lynch[s.Name], "")
