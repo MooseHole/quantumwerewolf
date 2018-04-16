@@ -61,6 +61,9 @@ func showGame(c *gin.Context) {
 		Lynch   map[string][]string `json:"Lynch"`
 	}
 	var actionSelections ActionSelections
+	actionSelections.Peek = make(map[string][]string)
+	actionSelections.Attack = make(map[string][]string)
+	actionSelections.Lynch = make(map[string][]string)
 
 	for _, s := range players {
 		// Don't add actions for dead players
@@ -70,6 +73,13 @@ func showGame(c *gin.Context) {
 			}
 		}
 
+		actionSelections.Peek[s.Name] = make([]string, 0, len(players)+1)
+		actionSelections.Attack[s.Name] = make([]string, 0, len(players)+1)
+		actionSelections.Lynch[s.Name] = make([]string, 0, len(players)+1)
+
+		actionSelections.Peek[s.Name] = append(actionSelections.Peek[s.Name], "")
+		actionSelections.Attack[s.Name] = append(actionSelections.Attack[s.Name], "")
+		actionSelections.Lynch[s.Name] = append(actionSelections.Lynch[s.Name], "")
 		for _, t := range players {
 			// Don't add actions for dead players
 			for _, o := range killObservations {
