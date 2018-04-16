@@ -12,6 +12,9 @@
             Player {{ .Num }}: {{ .Actions }}<br>
         {{ end }}    
         <p>
+        <b>Action Messages</b><br>
+        {{ .ActionMessages }}
+        <p>
         <b>Actions for {{ .Round }}</b><br>
         <form name="Actions" id="Actions" action="/processActions" method="post">
         <input type="hidden" name="gameId" value={{ .GameID }}>

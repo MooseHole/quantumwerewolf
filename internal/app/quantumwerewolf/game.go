@@ -1,6 +1,7 @@
 package quantumwerewolf
 
 import (
+	"fmt"
 	"net/http"
 	"quantumwerewolf/pkg/quantumutilities"
 	"sort"
@@ -26,15 +27,43 @@ func showGame(c *gin.Context) {
 		roundString += "Day "
 	}
 	roundString += strconv.Itoa(game.RoundNum)
+
+	actionMessages := ""
+	for _, o := range peekObservations {
+		if o.Round == game.RoundNum-1 {
+			resultString := "good"
+			if o.IsEvil {
+				resultString = "evil"
+			}
+			actionMessages += fmt.Sprintf("%s peeked at %s and found them %s.<br>", players[o.Subject].Name, players[o.Target].Name, resultString)
+		}
+	}
+	for _, o := range attackObservations {
+		if o.Round == game.RoundNum-1 {
+			actionMessages += fmt.Sprintf("%s attacked at %s.<br>", players[o.Subject].Name, players[o.Target].Name)
+		}
+	}
+	for _, o := range lynchObservations {
+		if o.Round == game.RoundNum {
+			actionMessages += fmt.Sprintf("%s voted to lynch %s.<br>", players[o.Subject].Name, players[o.Target].Name)
+		}
+	}
+	for _, o := range killObservations {
+		if o.Round == game.RoundNum || (o.Round == game.RoundNum-1 && !game.RoundNight) {
+			actionMessages += fmt.Sprintf("%s died.<br>", players[o.Subject].Name)
+		}
+	}
+
 	c.HTML(http.StatusOK, "game.gtpl", gin.H{
-		"GameID":        game.Number,
-		"Name":          gameSetup.Name,
-		"TotalPlayers":  gameSetup.Total,
-		"Roles":         gameSetup.Roles,
-		"Round":         roundString,
-		"IsNight":       game.RoundNight,
-		"PlayersByName": playersByName,
-		"PlayersByNum":  playersByNum,
+		"GameID":         game.Number,
+		"Name":           gameSetup.Name,
+		"TotalPlayers":   gameSetup.Total,
+		"Roles":          gameSetup.Roles,
+		"Round":          roundString,
+		"IsNight":        game.RoundNight,
+		"PlayersByName":  playersByName,
+		"PlayersByNum":   playersByNum,
+		"ActionMessages": actionMessages,
 	})
 }
 
