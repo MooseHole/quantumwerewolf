@@ -34,6 +34,7 @@ type LynchObservation struct {
 type KillObservation struct {
 	Subject int
 	Round   int
+	Role    int
 }
 
 var peekObservations []PeekObservation
@@ -81,7 +82,7 @@ func fillPeekObservation(subject int, action string) {
 	if err != nil {
 		log.Printf("Error converting round for peek observation: %v", err)
 	}
-	target, err := strconv.ParseInt(action[indexOfActionToken:len(action)-1], 10, 64)
+	target, err := strconv.ParseInt(action[indexOfActionToken+1:len(action)-1], 10, 64)
 	if err != nil {
 		log.Printf("Error converting target for peek observation: %v", err)
 	}
@@ -106,7 +107,7 @@ func fillAttackObservation(subject int, action string) {
 	if err != nil {
 		log.Printf("Error converting round for attack observation: %v", err)
 	}
-	target, err := strconv.ParseInt(action[indexOfActionToken:len(action)-1], 10, 64)
+	target, err := strconv.ParseInt(action[indexOfActionToken+1:len(action)], 10, 64)
 	if err != nil {
 		log.Printf("Error converting target for attack observation: %v", err)
 	}
@@ -130,7 +131,7 @@ func fillLynchObservation(subject int, action string) {
 	if err != nil {
 		log.Printf("Error converting round for lynch observation: %v", err)
 	}
-	target, err := strconv.ParseInt(action[indexOfActionToken:len(action)-1], 10, 64)
+	target, err := strconv.ParseInt(action[indexOfActionToken+1:len(action)], 10, 64)
 	if err != nil {
 		log.Printf("Error converting target for lynch observation: %v", err)
 	}
@@ -154,9 +155,14 @@ func fillKillObservation(subject int, action string) {
 	if err != nil {
 		log.Printf("Error converting round for kill observation: %v", err)
 	}
+	role, err := strconv.ParseInt(action[indexOfActionToken+1:len(action)], 10, 64)
+	if err != nil {
+		log.Printf("Error converting role for lynch observation: %v", err)
+	}
 
 	observation := KillObservation{}
 	observation.Subject = subject
 	observation.Round = int(round)
+	observation.Role = int(role)
 	killObservations = append(killObservations, observation)
 }
