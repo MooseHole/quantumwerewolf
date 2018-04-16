@@ -40,7 +40,7 @@ func showGame(c *gin.Context) {
 	}
 	for _, o := range attackObservations {
 		if o.Round == game.RoundNum-1 {
-			actionMessages += fmt.Sprintf("%s attacked at %s.<br>", players[o.Subject].Name, players[o.Target].Name)
+			actionMessages += fmt.Sprintf("%s attacked %s.<br>", players[o.Subject].Name, players[o.Target].Name)
 		}
 	}
 	for _, o := range lynchObservations {
@@ -144,13 +144,13 @@ func processActions(c *gin.Context) {
 		var peekSelection = c.Request.FormValue(p.Name + "Peek")
 		var lynchSelection = c.Request.FormValue(p.Name + "Lynch")
 		if len(attackSelection) > 0 {
-			p.Actions += strconv.Itoa(game.RoundNum) + tokenAttack + attackSelection + tokenEndAction
+			p.Actions += strconv.Itoa(game.RoundNum) + tokenAttack + strconv.Itoa(getPlayerByName(attackSelection).Num) + tokenEndAction
 		}
 		if len(peekSelection) > 0 {
-			p.Actions += strconv.Itoa(game.RoundNum) + tokenPeek + peekSelection + Peek(p.Num, getPlayerByName(peekSelection).Num) + tokenEndAction
+			p.Actions += strconv.Itoa(game.RoundNum) + tokenPeek + strconv.Itoa(getPlayerByName(peekSelection).Num) + Peek(p.Num, getPlayerByName(peekSelection).Num) + tokenEndAction
 		}
 		if len(lynchSelection) > 0 {
-			p.Actions += strconv.Itoa(game.RoundNum) + tokenLynch + lynchSelection + tokenEndAction
+			p.Actions += strconv.Itoa(game.RoundNum) + tokenLynch + strconv.Itoa(getPlayerByName(lynchSelection).Num) + tokenEndAction
 		}
 		var dbStatement = "UPDATE players SET "
 		dbStatement += "actions = "
