@@ -26,6 +26,12 @@
         </form>
 
         <ul>
+        {{ range .ActionSubjects.Peek }}
+            <li>{{ . }}</li>
+        {{ end }}
+        </ul>
+
+        <ul>
         {{ range .ActionSubjects }}
             <li>{{ .Subject }}
                 <ul>
