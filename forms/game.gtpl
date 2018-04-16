@@ -9,7 +9,7 @@
         Round: {{ .Round }}<p>
         <b>Actions</b><br>
         {{ range .PlayersByNum }}
-            Player {{ .Num }}: {{ .Actions }}<br>
+            Player {{ .Num }} ({{ .Name }}): {{ .Actions }}<br>
         {{ end }}    
         <p>
         <b>Action Messages</b><br>

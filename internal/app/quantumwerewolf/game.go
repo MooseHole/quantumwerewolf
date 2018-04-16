@@ -50,7 +50,7 @@ func showGame(c *gin.Context) {
 	}
 	for _, o := range killObservations {
 		if o.Round == game.RoundNum || (o.Round == game.RoundNum-1 && !game.RoundNight) {
-			actionMessages += fmt.Sprintf("%s died.<br>", players[o.Subject].Name)
+			actionMessages += fmt.Sprintf("%s died and was a %s.<br>", players[o.Subject].Name, roleTypes[o.Role].Name)
 		}
 	}
 
