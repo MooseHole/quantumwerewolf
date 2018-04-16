@@ -25,6 +25,29 @@
         </table>
         </form>
 
+        <ul>
+        {{ range .ActionSelections }}
+            <li>{{ .Subject }}
+                <ul>
+                {{ range .Peek }}
+                    <li>{{ . }}</li>
+                {{ end }}
+                </ul>
+                <ul>
+                {{ range .Attack }}
+                    <li>{{ . }}</li>
+                {{ end }}
+                </ul>
+                <ul>
+                {{ range .Lynch }}
+                    <li>{{ . }}</li>
+                {{ end }}
+                </ul>
+            </li>
+        {{ end }}
+        </ul>
+        
+
         <script>
             var allPlayers = {}
             {{ range .PlayersByName }}   

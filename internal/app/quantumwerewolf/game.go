@@ -54,16 +54,68 @@ func showGame(c *gin.Context) {
 		}
 	}
 
+	type ActionSelections struct {
+		Subject []string            `json:"Subject"`
+		Peek    map[string][]string `json:"Peek"`
+		Attack  map[string][]string `json:"Attack"`
+		Lynch   map[string][]string `json:"Lynch"`
+	}
+	var actionSelections ActionSelections
+
+	for _, s := range players {
+		// Don't add actions for dead players
+		for _, o := range killObservations {
+			if o.Subject == s.Num {
+				continue
+			}
+		}
+
+		for _, t := range players {
+			// Don't add actions for dead players
+			for _, o := range killObservations {
+				if o.Subject == t.Num {
+					continue
+				}
+			}
+
+			// Don't do actions on yourself
+			if s.Num != t.Num {
+				hasPeeked := false
+				for _, o := range attackObservations {
+					if o.Target == t.Num {
+						hasPeeked = true
+						break
+					}
+					if !hasPeeked {
+						actionSelections.Peek[s.Name] = append(actionSelections.Peek[s.Name], t.Name)
+					}
+				}
+				hasAttacked := false
+				for _, o := range attackObservations {
+					if o.Target == t.Num {
+						hasAttacked = true
+						break
+					}
+					if !hasAttacked {
+						actionSelections.Attack[s.Name] = append(actionSelections.Attack[s.Name], t.Name)
+					}
+				}
+				actionSelections.Lynch[s.Name] = append(actionSelections.Lynch[s.Name], t.Name)
+			}
+		}
+	}
+
 	c.HTML(http.StatusOK, "game.gtpl", gin.H{
-		"GameID":         game.Number,
-		"Name":           gameSetup.Name,
-		"TotalPlayers":   gameSetup.Total,
-		"Roles":          gameSetup.Roles,
-		"Round":          roundString,
-		"IsNight":        game.RoundNight,
-		"PlayersByName":  playersByName,
-		"PlayersByNum":   playersByNum,
-		"ActionMessages": actionMessages,
+		"GameID":           game.Number,
+		"Name":             gameSetup.Name,
+		"TotalPlayers":     gameSetup.Total,
+		"Roles":            gameSetup.Roles,
+		"Round":            roundString,
+		"IsNight":          game.RoundNight,
+		"PlayersByName":    playersByName,
+		"PlayersByNum":     playersByNum,
+		"ActionMessages":   actionMessages,
+		"ActionSelections": actionSelections,
 	})
 }
 
