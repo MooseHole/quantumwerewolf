@@ -121,7 +121,29 @@ func getFixedRole(playerNumber int) int {
 	return foundUniverse[playerNumber]
 }
 
-func collapseForFixedRole(playerNumber int, fixedRoleID int) {
+func collapseAllFixedRoles() {
+	UpdateRoleTotals()
+	anyEliminations := false
+	for _, p := range players {
+		numberOfPossibleRoles := 0
+		fixedRole := 0
+		for _, r := range roleTypes {
+			if p.Role[r.ID] > 0 {
+				numberOfPossibleRoles++
+				fixedRole = r.ID
+			}
+		}
+		if numberOfPossibleRoles == 1 {
+			anyEliminations = collapseForFixedRole(p.Num, fixedRole)
+		}
+	}
+
+	if anyEliminations {
+		collapseAllFixedRoles()
+	}
+}
+
+func collapseForFixedRole(playerNumber int, fixedRoleID int) bool {
 	FillObservations()
 	universeLength := len(multiverse.originalAssignments)
 	universeRoleIDs := make([]int, universeLength)
@@ -138,25 +160,22 @@ func collapseForFixedRole(playerNumber int, fixedRoleID int) {
 		}
 	}
 
-	if universesEliminated {
-		dirtyMultiverse = true
-		multiverse.universes = make([]uint64, 0, len(newUniverses))
-		for _, v := range newUniverses {
-			multiverse.universes = append(multiverse.universes, v)
-		}
-	}
+	anyEliminations := universesEliminated
+	eliminateUniverses(universesEliminated, newUniverses)
 
 	if roleTypes[fixedRoleID].CanAttack {
-		collapseForAttack(playerNumber)
+		anyEliminations = anyEliminations || collapseForAttack(playerNumber)
 	}
 
 	if roleTypes[fixedRoleID].CanPeek {
-		collapseForPeek(playerNumber)
+		anyEliminations = anyEliminations || collapseForPeek(playerNumber)
 	}
+
+	return anyEliminations
 }
 
 // collapseForAttack should only be called if role is fixed to attacker
-func collapseForAttack(attacker int) {
+func collapseForAttack(attacker int) bool {
 	universeLength := len(multiverse.originalAssignments)
 	evaluationUniverse := make([]int, universeLength)
 	evaluationRanks := make([]int, universeLength)
@@ -223,17 +242,12 @@ func collapseForAttack(attacker int) {
 		}
 	}
 
-	if universesEliminated {
-		dirtyMultiverse = true
-		multiverse.universes = make([]uint64, 0, len(newUniverses))
-		for _, v := range newUniverses {
-			multiverse.universes = append(multiverse.universes, v)
-		}
-	}
+	eliminateUniverses(universesEliminated, newUniverses)
+	return universesEliminated
 }
 
 // collapseForPeek should only be called if role is fixed to peeker
-func collapseForPeek(peeker int) {
+func collapseForPeek(peeker int) bool {
 	universeLength := len(multiverse.originalAssignments)
 	evaluationUniverse := make([]int, universeLength)
 	newUniverses := make([]uint64, 0, len(multiverse.universes))
@@ -286,6 +300,11 @@ func collapseForPeek(peeker int) {
 		}
 	}
 
+	eliminateUniverses(universesEliminated, newUniverses)
+	return universesEliminated
+}
+
+func eliminateUniverses(universesEliminated bool, newUniverses []uint64) {
 	if universesEliminated {
 		dirtyMultiverse = true
 		multiverse.universes = make([]uint64, 0, len(newUniverses))
@@ -298,6 +317,7 @@ func collapseForPeek(peeker int) {
 func collapseToFixedRole(playerNumber int) int {
 	roleID := getFixedRole(playerNumber)
 	collapseForFixedRole(playerNumber, roleID)
+	collapseAllFixedRoles()
 	return roleID
 }
 
