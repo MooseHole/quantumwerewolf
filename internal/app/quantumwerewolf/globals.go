@@ -42,6 +42,11 @@ type GameSetup struct {
 	Keep  int            `json:"keepPercent"`
 }
 
+type Action struct {
+	Name  string
+	Value string
+}
+
 // Multiverse holds the state of all universes
 // universes contains the active universe permutation numbers
 // originalAssignments contains the permutation of the 0th universe

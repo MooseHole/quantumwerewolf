@@ -54,17 +54,9 @@ func showGame(c *gin.Context) {
 		}
 	}
 
-	type ActionSelections struct {
-		Subject string   `json:"Subject"`
-		Peek    []string `json:"Peek"`
-		Attack  []string `json:"Attack"`
-		Lynch   []string `json:"Lynch"`
-	}
-	type ActionSubjects struct {
-		Selections []ActionSelections `json:"Selections"`
-	}
-	var actionSubjects ActionSubjects
-	actionSubjects.Selections = make([]ActionSelections, 0, len(players))
+	peekMap := make(map[string][]Action)
+	attackMap := make(map[string][]Action)
+	lynchMap := make(map[string][]Action)
 
 	for _, s := range players {
 		// Don't add actions for dead players
@@ -74,15 +66,17 @@ func showGame(c *gin.Context) {
 			}
 		}
 
-		var selection ActionSelections
-		selection.Subject = s.Name
-		selection.Peek = make([]string, 0, len(players)+1)
-		selection.Attack = make([]string, 0, len(players)+1)
-		selection.Lynch = make([]string, 0, len(players)+1)
+		peekMap[s.Name] = make([]Action, 0, len(players)+1)
+		attackMap[s.Name] = make([]Action, 0, len(players)+1)
+		lynchMap[s.Name] = make([]Action, 0, len(players)+1)
 
-		selection.Peek = append(selection.Peek, "")
-		selection.Attack = append(selection.Peek, "")
-		selection.Lynch = append(selection.Peek, "")
+		var noneAction Action
+		noneAction.Name = "--NONE--"
+		noneAction.Value = ""
+
+		peekMap[s.Name] = append(peekMap[s.Name], noneAction)
+		attackMap[s.Name] = append(attackMap[s.Name], noneAction)
+		lynchMap[s.Name] = append(lynchMap[s.Name], noneAction)
 		for _, t := range players {
 			// Don't add actions for dead players
 			for _, o := range killObservations {
@@ -100,7 +94,10 @@ func showGame(c *gin.Context) {
 						break
 					}
 					if !hasPeeked {
-						selection.Peek = append(selection.Peek, t.Name)
+						var action Action
+						action.Name = t.Name
+						action.Value = t.Name
+						peekMap[s.Name] = append(peekMap[s.Name], action)
 					}
 				}
 				hasAttacked := false
@@ -110,17 +107,36 @@ func showGame(c *gin.Context) {
 						break
 					}
 					if !hasAttacked {
-						selection.Attack = append(selection.Attack, t.Name)
+						var action Action
+						action.Name = t.Name
+						action.Value = t.Name
+						attackMap[s.Name] = append(attackMap[s.Name], action)
 					}
 				}
-				selection.Lynch = append(selection.Lynch, t.Name)
+				var action Action
+				action.Name = t.Name
+				action.Value = t.Name
+				lynchMap[s.Name] = append(lynchMap[s.Name], action)
 			}
 		}
-
-		actionSubjects.Selections = append(actionSubjects.Selections, selection)
 	}
 
-	c.HTML(http.StatusOK, "game.gtpl", gin.H{
+	var parameters = make(map[string]interface{})
+	parameters["GameID"] = game.Number
+	parameters["Name"] = gameSetup.Name
+	parameters["TotalPlayers"] = gameSetup.Total
+	parameters["Roles"] = gameSetup.Roles
+	parameters["Round"] = roundString
+	parameters["IsNight"] = game.RoundNight
+	parameters["PlayersByName"] = playersByName
+	parameters["PlayersByNum"] = playersByNum
+	parameters["ActionMessages"] = actionMessages
+	parameters["AttackMap"] = attackMap
+	parameters["PeekMap"] = peekMap
+	parameters["LynchMap"] = lynchMap
+
+	c.HTML(http.StatusOK, "game.gtpl", parameters)
+	/*	c.HTML(http.StatusOK, "game.gtpl", gin.H{
 		"GameID":         game.Number,
 		"Name":           gameSetup.Name,
 		"TotalPlayers":   gameSetup.Total,
@@ -131,7 +147,7 @@ func showGame(c *gin.Context) {
 		"PlayersByNum":   playersByNum,
 		"ActionMessages": actionMessages,
 		"ActionSubjects": actionSubjects,
-	})
+	})*/
 }
 
 func rebuildGame(c *gin.Context, gameID int) {

@@ -1,3 +1,8 @@
+{{ define "helpy" }}
+{{ range . }}
+{{ . }}
+{{ end }}
+{{ end }}
 {{define "game.gtpl"}}<!DOCTYPE html>
 <html lang="en">
     <head>
@@ -22,6 +27,27 @@
         <input type="checkbox" name="advance" value="true">Advance to next round<br>
         <table name="ActionsTable" id="ActionsTable">
         <tr><th>Player</th>{{ if .IsNight }}<th>Attack</th><th>Peek</th>{{ else }}<th>Lynch</th>{{ end }}</tr>
+        {{ range $subject, $action := .LynchMap }}
+        <tr><td>{{ $subject }}</td>
+            {{ if $.IsNight }}
+            <td>
+            <select name="{{$subject}}Attack">
+            {{ range $action }}
+                <option value={{ .Value }}>{{ .Name }}</option>
+            {{ end }}
+            </select>
+            </td>
+            {{ else }}
+            <td>
+            <select name="{{$subject}}Lynch">
+            {{ range $action }}
+                <option value={{ .Value }}>{{ .Name }}</option>
+            {{ end }}
+            </select>
+            </td>
+            {{ end }}
+        </tr>
+        {{ end }}
         </table>
         </form>
 
