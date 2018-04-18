@@ -32,6 +32,7 @@
                 <option value="{{ $value }}">{{ $name }}</option>
                 {{ end }}
                 </select>
+                </td><td>
                 <select name="{{ $name }}Peek">
                 {{ range $name, $value :=  $selections.Peek }}
                 <option value="{{ $value }}">{{ $name }}</option>
