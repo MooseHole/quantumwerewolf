@@ -1,8 +1,3 @@
-{{ define "helpy" }}
-{{ range . }}
-{{ . }}
-{{ end }}
-{{ end }}
 {{define "game.gtpl"}}<!DOCTYPE html>
 <html lang="en">
     <head>
@@ -27,108 +22,35 @@
         <input type="checkbox" name="advance" value="true">Advance to next round<br>
         <table name="ActionsTable" id="ActionsTable">
         <tr><th>Player</th>{{ if .IsNight }}<th>Attack</th><th>Peek</th>{{ else }}<th>Lynch</th>{{ end }}</tr>
-        {{ range $subject, $action := .LynchMap }}
-        <tr><td>{{ $subject }}</td>
+        {{ range $name, $selections := .ActionSubjects }}
+        <tr>
+            <td>{{ $name }}</td>
             {{ if $.IsNight }}
-            <td>
-            <select name="{{$subject}}Attack">
-            {{ range $action }}
-                <option value={{ .Value }}>{{ .Name }}</option>
-            {{ end }}
-            </select>
-            </td>
+                <td>
+                <select name="{{ $name }}Attack">
+                {{ range $name, $value :=  $selections.Attack }}
+                <option value="{{ $value }}">{{ $name }}</option>
+                {{ end }}
+                </select>
+                <select name="{{ $name }}Peek">
+                {{ range $name, $value :=  $selections.Peek }}
+                <option value="{{ $value }}">{{ $name }}</option>
+                {{ end }}
+                </select>
+                </td>
             {{ else }}
-            <td>
-            <select name="{{$subject}}Lynch">
-            {{ range $action }}
-                <option value={{ .Value }}>{{ .Name }}</option>
-            {{ end }}
-            </select>
-            </td>
+                <td>
+                <select name="{{ $name }}Lynch">
+                {{ range $name, $value :=  $selections.Lynch }}
+                <option value="{{ $value }}">{{ $name }}</option>
+                {{ end }}
+                </select>
+                </td>
             {{ end }}
         </tr>
         {{ end }}
         </table>
         </form>
-
-        <script>
-            var allPlayers = {}
-            {{ range .PlayersByName }}   
-            allPlayers["{{ .Name }}"] = "{{ .Actions }}"
-            {{ end }}
-
-            actionsForm = document.getElementById("Actions")
-            actionsTable = document.getElementById("ActionsTable")
-            for (performingPlayer in allPlayers) {
-                if (allPlayers[performingPlayer].includes("#")) {
-                    continue
-                }
-                row = document.createElement("tr")
-                playerName = document.createElement("td")
-                playerName.innerHTML = performingPlayer
-                row.appendChild(playerName)
-                {{ if .IsNight }}
-                attackCell = document.createElement("td")
-                attackSelect = document.createElement("select")
-                attackSelect.id = performingPlayer + "Attack"
-                attackSelect.name = performingPlayer + "Attack"
-                peekCell = document.createElement("td")
-                peekSelect = document.createElement("select")
-                peekSelect.name = performingPlayer + "Peek"
-                var noAttackOption = document.createElement("option");
-                noAttackOption.value = "";
-                noAttackOption.text = "--NONE--";
-                attackSelect.appendChild(noAttackOption)
-                var noPeekOption = document.createElement("option");
-                noPeekOption.value = "";
-                noPeekOption.text = "--NONE--";
-                peekSelect.appendChild(noPeekOption)
-                for (targetPlayer in allPlayers) {
-                    if (performingPlayer != targetPlayer && !allPlayers[targetPlayer].includes("#")) {
-                        if (!allPlayers[performingPlayer].includes("@"+targetPlayer+"|")) {
-                            var option = document.createElement("option");
-                            option.value = targetPlayer;
-                            option.text = targetPlayer;
-                            attackSelect.appendChild(option)
-                        }
-                        if (!allPlayers[performingPlayer].includes("%"+targetPlayer+"|")) {
-                            var option = document.createElement("option");
-                            option.value = targetPlayer;
-                            option.text = targetPlayer;
-                            peekSelect.appendChild(option)
-                        }
-                    }
-                }
-                attackSelect.form = "Actions"
-                peekSelect.form = "Actions"
-                attackCell.appendChild(attackSelect)
-                peekCell.appendChild(peekSelect)
-                row.appendChild(attackCell)
-                row.appendChild(peekCell)
-                {{ else }}
-                lynchCell = document.createElement("td")
-                lynchSelect = document.createElement("select")
-                lynchSelect.id = performingPlayer + "Lynch"
-                lynchSelect.name = performingPlayer + "Lynch"
-                var noLynchOption = document.createElement("option");
-                noLynchOption.value = "";
-                noLynchOption.text = "--NONE--";
-                lynchSelect.appendChild(noLynchOption)
-                for (targetPlayer in allPlayers) {
-                    if (performingPlayer != targetPlayer && !allPlayers[targetPlayer].includes("#")) {
-                        var option = document.createElement("option");
-                        option.value = targetPlayer;
-                        option.text = targetPlayer;
-                        lynchSelect.appendChild(option)
-                    }
-                }
-                lynchSelect.form = "Actions"
-                lynchCell.appendChild(lynchSelect)
-                row.appendChild(lynchCell)
-                {{ end }}
-                actionsTable.appendChild(row)
-            }
-        </script>
      </body>
 </html>
 {{end}}
