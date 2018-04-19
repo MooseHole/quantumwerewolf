@@ -31,7 +31,13 @@ type Player struct {
 	Name    string      `json:"playerName"`
 	Num     int         `json:"playerNumber"`
 	Actions string      `json:"actions"`
-	Role    map[int]int `json:"role"`
+	Role    RoleTracker `json:"role"`
+}
+
+type RoleTracker struct {
+	Totals  map[int]int `json:"roles"`
+	IsFixed bool        `json:"isFixed"`
+	Fixed   int         `json:"fixed"`
 }
 
 // GameSetup holds the game settings

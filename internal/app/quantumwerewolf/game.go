@@ -229,7 +229,7 @@ func rebuildGame(c *gin.Context, gameID int) {
 		if quantumutilities.HandleErr(c, err, "Error scanning player variables ["+playerQuery+"]") {
 			return
 		}
-		player.Role = make(map[int]int)
+		player.Role.Totals = make(map[int]int)
 		players = append(players, player)
 	}
 	row.Close()

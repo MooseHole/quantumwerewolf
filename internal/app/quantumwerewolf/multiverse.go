@@ -88,8 +88,8 @@ func UpdateRoleTotals() {
 	updateFixedRoles()
 
 	for i := range players {
-		for j := range players[i].Role {
-			players[i].Role[j] = 0
+		for j := range players[i].Role.Totals {
+			players[i].Role.Totals[j] = 0
 		}
 	}
 
@@ -99,7 +99,22 @@ func UpdateRoleTotals() {
 		copy(universeRoleIDs, multiverse.originalAssignments)
 		universeRoleIDs = quantumutilities.Kthperm(universeRoleIDs, v)
 		for i, uv := range universeRoleIDs {
-			players[i].Role[uv]++
+			players[i].Role.Totals[uv]++
+		}
+	}
+
+	for _, p := range players {
+		numberOfPossibleRoles := 0
+		fixedRole := 0
+		for _, r := range roleTypes {
+			if p.Role.Totals[r.ID] > 0 {
+				numberOfPossibleRoles++
+				fixedRole = r.ID
+			}
+		}
+		if numberOfPossibleRoles == 1 {
+			p.Role.IsFixed = true
+			p.Role.Fixed = fixedRole
 		}
 	}
 
@@ -125,16 +140,8 @@ func collapseAllFixedRoles() {
 	UpdateRoleTotals()
 	anyEliminations := false
 	for _, p := range players {
-		numberOfPossibleRoles := 0
-		fixedRole := 0
-		for _, r := range roleTypes {
-			if p.Role[r.ID] > 0 {
-				numberOfPossibleRoles++
-				fixedRole = r.ID
-			}
-		}
-		if numberOfPossibleRoles == 1 {
-			anyEliminations = collapseForFixedRole(p.Num, fixedRole)
+		if p.Role.IsFixed {
+			anyEliminations = collapseForFixedRole(p.Num, p.Role.Fixed)
 		}
 	}
 
@@ -325,7 +332,7 @@ func collapseToFixedRole(playerNumber int) int {
 func Peek(potentialSeer int, target int) string {
 	UpdateRoleTotals()
 
-	if players[potentialSeer].Role[seer.ID] == 0 {
+	if players[potentialSeer].Role.Totals[seer.ID] == 0 {
 		log.Printf("Attempted to peek with player %d but can not peek", potentialSeer)
 		return tokenEndAction
 	}
