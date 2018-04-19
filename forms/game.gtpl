@@ -39,7 +39,8 @@
                 {{ $thisPeeked := index $selections.Peeked $roundNum }}
                 {{ $thisLynched := index $selections.Lynched $roundNum }}
                 {{ $thisKilled := index $selections.Killed $roundNum }}
-                {{ if and (eq $.RoundNum $roundNum) (not $.IsNight) }}
+                
+                {{ if and (not (eq (len $selections.Lynch) 1)) (and (eq $.RoundNum $roundNum) (not $.IsNight)) }}
                 <td>
                     <select name="{{ $name }}Lynch">
                     {{ range $name, $value :=  $selections.Lynch }}
@@ -55,7 +56,7 @@
                 {{ else }}
                 <td>{{ $thisLynched }}</td>
                 {{ end }}
-                {{ if and (eq $.RoundNum $roundNum) $.IsNight }}
+                {{ if and (not (eq (len $selections.Attack) 1)) (and (eq $.RoundNum $roundNum) $.IsNight) }}
                 <td>
                     <select name="{{ $name }}Attack">
                     {{ range $name, $value :=  $selections.Attack }}
@@ -71,7 +72,7 @@
                 {{ else }}
                 <td>{{ $thisAttacked }}</td>
                 {{ end }}
-                {{ if and (eq $.RoundNum $roundNum) $.IsNight }}
+                {{ if and (not (eq (len $selections.Peek) 1)) (and (eq $.RoundNum $roundNum) $.IsNight) }}
                 <td>
                     <select name="{{ $name }}Peek">
                     {{ range $name, $value :=  $selections.Peek }}
