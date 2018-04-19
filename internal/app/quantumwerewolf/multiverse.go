@@ -87,9 +87,9 @@ func UpdateRoleTotals() {
 
 	updateFixedRoles()
 
-	for i := range players {
-		for j := range players[i].Role.Totals {
-			players[i].Role.Totals[j] = 0
+	for _, p := range players {
+		for j := range p.Role.Totals {
+			p.Role.Totals[j] = 0
 		}
 	}
 
@@ -99,7 +99,7 @@ func UpdateRoleTotals() {
 		copy(universeRoleIDs, multiverse.originalAssignments)
 		universeRoleIDs = quantumutilities.Kthperm(universeRoleIDs, v)
 		for i, uv := range universeRoleIDs {
-			players[i].Role.Totals[uv]++
+			getPlayerByNumber(i).Role.Totals[uv]++
 		}
 	}
 
@@ -250,7 +250,7 @@ func collapseForAttack(attacker int) bool {
 	universesEliminated := false
 
 	attackTargets := make([]int, 0, len(players))
-	actionStrings := strings.Split(players[attacker].Actions, tokenEndAction)
+	actionStrings := strings.Split(getPlayerByNumber(attacker).Actions, tokenEndAction)
 	for _, a := range actionStrings {
 		attackIndex := strings.Index(a, tokenAttack)
 		if attackIndex < 0 {
@@ -286,7 +286,7 @@ func collapseForPeek(peeker int) bool {
 	}
 
 	peekActions := make([]PeekAction, 0, len(players))
-	actionStrings := strings.Split(players[peeker].Actions, tokenEndAction)
+	actionStrings := strings.Split(getPlayerByNumber(peeker).Actions, tokenEndAction)
 	for _, a := range actionStrings {
 		peekIndex := strings.Index(a, tokenPeek)
 		if peekIndex < 0 {
@@ -352,7 +352,7 @@ func collapseToFixedRole(playerNumber int) int {
 func Peek(potentialSeer int, target int) string {
 	UpdateRoleTotals()
 
-	if players[potentialSeer].Role.Totals[seer.ID] == 0 {
+	if getPlayerByNumber(potentialSeer).Role.Totals[seer.ID] == 0 {
 		log.Printf("Attempted to peek with player %d but can not peek", potentialSeer)
 		return tokenEndAction
 	}

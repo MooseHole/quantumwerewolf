@@ -56,13 +56,16 @@ func showGame(c *gin.Context) {
 	}
 
 	type ActionSelections struct {
-		Peek     map[string]string
-		Attack   map[string]string
-		Lynch    map[string]string
-		Peeked   map[string]string
-		Attacked map[string]string
-		Lynched  map[string]string
-		Killed   map[string]string
+		Peek        map[string]string
+		Attack      map[string]string
+		Lynch       map[string]string
+		Peeked      map[string]string
+		Attacked    map[string]string
+		Lynched     map[string]string
+		Killed      map[string]string
+		GoodPercent int
+		EvilPercent int
+		DeadPercent int
 	}
 	actionSubjects := make(map[string]ActionSelections)
 	FillObservations()
@@ -71,6 +74,9 @@ func showGame(c *gin.Context) {
 		var selection ActionSelections
 		var playerIsDead = false
 
+		selection.GoodPercent = playerGoodPercent(s)
+		selection.EvilPercent = playerEvilPercent(s)
+		selection.DeadPercent = playerDeadPercent(s)
 		selection.Peeked = make(map[string]string)
 		selection.Attacked = make(map[string]string)
 		selection.Lynched = make(map[string]string)
@@ -136,26 +142,30 @@ func showGame(c *gin.Context) {
 					continue
 				}
 
-				hasPeeked := false
-				for _, o := range peekObservations {
-					if o.Subject == s.Num && o.Target == t.Num {
-						hasPeeked = true
-						break
+				if playerCanPeek(s) {
+					hasPeeked := false
+					for _, o := range peekObservations {
+						if o.Subject == s.Num && o.Target == t.Num {
+							hasPeeked = true
+							break
+						}
 					}
-				}
-				if !hasPeeked {
-					selection.Peek[t.Name] = t.Name
+					if !hasPeeked {
+						selection.Peek[t.Name] = t.Name
+					}
 				}
 
-				hasAttacked := false
-				for _, o := range attackObservations {
-					if o.Subject == s.Num && o.Target == t.Num {
-						hasAttacked = true
-						break
+				if playerCanAttack(s) {
+					hasAttacked := false
+					for _, o := range attackObservations {
+						if o.Subject == s.Num && o.Target == t.Num {
+							hasAttacked = true
+							break
+						}
 					}
-				}
-				if !hasAttacked {
-					selection.Attack[t.Name] = t.Name
+					if !hasAttacked {
+						selection.Attack[t.Name] = t.Name
+					}
 				}
 
 				selection.Lynch[t.Name] = t.Name

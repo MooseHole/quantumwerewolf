@@ -87,7 +87,6 @@ func createPlayerHandler(c *gin.Context) {
 	// Append our existing list of players with a new entry
 	players = append(players, player)
 
-	//	c.String(http.StatusOK, players[0].Number)
 	//Finally, we redirect the user to the original HTMl page
 	c.HTML(http.StatusOK, "playerSetup.gtpl", nil)
 }

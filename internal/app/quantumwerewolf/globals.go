@@ -104,8 +104,7 @@ func getPlayerByNumber(playerNumber int) Player {
 	return unknownPlayer
 }
 
-func playerCanPeek(playerNumber int) bool {
-	player := getPlayerByNumber(playerNumber)
+func playerCanPeek(player Player) bool {
 	UpdateRoleTotals()
 	for k, v := range player.Role.Totals {
 		if v > 0 && roleTypes[k].CanPeek {
@@ -116,8 +115,7 @@ func playerCanPeek(playerNumber int) bool {
 	return false
 }
 
-func playerCanAttack(playerNumber int) bool {
-	player := getPlayerByNumber(playerNumber)
+func playerCanAttack(player Player) bool {
 	UpdateRoleTotals()
 	for k, v := range player.Role.Totals {
 		if v > 0 && roleTypes[k].CanAttack {
@@ -128,8 +126,7 @@ func playerCanAttack(playerNumber int) bool {
 	return false
 }
 
-func playerEvilPercent(playerNumber int) int {
-	player := getPlayerByNumber(playerNumber)
+func playerEvilPercent(player Player) int {
 	UpdateRoleTotals()
 
 	amountEvil := 0
@@ -142,18 +139,17 @@ func playerEvilPercent(playerNumber int) int {
 	return (amountEvil * 100) / len(multiverse.universes)
 }
 
-func playerGoodPercent(playerNumber int) int {
-	return 100 - playerEvilPercent(playerNumber)
+func playerGoodPercent(player Player) int {
+	return 100 - playerEvilPercent(player)
 }
 
-func playerDeadPercent(playerNumber int) int {
-
+func playerDeadPercent(player Player) int {
 	attacksOnMe := make([]AttackObservation, 0, len(attackObservations))
 	totalUniverses := 0
 	totalDeaths := 0
 
 	for _, o := range attackObservations {
-		if o.Target == playerNumber {
+		if o.Target == player.Num {
 			attacksOnMe = append(attacksOnMe, o)
 		}
 	}
@@ -161,7 +157,7 @@ func playerDeadPercent(playerNumber int) int {
 	for _, v := range multiverse.universes {
 		totalUniverses++
 		for _, o := range attacksOnMe {
-			if AttackTarget(v, o.Subject, playerNumber) {
+			if AttackTarget(v, o.Subject, player.Num) {
 				totalDeaths++
 				break
 			}

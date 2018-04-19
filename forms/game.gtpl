@@ -6,11 +6,22 @@
     <body>
         Game: {{ .Name }}<br>
         Number of Players: {{ .TotalPlayers }}<br>
+        {{ range $name, $value := .Roles }}
+        Number of {{ $name }}: {{ $value }}<br>
+        {{ end }}
         Round: {{ .Round }}<p>
         <b>Actions</b><br>
         {{ range .PlayersByNum }}
             Player {{ .Num }} ({{ .Name }}): {{ .Actions }}<br>
         {{ end }}    
+        <p>
+        <table>
+        <tr><th>Player</th><th>Good</th><th>Evil</th><th>Dead</th></tr>
+        {{ range $name, $selections := .ActionSubjects }}
+        <tr><td>{{ $name }}</td><td>{{ $selections.GoodPercent }}%</td><td>{{ $selections.EvilPercent }}%</td><td>{{ $selections.DeadPercent }}%</td></tr>
+        {{ end }}
+        </table>
+
         <p>
         <b>Action Messages</b><br>
         {{ .ActionMessages }}
