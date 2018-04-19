@@ -55,21 +55,56 @@ func showGame(c *gin.Context) {
 	}
 
 	type ActionSelections struct {
-		Peek   map[string]string `json:"Peek"`
-		Attack map[string]string `json:"Attack"`
-		Lynch  map[string]string `json:"Lynch"`
+		Peek     map[string]string
+		Attack   map[string]string
+		Lynch    map[string]string
+		Peeked   map[string]string
+		Attacked map[string]string
+		Lynched  map[string]string
+		Killed   map[string]string
 	}
 	actionSubjects := make(map[string]ActionSelections)
+	FillObservations()
 
 	for _, s := range players {
-		// Don't add actions for dead players
+		var selection ActionSelections
+		var playerIsDead = false
+
+		selection.Peeked = make(map[string]string)
+		selection.Attacked = make(map[string]string)
+		selection.Lynched = make(map[string]string)
+		selection.Killed = make(map[string]string)
+
 		for _, o := range killObservations {
 			if o.Subject == s.Num {
-				continue
+				selection.Killed[strconv.Itoa(o.Round)] = roleTypes[o.Role].Name
+				playerIsDead = true
 			}
 		}
 
-		var selection ActionSelections
+		for _, o := range peekObservations {
+			if o.Subject == s.Num {
+				var resultString = "good"
+				if o.IsEvil {
+					resultString = "evil"
+				}
+				selection.Peeked[strconv.Itoa(o.Round)] = playersByNum[o.Target].Name + "=" + resultString
+			}
+		}
+
+		for _, o := range attackObservations {
+			if o.Subject == s.Num {
+				selection.Attacked[strconv.Itoa(o.Round)] = playersByNum[o.Target].Name
+			}
+		}
+
+		for _, o := range lynchObservations {
+			if o.Subject == s.Num {
+				selection.Lynched[strconv.Itoa(o.Round)] = playersByNum[o.Target].Name
+			}
+		}
+
+		// Set up next actions
 		selection.Peek = make(map[string]string)
 		selection.Attack = make(map[string]string)
 		selection.Lynch = make(map[string]string)
@@ -78,36 +113,50 @@ func showGame(c *gin.Context) {
 		selection.Attack["--NONE--"] = ""
 		selection.Lynch["--NONE--"] = ""
 
-		for _, t := range players {
-			// Don't add actions for dead players
-			for _, o := range killObservations {
-				if o.Subject == t.Num {
+		// Don't allow dead players to do actions
+		if !playerIsDead {
+			for _, t := range players {
+				skipTarget := false
+
+				// Don't add actions for dead targets
+				for _, o := range killObservations {
+					if o.Subject == t.Num {
+						skipTarget = true
+						break
+					}
+				}
+
+				// Don't do actions on yourself
+				if s.Num == t.Num {
+					skipTarget = true
+				}
+
+				if skipTarget {
 					continue
 				}
-			}
 
-			// Don't do actions on yourself
-			if s.Num != t.Num {
 				hasPeeked := false
-				for _, o := range attackObservations {
-					if o.Target == t.Num {
+				for _, o := range peekObservations {
+					if o.Subject == s.Num && o.Target == t.Num {
 						hasPeeked = true
 						break
 					}
-					if !hasPeeked {
-						selection.Peek[t.Name] = t.Name
-					}
 				}
+				if !hasPeeked {
+					selection.Peek[t.Name] = t.Name
+				}
+
 				hasAttacked := false
 				for _, o := range attackObservations {
-					if o.Target == t.Num {
+					if o.Subject == s.Num && o.Target == t.Num {
 						hasAttacked = true
 						break
 					}
-					if !hasAttacked {
-						selection.Attack[t.Name] = t.Name
-					}
 				}
+				if !hasAttacked {
+					selection.Attack[t.Name] = t.Name
+				}
+
 				selection.Lynch[t.Name] = t.Name
 			}
 		}
@@ -115,12 +164,19 @@ func showGame(c *gin.Context) {
 		actionSubjects[s.Name] = selection
 	}
 
+	rounds := make([]string, game.RoundNum+1)
+	for i := range rounds {
+		rounds[i] = strconv.Itoa(i)
+	}
+
 	c.HTML(http.StatusOK, "game.gtpl", gin.H{
 		"GameID":         game.Number,
 		"Name":           gameSetup.Name,
 		"TotalPlayers":   gameSetup.Total,
 		"Roles":          gameSetup.Roles,
+		"RoundNum":       strconv.Itoa(game.RoundNum),
 		"Round":          roundString,
+		"Rounds":         rounds,
 		"IsNight":        game.RoundNight,
 		"PlayersByName":  playersByName,
 		"PlayersByNum":   playersByNum,
@@ -233,20 +289,20 @@ func processActions(c *gin.Context) {
 		rebuildGame(c, int(gameIDNum))
 		lynchSubstring := strconv.Itoa(game.RoundNum) + tokenLynch
 		lynchSubstringLength := len(lynchSubstring)
-		var lynchTargets = make(map[string]int)
+		var lynchTargets = make(map[int]int)
 		for _, p := range players {
 			actionStrings := strings.Split(p.Actions, tokenEndAction)
 			for _, a := range actionStrings {
 				if len(a) >= lynchSubstringLength && a[0:lynchSubstringLength] == lynchSubstring {
-					lynchTarget := a[lynchSubstringLength:]
-					lynchTargets[lynchTarget]++
+					lynchTarget, _ := strconv.ParseInt(a[lynchSubstringLength:], 10, 32)
+					lynchTargets[int(lynchTarget)]++
 				}
 			}
 		}
 
 		for t, n := range lynchTargets {
 			if n > len(players)/2 {
-				lynchedPlayer := getPlayerByName(t)
+				lynchedPlayer := getPlayerByNumber(t)
 
 				fixedRole := collapseToFixedRole(lynchedPlayer.Num)
 

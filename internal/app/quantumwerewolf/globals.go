@@ -85,7 +85,19 @@ func getPlayerByName(playerName string) Player {
 		}
 	}
 
-	log.Printf("Attempted to get unknown player: %v", playerName)
+	log.Printf("Attempted to get unknown player by name: %v", playerName)
+	var unknownPlayer Player
+	return unknownPlayer
+}
+
+func getPlayerByNumber(playerNumber int) Player {
+	for _, p := range players {
+		if p.Num == playerNumber {
+			return p
+		}
+	}
+
+	log.Printf("Attempted to get unknown player by number: %d", playerNumber)
 	var unknownPlayer Player
 	return unknownPlayer
 }
