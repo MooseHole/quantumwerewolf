@@ -34,6 +34,7 @@ type Player struct {
 	Role    RoleTracker `json:"role"`
 }
 
+// RoleTracker holds state info about a player's roles
 type RoleTracker struct {
 	Totals  map[int]int `json:"roles"`
 	IsFixed bool        `json:"isFixed"`
@@ -46,11 +47,6 @@ type GameSetup struct {
 	Roles map[string]int `json:"roles"`
 	Total int            `json:"totalPlayers"`
 	Keep  int            `json:"keepPercent"`
-}
-
-type Action struct {
-	Name  string
-	Value string
 }
 
 // Multiverse holds the state of all universes
@@ -106,4 +102,70 @@ func getPlayerByNumber(playerNumber int) Player {
 	log.Printf("Attempted to get unknown player by number: %d", playerNumber)
 	var unknownPlayer Player
 	return unknownPlayer
+}
+
+func playerCanPeek(playerNumber int) bool {
+	player := getPlayerByNumber(playerNumber)
+	UpdateRoleTotals()
+	for k, v := range player.Role.Totals {
+		if v > 0 && roleTypes[k].CanPeek {
+			return true
+		}
+	}
+
+	return false
+}
+
+func playerCanAttack(playerNumber int) bool {
+	player := getPlayerByNumber(playerNumber)
+	UpdateRoleTotals()
+	for k, v := range player.Role.Totals {
+		if v > 0 && roleTypes[k].CanAttack {
+			return true
+		}
+	}
+
+	return false
+}
+
+func playerEvilPercent(playerNumber int) int {
+	player := getPlayerByNumber(playerNumber)
+	UpdateRoleTotals()
+
+	amountEvil := 0
+	for k, v := range player.Role.Totals {
+		if roleTypes[k].Evil {
+			amountEvil += v
+		}
+	}
+
+	return (amountEvil * 100) / len(multiverse.universes)
+}
+
+func playerGoodPercent(playerNumber int) int {
+	return 100 - playerEvilPercent(playerNumber)
+}
+
+func playerDeadPercent(playerNumber int) int {
+
+	attacksOnMe := make([]AttackObservation, 0, len(attackObservations))
+	totalUniverses := 0
+	totalDeaths := 0
+
+	for _, o := range attackObservations {
+		if o.Target == playerNumber {
+			attacksOnMe = append(attacksOnMe, o)
+		}
+	}
+
+	for _, v := range multiverse.universes {
+		totalUniverses++
+		for _, o := range attacksOnMe {
+			if AttackTarget(v, o.Subject, playerNumber) {
+				totalDeaths++
+				break
+			}
+		}
+	}
+	return (totalDeaths * 100) / totalUniverses
 }

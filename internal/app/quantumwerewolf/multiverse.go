@@ -181,11 +181,71 @@ func collapseForFixedRole(playerNumber int, fixedRoleID int) bool {
 	return anyEliminations
 }
 
-// collapseForAttack should only be called if role is fixed to attacker
-func collapseForAttack(attacker int) bool {
+// AttackTarget returns true if the attacker successfully completed an attack on this target in the given universe
+func AttackTarget(universe uint64, attacker int, target int) bool {
 	universeLength := len(multiverse.originalAssignments)
 	evaluationUniverse := make([]int, universeLength)
 	evaluationRanks := make([]int, universeLength)
+
+	copy(evaluationUniverse, multiverse.originalAssignments)
+	for i := range evaluationRanks {
+		evaluationRanks[i] = i
+	}
+
+	evaluationUniverse = quantumutilities.Kthperm(evaluationUniverse, universe)
+	evaluationRanks = quantumutilities.Kthperm(evaluationRanks, universe)
+
+	attackSucceeds := false
+	if roleTypes[evaluationUniverse[attacker]].CanAttack {
+		// Can only attack if on other side from target
+		if roleTypes[evaluationUniverse[target]].Evil != roleTypes[evaluationUniverse[attacker]].Evil {
+			attackSucceeds = true
+
+			// Check if potential is highest ranked attacker in this universe
+			for teammateIndex := range evaluationUniverse {
+				// If same role ID
+				if evaluationUniverse[teammateIndex] == evaluationUniverse[attacker] {
+					// If someone else has higher rank
+					if evaluationRanks[teammateIndex] < evaluationRanks[attacker] {
+						wasTeammateDead := false
+						for _, teammateKilled := range killObservations {
+							// If higher ranked was dead when attack was made
+							if teammateKilled.Subject == teammateIndex && teammateKilled.Round > attacker {
+								wasTeammateDead = true
+								break
+							}
+						}
+						if !wasTeammateDead {
+							attackSucceeds = false
+							break
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return attackSucceeds
+}
+
+// Attack returns true if universe is consistent with all attacks by the given player
+func Attack(universe uint64, attacker int) bool {
+	universeLength := len(multiverse.originalAssignments)
+	evaluationUniverse := make([]int, universeLength)
+	copy(evaluationUniverse, multiverse.originalAssignments)
+
+	FillObservations()
+	for _, attack := range attackObservations {
+		if !AttackTarget(universe, attacker, attack.Target) {
+			return false
+		}
+	}
+
+	return true
+}
+
+// collapseForAttack should only be called if role is fixed to attacker
+func collapseForAttack(attacker int) bool {
 	newUniverses := make([]uint64, 0, len(multiverse.universes))
 	universesEliminated := false
 
@@ -202,47 +262,7 @@ func collapseForAttack(attacker int) bool {
 	}
 
 	for _, v := range multiverse.universes {
-		copy(evaluationUniverse, multiverse.originalAssignments)
-		for i := range evaluationRanks {
-			evaluationRanks[i] = i
-		}
-		evaluationUniverse = quantumutilities.Kthperm(evaluationUniverse, v)
-		evaluationRanks = quantumutilities.Kthperm(evaluationRanks, v)
-
-		attackSucceeds := false
-		if roleTypes[evaluationUniverse[attacker]].CanAttack {
-
-			for _, attack := range attackObservations {
-				// Can only attack if on other side from target
-				if roleTypes[evaluationUniverse[attack.Target]].Evil != roleTypes[evaluationUniverse[attacker]].Evil {
-					attackSucceeds = true
-
-					// Check if potential is highest ranked attacker in this universe
-					for teammateIndex := range evaluationUniverse {
-						// If same role ID
-						if evaluationUniverse[teammateIndex] == evaluationUniverse[attacker] {
-							// If someone else has higher rank
-							if evaluationRanks[teammateIndex] < evaluationRanks[attacker] {
-								wasTeammateDead := false
-								for _, teammateKilled := range killObservations {
-									// If higher ranked was dead when attack was made
-									if teammateKilled.Subject == teammateIndex && teammateKilled.Round > attack.Subject {
-										wasTeammateDead = true
-										break
-									}
-								}
-								if !wasTeammateDead {
-									attackSucceeds = false
-									break
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-
-		if attackSucceeds {
+		if Attack(v, attacker) {
 			newUniverses = append(newUniverses, v)
 		} else {
 			universesEliminated = true

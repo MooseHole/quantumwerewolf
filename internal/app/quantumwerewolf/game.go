@@ -28,6 +28,7 @@ func showGame(c *gin.Context) {
 	}
 	roundString += strconv.Itoa(game.RoundNum)
 
+	FillObservations()
 	actionMessages := ""
 	for _, o := range peekObservations {
 		if o.Round == game.RoundNum-1 {
