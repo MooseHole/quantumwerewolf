@@ -35,22 +35,22 @@ func showGame(c *gin.Context) {
 			if o.IsEvil {
 				resultString = "evil"
 			}
-			actionMessages += fmt.Sprintf("%s peeked at %s and found them %s.<br>", playersByNum[o.Subject].Name, playersByNum[o.Target].Name, resultString)
+			actionMessages += fmt.Sprintf("%s peeked at %s and found them %s.<br>", getPlayerByNumber(o.Subject).Name, getPlayerByNumber(o.Target).Name, resultString)
 		}
 	}
 	for _, o := range attackObservations {
 		if o.Round == game.RoundNum-1 {
-			actionMessages += fmt.Sprintf("%s attacked %s.<br>", playersByNum[o.Subject].Name, playersByNum[o.Target].Name)
+			actionMessages += fmt.Sprintf("%s attacked %s.<br>", getPlayerByNumber(o.Subject).Name, getPlayerByNumber(o.Target).Name)
 		}
 	}
 	for _, o := range lynchObservations {
 		if o.Round == game.RoundNum {
-			actionMessages += fmt.Sprintf("%s voted to lynch %s.<br>", playersByNum[o.Subject].Name, playersByNum[o.Target].Name)
+			actionMessages += fmt.Sprintf("%s voted to lynch %s.<br>", getPlayerByNumber(o.Subject).Name, getPlayerByNumber(o.Target).Name)
 		}
 	}
 	for _, o := range killObservations {
 		if o.Round == game.RoundNum || (o.Round == game.RoundNum-1 && !game.RoundNight) {
-			actionMessages += fmt.Sprintf("%s died and was a %s.<br>", playersByNum[o.Subject].Name, roleTypes[o.Role].Name)
+			actionMessages += fmt.Sprintf("%s died and was a %s.<br>", getPlayerByNumber(o.Subject).Name, roleTypes[o.Role].Name)
 		}
 	}
 
@@ -88,19 +88,19 @@ func showGame(c *gin.Context) {
 				if o.IsEvil {
 					resultString = "evil"
 				}
-				selection.Peeked[strconv.Itoa(o.Round)] = playersByNum[o.Target].Name + "=" + resultString
+				selection.Peeked[strconv.Itoa(o.Round)] = getPlayerByNumber(o.Target).Name + "=" + resultString
 			}
 		}
 
 		for _, o := range attackObservations {
 			if o.Subject == s.Num {
-				selection.Attacked[strconv.Itoa(o.Round)] = playersByNum[o.Target].Name
+				selection.Attacked[strconv.Itoa(o.Round)] = getPlayerByNumber(o.Target).Name
 			}
 		}
 
 		for _, o := range lynchObservations {
 			if o.Subject == s.Num {
-				selection.Lynched[strconv.Itoa(o.Round)] = playersByNum[o.Target].Name
+				selection.Lynched[strconv.Itoa(o.Round)] = getPlayerByNumber(o.Target).Name
 			}
 		}
 
