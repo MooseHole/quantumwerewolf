@@ -54,6 +54,7 @@ func CreateMultiverse() {
 	possibleUniverses := quantumutilities.Factorial(gameSetup.Total)
 	multiverse.universes = quantumutilities.PermUint64Trunc(multiverseRandom, possibleUniverses, 100000)
 	UpdateRoleTotals()
+	collapseAll()
 
 	for _, v := range multiverse.universes {
 		log.Printf(getUniverseString(v))
@@ -136,17 +137,25 @@ func getFixedRole(playerNumber int) int {
 	return foundUniverse[playerNumber]
 }
 
-func collapseAllFixedRoles() {
+func collapseAll() {
 	UpdateRoleTotals()
 	anyEliminations := false
 	for _, p := range players {
 		if p.Role.IsFixed {
 			anyEliminations = collapseForFixedRole(p.Num, p.Role.Fixed)
 		}
+
+		if playerCanAttack(p) {
+			anyEliminations = anyEliminations || collapseForAttack(p.Num)
+		}
+
+		if playerCanPeek(p) {
+			anyEliminations = anyEliminations || collapseForPeek(p.Num)
+		}
 	}
 
 	if anyEliminations {
-		collapseAllFixedRoles()
+		collapseAll()
 	}
 }
 
@@ -169,14 +178,6 @@ func collapseForFixedRole(playerNumber int, fixedRoleID int) bool {
 
 	anyEliminations := universesEliminated
 	eliminateUniverses(universesEliminated, newUniverses)
-
-	if roleTypes[fixedRoleID].CanAttack {
-		anyEliminations = anyEliminations || collapseForAttack(playerNumber)
-	}
-
-	if roleTypes[fixedRoleID].CanPeek {
-		anyEliminations = anyEliminations || collapseForPeek(playerNumber)
-	}
 
 	return anyEliminations
 }
@@ -228,15 +229,62 @@ func AttackTarget(universe uint64, attacker int, target int) bool {
 	return attackSucceeds
 }
 
-// Attack returns true if universe is consistent with all attacks by the given player
-func Attack(universe uint64, attacker int) bool {
+// AttackFriend returns true if the attacker kills a teammate
+func AttackFriend(universe uint64, attacker int, target int) bool {
+	universeLength := len(multiverse.originalAssignments)
+	evaluationUniverse := make([]int, universeLength)
+	evaluationRanks := make([]int, universeLength)
+
+	copy(evaluationUniverse, multiverse.originalAssignments)
+	for i := range evaluationRanks {
+		evaluationRanks[i] = i
+	}
+
+	evaluationUniverse = quantumutilities.Kthperm(evaluationUniverse, universe)
+	evaluationRanks = quantumutilities.Kthperm(evaluationRanks, universe)
+
+	attackedFriend := false
+	if roleTypes[evaluationUniverse[attacker]].CanAttack {
+		// If on same side as target
+		if roleTypes[evaluationUniverse[target]].Evil == roleTypes[evaluationUniverse[attacker]].Evil {
+			attackedFriend = true
+
+			// Check if potential is highest ranked attacker in this universe
+			for teammateIndex := range evaluationUniverse {
+				// If same role ID
+				if evaluationUniverse[teammateIndex] == evaluationUniverse[attacker] {
+					// If someone else has higher rank
+					if evaluationRanks[teammateIndex] < evaluationRanks[attacker] {
+						wasTeammateDead := false
+						for _, teammateKilled := range killObservations {
+							// If higher ranked was dead when attack was made
+							if teammateKilled.Subject == teammateIndex && teammateKilled.Round > attacker {
+								wasTeammateDead = true
+								break
+							}
+						}
+						if !wasTeammateDead {
+							attackedFriend = false
+							break
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return attackedFriend
+}
+
+// AttackOk returns false if a player is the dominant attacker and attacks a teammate
+func AttackOk(universe uint64, attacker int) bool {
 	universeLength := len(multiverse.originalAssignments)
 	evaluationUniverse := make([]int, universeLength)
 	copy(evaluationUniverse, multiverse.originalAssignments)
 
 	FillObservations()
 	for _, attack := range attackObservations {
-		if !AttackTarget(universe, attacker, attack.Target) {
+		if AttackFriend(universe, attacker, attack.Target) {
 			return false
 		}
 	}
@@ -262,7 +310,7 @@ func collapseForAttack(attacker int) bool {
 	}
 
 	for _, v := range multiverse.universes {
-		if Attack(v, attacker) {
+		if AttackOk(v, attacker) {
 			newUniverses = append(newUniverses, v)
 		} else {
 			universesEliminated = true
@@ -306,21 +354,21 @@ func collapseForPeek(peeker int) bool {
 		copy(evaluationUniverse, multiverse.originalAssignments)
 		evaluationUniverse = quantumutilities.Kthperm(evaluationUniverse, v)
 
-		peekSucceeds := false
+		peekOk := true
 		if roleTypes[evaluationUniverse[peeker]].CanPeek {
-			peekSucceeds = true
+			peekOk = false
 			for _, a := range peekActions {
 				targetIsEvil := roleTypes[evaluationUniverse[a.Target]].Evil
 
-				// Observation doesn't match this universe's reality
-				if a.IsEvil != targetIsEvil {
-					peekSucceeds = false
+				// Observation matches this universe's reality
+				if a.IsEvil == targetIsEvil {
+					peekOk = true
 					break
 				}
 			}
 		}
 
-		if peekSucceeds {
+		if peekOk {
 			newUniverses = append(newUniverses, v)
 		} else {
 			universesEliminated = true
@@ -344,7 +392,7 @@ func eliminateUniverses(universesEliminated bool, newUniverses []uint64) {
 func collapseToFixedRole(playerNumber int) int {
 	roleID := getFixedRole(playerNumber)
 	collapseForFixedRole(playerNumber, roleID)
-	collapseAllFixedRoles()
+	collapseAll()
 	return roleID
 }
 

@@ -5,6 +5,7 @@
     </head>
     <body>
         Game: {{ .Name }}<br>
+        Remaining Universes: {{ len .Universes }}<br>
         Number of Players: {{ .TotalPlayers }}<br>
         {{ range $name, $value := .Roles }}
         Number of {{ $name }}: {{ $value }}<br>
@@ -105,6 +106,10 @@
         {{ end }}
         </table>
         </form>
+
+        {{ range $num, $output := .Universes }}
+        {{ $output  }} {{ $num }}<br>
+        {{ end }}
      </body>
 </html>
 {{end}}

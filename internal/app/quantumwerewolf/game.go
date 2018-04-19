@@ -180,6 +180,11 @@ func showGame(c *gin.Context) {
 		rounds[i] = strconv.Itoa(i)
 	}
 
+	universes := make(map[int]string)
+	for _, u := range multiverse.universes {
+		universes[int(u)] = getUniverseString(u)
+	}
+
 	c.HTML(http.StatusOK, "game.gtpl", gin.H{
 		"GameID":         game.Number,
 		"Name":           gameSetup.Name,
@@ -188,6 +193,7 @@ func showGame(c *gin.Context) {
 		"RoundNum":       strconv.Itoa(game.RoundNum),
 		"Round":          roundString,
 		"Rounds":         rounds,
+		"Universes":      universes,
 		"IsNight":        game.RoundNight,
 		"PlayersByName":  playersByName,
 		"PlayersByNum":   playersByNum,
