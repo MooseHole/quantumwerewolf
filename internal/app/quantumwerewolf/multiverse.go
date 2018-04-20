@@ -1,6 +1,7 @@
 package quantumwerewolf
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"math/rand"
@@ -126,6 +127,25 @@ func randomUniverse() uint64 {
 	universeNumber := uint64(rand.Int63n(int64(len(multiverse.universes))))
 	getUniverseString(universeNumber)
 	return universeNumber
+}
+
+func randomPeekUniverse(peeker int) (uint64, error) {
+	temp := make([]uint64, 0, len(multiverse.universes))
+	universeLength := len(multiverse.originalAssignments)
+	evaluationUniverse := make([]int, universeLength)
+
+	for _, v := range multiverse.universes {
+		copy(evaluationUniverse, multiverse.originalAssignments)
+		evaluationUniverse = quantumutilities.Kthperm(evaluationUniverse, v)
+		if roleTypes[evaluationUniverse[peeker]].CanPeek {
+			temp = append(temp, v)
+		}
+	}
+
+	if len(temp) < 1 {
+		return 0, errors.New("No valid peek universe found")
+	}
+	return temp[uint64(rand.Int63n(int64(len(temp))))], nil
 }
 
 func getFixedRole(playerNumber int) int {
@@ -382,20 +402,14 @@ func Peek(peeker int, target int) bool {
 		log.Printf("Attempted to peek with player %d but can not peek", peeker)
 	}
 
-	universeLength := len(multiverse.originalAssignments)
-	evaluationUniverse := make([]int, universeLength)
-	// Keep trying until a universe is found where this player is a seer
-	for true {
-		copy(evaluationUniverse, multiverse.originalAssignments)
-		evaluationUniverse = quantumutilities.Kthperm(evaluationUniverse, randomUniverse())
-		if roleTypes[evaluationUniverse[peeker]].CanPeek {
-			if roleTypes[evaluationUniverse[target]].Evil {
-				return true
-			}
-
-			return false
-		}
+	peekUniverse, err := randomPeekUniverse(peeker)
+	if err != nil {
+		log.Printf("Attempted to peek with player %d but had error: %v", peeker, err)
+		return false
 	}
 
-	return false
+	evaluationUniverse := make([]int, len(multiverse.originalAssignments))
+	copy(evaluationUniverse, multiverse.originalAssignments)
+	evaluationUniverse = quantumutilities.Kthperm(evaluationUniverse, peekUniverse)
+	return roleTypes[evaluationUniverse[target]].Evil
 }

@@ -77,8 +77,10 @@ func FillObservations() {
 // CommitObservations removes pending from all observations
 func CommitObservations() {
 	for _, o := range peekObservations {
-		o.IsEvil = Peek(o.Subject, o.Target)
-		o.Pending = false
+		if o.Pending {
+			o.IsEvil = Peek(o.Subject, o.Target)
+			o.Pending = false
+		}
 		addPeekObservation(o)
 	}
 	for _, o := range attackObservations {
