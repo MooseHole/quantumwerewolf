@@ -49,6 +49,7 @@
             {{ range $roundNum := $.Rounds }}
                 {{ $thisAttacked := index $selections.Attacked $roundNum }}
                 {{ $thisPeeked := index $selections.Peeked $roundNum }}
+                {{ $thisPeekResult := index $selections.PeekResult $roundNum }}
                 {{ $thisLynched := index $selections.Lynched $roundNum }}
                 {{ $thisKilled := index $selections.Killed $roundNum }}
                 
@@ -98,7 +99,7 @@
                     </select>
                 </td>
                 {{ else }}
-                <td>{{ $thisPeeked }}</td>
+                <td>{{ $thisPeeked }}{{ $thisPeekResult }}</td>
                 {{ end }}
                 <td>{{ $thisKilled }}</td>
             {{ end }}

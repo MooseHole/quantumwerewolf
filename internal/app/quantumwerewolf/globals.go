@@ -105,6 +105,16 @@ func getPlayerByNumber(playerNumber int) Player {
 	return unknownPlayer
 }
 
+func getPlayerIndex(player Player) int {
+	for i, p := range players {
+		if p.Num == player.Num {
+			return i
+		}
+	}
+
+	return -1
+}
+
 func playerCanPeek(player Player) bool {
 	UpdateRoleTotals()
 	for k, v := range player.Role.Totals {

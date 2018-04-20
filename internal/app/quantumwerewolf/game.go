@@ -60,6 +60,7 @@ func showGame(c *gin.Context) {
 		Attack      map[string]string
 		Lynch       map[string]string
 		Peeked      map[string]string
+		PeekResult  map[string]string
 		Attacked    map[string]string
 		Lynched     map[string]string
 		Killed      map[string]string
@@ -78,6 +79,7 @@ func showGame(c *gin.Context) {
 		selection.EvilPercent = playerEvilPercent(s)
 		selection.DeadPercent = playerDeadPercent(s)
 		selection.Peeked = make(map[string]string)
+		selection.PeekResult = make(map[string]string)
 		selection.Attacked = make(map[string]string)
 		selection.Lynched = make(map[string]string)
 		selection.Killed = make(map[string]string)
@@ -91,11 +93,12 @@ func showGame(c *gin.Context) {
 
 		for _, o := range peekObservations {
 			if o.Subject == s.Num {
-				var resultString = "good"
+				var resultString = "=good"
 				if o.IsEvil {
-					resultString = "evil"
+					resultString = "=evil"
 				}
-				selection.Peeked[strconv.Itoa(o.Round)] = getPlayerByNumber(o.Target).Name + "=" + resultString
+				selection.Peeked[strconv.Itoa(o.Round)] = getPlayerByNumber(o.Target).Name
+				selection.PeekResult[strconv.Itoa(o.Round)] = resultString
 			}
 		}
 

@@ -108,28 +108,29 @@ func FillActionsWithObservations() {
 		if o.Pending {
 			pending = tokenPending
 		}
-		players[o.Subject].Actions += strconv.Itoa(o.Round) + tokenPeek + strconv.Itoa(o.Target) + result + pending + tokenEndAction
+
+		players[getPlayerIndex(getPlayerByNumber(o.Subject))].Actions += strconv.Itoa(o.Round) + tokenPeek + strconv.Itoa(o.Target) + result + pending + tokenEndAction
 	}
 	for _, o := range attackObservations {
 		pending := ""
 		if o.Pending {
 			pending = tokenPending
 		}
-		players[o.Subject].Actions += strconv.Itoa(o.Round) + tokenAttack + strconv.Itoa(o.Target) + pending + tokenEndAction
+		players[getPlayerIndex(getPlayerByNumber(o.Subject))].Actions += strconv.Itoa(o.Round) + tokenAttack + strconv.Itoa(o.Target) + pending + tokenEndAction
 	}
 	for _, o := range lynchObservations {
 		pending := ""
 		if o.Pending {
 			pending = tokenPending
 		}
-		players[o.Subject].Actions += strconv.Itoa(o.Round) + tokenLynch + strconv.Itoa(o.Target) + pending + tokenEndAction
+		players[getPlayerIndex(getPlayerByNumber(o.Subject))].Actions += strconv.Itoa(o.Round) + tokenLynch + strconv.Itoa(o.Target) + pending + tokenEndAction
 	}
 	for _, o := range killObservations {
 		pending := ""
 		if o.Pending {
 			pending = tokenPending
 		}
-		players[o.Subject].Actions += strconv.Itoa(o.Round) + tokenKilled + strconv.Itoa(o.Role) + pending + tokenEndAction
+		players[getPlayerIndex(getPlayerByNumber(o.Subject))].Actions += strconv.Itoa(o.Round) + tokenKilled + strconv.Itoa(o.Role) + pending + tokenEndAction
 	}
 }
 
@@ -241,6 +242,7 @@ func fillPeekObservation(subject int, action string) {
 	observation.Round = int(round)
 	observation.Target = int(target)
 	observation.IsEvil = action[len(action)-1:len(action)] == tokenEvil
+	observation.Pending = pending
 	addPeekObservation(observation)
 }
 
