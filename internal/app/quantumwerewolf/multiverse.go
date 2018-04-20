@@ -345,7 +345,7 @@ func collapseForPeek(peeker int) bool {
 }
 
 func eliminateUniverses(universesEliminated bool, newUniverses []uint64) {
-	if universesEliminated {
+	if universesEliminated && len(newUniverses) > 0 {
 		dirtyMultiverse = true
 		multiverse.universes = make([]uint64, 0, len(newUniverses))
 		for _, v := range newUniverses {
