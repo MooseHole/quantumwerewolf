@@ -323,8 +323,15 @@ func processActions(c *gin.Context) {
 			}
 		}
 
+		remainingPlayers := 0
+		for _, p := range players {
+			if !playerIsDead(p) {
+				remainingPlayers++
+			}
+		}
+
 		for t, n := range lynchTargets {
-			if n > len(players)/2 {
+			if n > remainingPlayers/2 {
 				lynchedPlayer := getPlayerByNumber(t)
 
 				var observation KillObservation
