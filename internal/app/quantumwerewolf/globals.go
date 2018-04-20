@@ -162,7 +162,21 @@ func playerGoodPercent(player Player) int {
 	return 100 - playerEvilPercent(player)
 }
 
+func playerIsDead(player Player) bool {
+	for _, o := range killObservations {
+		if o.Subject == player.Num {
+			return true
+		}
+	}
+
+	return false
+}
+
 func playerDeadPercent(player Player) int {
+	if playerIsDead(player) {
+		return 100
+	}
+
 	attacksOnMe := make([]AttackObservation, 0, len(attackObservations))
 	totalUniverses := 0
 	totalDeaths := 0

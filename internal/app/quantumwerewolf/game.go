@@ -328,12 +328,33 @@ func processActions(c *gin.Context) {
 				lynchedPlayer := getPlayerByNumber(t)
 
 				var observation KillObservation
-				observation.Pending = true
+				observation.Pending = false
 				observation.Round = game.RoundNum
 				observation.Subject = lynchedPlayer.Num
 				observation.Role = collapseToFixedRole(lynchedPlayer.Num)
 				addKillObservation(observation)
 				break
+			}
+		}
+
+		// Take all observations out of pending
+		CommitObservations()
+
+		UpdateRoleTotals()
+		collapseAll()
+
+		for _, p := range players {
+			if !p.Role.IsFixed {
+				deadPercent := playerDeadPercent(p)
+				if deadPercent == 100 {
+					var observation KillObservation
+					observation.Pending = true
+					observation.Round = game.RoundNum
+					observation.Subject = p.Num
+					observation.Role = collapseToFixedRole(p.Num)
+					observation.Pending = false
+					addKillObservation(observation)
+				}
 			}
 		}
 
@@ -346,8 +367,6 @@ func processActions(c *gin.Context) {
 			game.RoundNight = true
 			nightBoolString = "TRUE"
 		}
-
-		CommitObservations()
 
 		var dbStatement = "UPDATE game SET "
 		dbStatement += "round=" + strconv.Itoa(game.RoundNum)

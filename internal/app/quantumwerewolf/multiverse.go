@@ -7,7 +7,6 @@ import (
 	"math/rand"
 	"quantumwerewolf/pkg/quantumutilities"
 	"strconv"
-	"strings"
 )
 
 var dirtyMultiverse bool
@@ -63,20 +62,8 @@ func CreateMultiverse() {
 }
 
 func updateFixedRoles() {
-	for _, p := range players {
-		actionStrings := strings.Split(p.Actions, tokenEndAction)
-		for _, a := range actionStrings {
-			killedIndex := strings.Index(a, tokenKilled)
-			if killedIndex >= 0 {
-				fixedRoleIDString := a[killedIndex+1:]
-				fixedRoleID, err := strconv.ParseInt(fixedRoleIDString, 10, 64)
-				if err == nil {
-					collapseForFixedRole(p.Num, int(fixedRoleID))
-				} else {
-					log.Printf("updateFixedRoles had error when parsing role id: %v", err)
-				}
-			}
-		}
+	for _, o := range killObservations {
+		collapseForFixedRole(o.Subject, o.Role)
 	}
 }
 
@@ -91,7 +78,7 @@ func UpdateRoleTotals() {
 
 	for _, p := range players {
 		for j := range p.Role.Totals {
-			p.Role.Totals[j] = 0
+			players[getPlayerIndex(p)].Role.Totals[j] = 0
 		}
 	}
 
@@ -101,7 +88,7 @@ func UpdateRoleTotals() {
 		copy(universeRoleIDs, multiverse.originalAssignments)
 		universeRoleIDs = quantumutilities.Kthperm(universeRoleIDs, v)
 		for i, uv := range universeRoleIDs {
-			getPlayerByNumber(i).Role.Totals[uv]++
+			players[getPlayerIndex(getPlayerByNumber(i))].Role.Totals[uv]++
 		}
 	}
 
@@ -115,8 +102,8 @@ func UpdateRoleTotals() {
 			}
 		}
 		if numberOfPossibleRoles == 1 {
-			p.Role.IsFixed = true
-			p.Role.Fixed = fixedRole
+			players[getPlayerIndex(p)].Role.IsFixed = true
+			players[getPlayerIndex(p)].Role.Fixed = fixedRole
 		}
 	}
 
@@ -158,6 +145,7 @@ func getFixedRole(playerNumber int) int {
 }
 
 func collapseAll() {
+	dirtyMultiverse = true
 	UpdateRoleTotals()
 	anyEliminations := false
 	for _, p := range players {
@@ -344,8 +332,6 @@ func collapseForAttack(attacker int) bool {
 			universesEliminated = true
 		}
 	}
-
-	// TODO add a killed observation if someone is dead in all universes
 
 	universesEliminated = eliminateUniverses(universesEliminated, newUniverses)
 	return universesEliminated

@@ -198,22 +198,14 @@ func addLynchObservation(newO LynchObservation) {
 }
 
 func addKillObservation(newO KillObservation) {
-	temp := make([]KillObservation, 0, len(killObservations)+1)
-	entryReplaced := false
+	alreadyKilled := false
 	for _, o := range killObservations {
-		if o.Subject == newO.Subject && o.Round == newO.Round {
-			entryReplaced = true
-			temp = append(temp, newO)
-		} else {
-			temp = append(temp, o)
+		if o.Subject == newO.Subject {
+			alreadyKilled = true
 		}
 	}
-	if !entryReplaced {
-		temp = append(temp, newO)
-	}
-	killObservations = nil
-	for _, o := range temp {
-		killObservations = append(killObservations, o)
+	if !alreadyKilled {
+		killObservations = append(killObservations, newO)
 	}
 }
 
