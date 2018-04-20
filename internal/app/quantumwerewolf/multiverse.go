@@ -276,6 +276,24 @@ func AttackFriend(universe uint64, attacker int, target int) bool {
 	return attackedFriend
 }
 
+// PeekOk returns false if a player is a seer and gets an untrue result
+func PeekOk(universe uint64, peeker int) bool {
+	universeLength := len(multiverse.originalAssignments)
+	evaluationUniverse := make([]int, universeLength)
+	copy(evaluationUniverse, multiverse.originalAssignments)
+
+	FillObservations()
+	for _, peek := range peekObservations {
+		if roleTypes[evaluationUniverse[peeker]].CanPeek {
+			if roleTypes[evaluationUniverse[peek.Target]].Evil != peek.IsEvil {
+				return false
+			}
+		}
+	}
+
+	return true
+}
+
 // AttackOk returns false if a player is the dominant attacker and attacks a teammate
 func AttackOk(universe uint64, attacker int) bool {
 	universeLength := len(multiverse.originalAssignments)
@@ -311,52 +329,11 @@ func collapseForAttack(attacker int) bool {
 
 // collapseForPeek should only be called if role is fixed to peeker
 func collapseForPeek(peeker int) bool {
-	universeLength := len(multiverse.originalAssignments)
-	evaluationUniverse := make([]int, universeLength)
 	newUniverses := make([]uint64, 0, len(multiverse.universes))
 	universesEliminated := false
 
-	type PeekAction struct {
-		Target int
-		IsEvil bool
-	}
-
-	peekActions := make([]PeekAction, 0, len(players))
-	actionStrings := strings.Split(getPlayerByNumber(peeker).Actions, tokenEndAction)
-	for _, a := range actionStrings {
-		peekIndex := strings.Index(a, tokenPeek)
-		if peekIndex < 0 {
-			// This is not a peek action
-			continue
-		}
-		peekTarget := a[peekIndex : len(a)-1]
-		peekResult := a[len(a)-1 : len(a)]
-
-		peekAction := PeekAction{}
-		peekAction.Target = getPlayerByName(peekTarget).Num
-		peekAction.IsEvil = peekResult == tokenEvil
-		peekActions = append(peekActions, peekAction)
-	}
-
 	for _, v := range multiverse.universes {
-		copy(evaluationUniverse, multiverse.originalAssignments)
-		evaluationUniverse = quantumutilities.Kthperm(evaluationUniverse, v)
-
-		peekOk := true
-		if roleTypes[evaluationUniverse[peeker]].CanPeek {
-			peekOk = false
-			for _, a := range peekActions {
-				targetIsEvil := roleTypes[evaluationUniverse[a.Target]].Evil
-
-				// Observation matches this universe's reality
-				if a.IsEvil == targetIsEvil {
-					peekOk = true
-					break
-				}
-			}
-		}
-
-		if peekOk {
+		if PeekOk(v, peeker) {
 			newUniverses = append(newUniverses, v)
 		} else {
 			universesEliminated = true
