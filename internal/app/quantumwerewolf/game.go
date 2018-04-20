@@ -6,7 +6,6 @@ import (
 	"quantumwerewolf/pkg/quantumutilities"
 	"sort"
 	"strconv"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -317,17 +316,10 @@ func processActions(c *gin.Context) {
 	}
 
 	if advanceRound {
-		rebuildGame(c, int(gameIDNum))
-		lynchSubstring := strconv.Itoa(game.RoundNum) + tokenLynch
-		lynchSubstringLength := len(lynchSubstring)
 		var lynchTargets = make(map[int]int)
-		for _, p := range players {
-			actionStrings := strings.Split(p.Actions, tokenEndAction)
-			for _, a := range actionStrings {
-				if len(a) >= lynchSubstringLength && a[0:lynchSubstringLength] == lynchSubstring {
-					lynchTarget, _ := strconv.ParseInt(a[lynchSubstringLength:], 10, 32)
-					lynchTargets[int(lynchTarget)]++
-				}
+		for _, o := range lynchObservations {
+			if game.RoundNum == o.Round {
+				lynchTargets[o.Target]++
 			}
 		}
 
