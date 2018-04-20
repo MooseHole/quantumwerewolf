@@ -55,10 +55,6 @@ func CreateMultiverse() {
 	multiverse.universes = quantumutilities.PermUint64Trunc(multiverseRandom, possibleUniverses, 100000)
 	UpdateRoleTotals()
 	collapseAll()
-
-	for _, v := range multiverse.universes {
-		log.Printf(getUniverseString(v))
-	}
 }
 
 func updateFixedRoles() {
@@ -111,8 +107,7 @@ func UpdateRoleTotals() {
 }
 
 func randomUniverse() uint64 {
-	universeNumber := uint64(rand.Int63n(int64(len(multiverse.universes))))
-	getUniverseString(universeNumber)
+	universeNumber := multiverse.universes[uint64(rand.Int63n(int64(len(multiverse.universes))))]
 	return universeNumber
 }
 
