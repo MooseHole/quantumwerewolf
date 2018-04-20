@@ -297,18 +297,6 @@ func collapseForAttack(attacker int) bool {
 	newUniverses := make([]uint64, 0, len(multiverse.universes))
 	universesEliminated := false
 
-	attackTargets := make([]int, 0, len(players))
-	actionStrings := strings.Split(getPlayerByNumber(attacker).Actions, tokenEndAction)
-	for _, a := range actionStrings {
-		attackIndex := strings.Index(a, tokenAttack)
-		if attackIndex < 0 {
-			// This is not an attack action
-			continue
-		}
-		attackTarget := a[attackIndex:len(a)]
-		attackTargets = append(attackTargets, getPlayerByName(attackTarget).Num)
-	}
-
 	for _, v := range multiverse.universes {
 		if AttackOk(v, attacker) {
 			newUniverses = append(newUniverses, v)
