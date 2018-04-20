@@ -178,10 +178,9 @@ func collapseForFixedRole(playerNumber int, fixedRoleID int) bool {
 		}
 	}
 
-	anyEliminations := universesEliminated
-	eliminateUniverses(universesEliminated, newUniverses)
+	universesEliminated = eliminateUniverses(universesEliminated, newUniverses)
 
-	return anyEliminations
+	return universesEliminated
 }
 
 // AttackTarget returns true if the attacker successfully completed an attack on this target in the given universe
@@ -328,7 +327,7 @@ func collapseForAttack(attacker int) bool {
 
 	// TODO add a killed observation if someone is dead in all universes
 
-	eliminateUniverses(universesEliminated, newUniverses)
+	universesEliminated = eliminateUniverses(universesEliminated, newUniverses)
 	return universesEliminated
 }
 
@@ -350,18 +349,22 @@ func collapseForPeek(peeker int) bool {
 		}
 	}
 
-	eliminateUniverses(universesEliminated, newUniverses)
+	universesEliminated = eliminateUniverses(universesEliminated, newUniverses)
 	return universesEliminated
 }
 
-func eliminateUniverses(universesEliminated bool, newUniverses []uint64) {
+func eliminateUniverses(universesEliminated bool, newUniverses []uint64) bool {
 	if universesEliminated && len(newUniverses) > 0 {
 		dirtyMultiverse = true
 		multiverse.universes = make([]uint64, 0, len(newUniverses))
 		for _, v := range newUniverses {
 			multiverse.universes = append(multiverse.universes, v)
 		}
+
+		return true
 	}
+
+	return false
 }
 
 func collapseToFixedRole(playerNumber int) int {
