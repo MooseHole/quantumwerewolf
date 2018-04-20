@@ -136,7 +136,15 @@ func playerEvilPercent(player Player) int {
 		}
 	}
 
-	return (amountEvil * 100) / len(multiverse.universes)
+	totalUniverses := len(multiverse.universes)
+	returnPercent := (amountEvil * 100) / totalUniverses
+	if returnPercent >= 100 && amountEvil < totalUniverses {
+		returnPercent = 99
+	}
+	if returnPercent <= 0 && amountEvil > 0 {
+		returnPercent = 1
+	}
+	return returnPercent
 }
 
 func playerGoodPercent(player Player) int {
@@ -163,5 +171,13 @@ func playerDeadPercent(player Player) int {
 			}
 		}
 	}
-	return (totalDeaths * 100) / totalUniverses
+
+	returnPercent := (totalDeaths * 100) / totalUniverses
+	if returnPercent >= 100 && totalDeaths < totalUniverses {
+		returnPercent = 99
+	}
+	if returnPercent <= 0 && totalDeaths > 0 {
+		returnPercent = 1
+	}
+	return returnPercent
 }

@@ -154,6 +154,8 @@ func collapseAll() {
 		}
 	}
 
+	anyEliminations = anyEliminations || collapseForPriorDeaths()
+
 	if anyEliminations {
 		collapseAll()
 	}
@@ -312,7 +314,6 @@ func AttackOk(universe uint64, attacker int) bool {
 	return true
 }
 
-// collapseForAttack should only be called if role is fixed to attacker
 func collapseForAttack(attacker int) bool {
 	newUniverses := make([]uint64, 0, len(multiverse.universes))
 	universesEliminated := false
@@ -325,11 +326,18 @@ func collapseForAttack(attacker int) bool {
 		}
 	}
 
+	// TODO add a killed observation if someone is dead in all universes
+
 	eliminateUniverses(universesEliminated, newUniverses)
 	return universesEliminated
 }
 
-// collapseForPeek should only be called if role is fixed to peeker
+// collapseForPriorDeaths eliminates universes where a lynchee was attacked befoe
+func collapseForPriorDeaths() bool {
+	// TODO fill this in
+	return false
+}
+
 func collapseForPeek(peeker int) bool {
 	newUniverses := make([]uint64, 0, len(multiverse.universes))
 	universesEliminated := false
