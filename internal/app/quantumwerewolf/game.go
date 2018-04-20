@@ -295,7 +295,7 @@ func processActions(c *gin.Context) {
 			observation.Round = game.RoundNum
 			observation.Subject = p.Num
 			observation.Target = getPlayerByName(peekSelection).Num
-			observation.IsEvil = Peek(p.Num, getPlayerByName(peekSelection).Num)
+			observation.IsEvil = false // Determined at commit time
 			addPeekObservation(observation)
 		}
 		if len(lynchSelection) > 0 {

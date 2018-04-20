@@ -375,11 +375,11 @@ func collapseToFixedRole(playerNumber int) int {
 }
 
 // Peek returns true if the playernumber is evil
-func Peek(potentialSeer int, target int) bool {
+func Peek(peeker int, target int) bool {
 	UpdateRoleTotals()
 
-	if getPlayerByNumber(potentialSeer).Role.Totals[seer.ID] == 0 {
-		log.Printf("Attempted to peek with player %d but can not peek", potentialSeer)
+	if playerCanPeek(getPlayerByNumber(peeker)) {
+		log.Printf("Attempted to peek with player %d but can not peek", peeker)
 	}
 
 	universeLength := len(multiverse.originalAssignments)
@@ -388,7 +388,7 @@ func Peek(potentialSeer int, target int) bool {
 	for true {
 		copy(evaluationUniverse, multiverse.originalAssignments)
 		evaluationUniverse = quantumutilities.Kthperm(evaluationUniverse, randomUniverse())
-		if evaluationUniverse[potentialSeer] == seer.ID {
+		if roleTypes[evaluationUniverse[peeker]].CanPeek {
 			if roleTypes[evaluationUniverse[target]].Evil {
 				return true
 			}
