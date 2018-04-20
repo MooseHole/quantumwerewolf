@@ -31,7 +31,7 @@ func showGame(c *gin.Context) {
 	FillObservations()
 	actionMessages := ""
 	for _, o := range peekObservations {
-		if o.Round == game.RoundNum-1 {
+		if !o.Pending && o.Round == game.RoundNum-1 {
 			resultString := "good"
 			if o.IsEvil {
 				resultString = "evil"
@@ -40,17 +40,17 @@ func showGame(c *gin.Context) {
 		}
 	}
 	for _, o := range attackObservations {
-		if o.Round == game.RoundNum-1 {
+		if !o.Pending && o.Round == game.RoundNum-1 {
 			actionMessages += fmt.Sprintf("%s attacked %s.<br>", getPlayerByNumber(o.Subject).Name, getPlayerByNumber(o.Target).Name)
 		}
 	}
 	for _, o := range lynchObservations {
-		if o.Round == game.RoundNum {
+		if !o.Pending && o.Round == game.RoundNum {
 			actionMessages += fmt.Sprintf("%s voted to lynch %s.<br>", getPlayerByNumber(o.Subject).Name, getPlayerByNumber(o.Target).Name)
 		}
 	}
 	for _, o := range killObservations {
-		if o.Round == game.RoundNum || (o.Round == game.RoundNum-1 && !game.RoundNight) {
+		if !o.Pending && o.Round == game.RoundNum || (o.Round == game.RoundNum-1 && !game.RoundNight) {
 			actionMessages += fmt.Sprintf("%s died and was a %s.<br>", getPlayerByNumber(o.Subject).Name, roleTypes[o.Role].Name)
 		}
 	}
@@ -127,7 +127,7 @@ func showGame(c *gin.Context) {
 
 				// Don't add actions for dead targets
 				for _, o := range killObservations {
-					if o.Subject == t.Num {
+					if !o.Pending && o.Subject == t.Num {
 						skipTarget = true
 						break
 					}
@@ -145,7 +145,7 @@ func showGame(c *gin.Context) {
 				if playerCanPeek(s) {
 					hasPeeked := false
 					for _, o := range peekObservations {
-						if o.Subject == s.Num && o.Target == t.Num {
+						if !o.Pending && o.Subject == s.Num && o.Target == t.Num {
 							hasPeeked = true
 							break
 						}
@@ -158,7 +158,7 @@ func showGame(c *gin.Context) {
 				if playerCanAttack(s) {
 					hasAttacked := false
 					for _, o := range attackObservations {
-						if o.Subject == s.Num && o.Target == t.Num {
+						if !o.Pending && o.Subject == s.Num && o.Target == t.Num {
 							hasAttacked = true
 							break
 						}
@@ -279,19 +279,30 @@ func processActions(c *gin.Context) {
 		var peekSelection = c.Request.FormValue(p.Name + "Peek")
 		var lynchSelection = c.Request.FormValue(p.Name + "Lynch")
 		if len(attackSelection) > 0 {
-			p.Actions += strconv.Itoa(game.RoundNum) + tokenAttack + strconv.Itoa(getPlayerByName(attackSelection).Num) + tokenEndAction
+			var observation AttackObservation
+			observation.Pending = true
+			observation.Round = game.RoundNum
+			observation.Subject = p.Num
+			observation.Target = getPlayerByName(attackSelection).Num
+			addAttackObservation(observation)
 		}
 		if len(peekSelection) > 0 {
-			p.Actions += strconv.Itoa(game.RoundNum) + tokenPeek + strconv.Itoa(getPlayerByName(peekSelection).Num) + Peek(p.Num, getPlayerByName(peekSelection).Num) + tokenEndAction
+			var observation PeekObservation
+			observation.Pending = true
+			observation.Round = game.RoundNum
+			observation.Subject = p.Num
+			observation.Target = getPlayerByName(peekSelection).Num
+			observation.IsEvil = Peek(p.Num, getPlayerByName(peekSelection).Num)
+			addPeekObservation(observation)
 		}
 		if len(lynchSelection) > 0 {
-			p.Actions += strconv.Itoa(game.RoundNum) + tokenLynch + strconv.Itoa(getPlayerByName(lynchSelection).Num) + tokenEndAction
+			var observation LynchObservation
+			observation.Pending = true
+			observation.Round = game.RoundNum
+			observation.Subject = p.Num
+			observation.Target = getPlayerByName(lynchSelection).Num
+			addLynchObservation(observation)
 		}
-		var dbStatement = "UPDATE players SET "
-		dbStatement += "actions = "
-		dbStatement += "'" + p.Actions + "'"
-		dbStatement += " WHERE num=" + strconv.Itoa(p.Num) + " AND gameId=" + gameID
-		quantumutilities.DbExec(c, db, dbStatement)
 	}
 
 	var advance = c.Request.Form["advance"]
@@ -321,14 +332,12 @@ func processActions(c *gin.Context) {
 			if n > len(players)/2 {
 				lynchedPlayer := getPlayerByNumber(t)
 
-				fixedRole := collapseToFixedRole(lynchedPlayer.Num)
-
-				var dbStatement = "UPDATE players SET "
-				dbStatement += "actions = "
-				dbStatement += "'" + lynchedPlayer.Actions + strconv.Itoa(game.RoundNum) + tokenKilled + strconv.Itoa(fixedRole) + tokenEndAction + "'"
-				dbStatement += " WHERE num=" + strconv.Itoa(lynchedPlayer.Num) + " AND gameId=" + gameID
-				quantumutilities.DbExec(c, db, dbStatement)
-
+				var observation KillObservation
+				observation.Pending = true
+				observation.Round = game.RoundNum
+				observation.Subject = lynchedPlayer.Num
+				observation.Role = collapseToFixedRole(lynchedPlayer.Num)
+				addKillObservation(observation)
 				break
 			}
 		}
@@ -343,10 +352,19 @@ func processActions(c *gin.Context) {
 			nightBoolString = "TRUE"
 		}
 
+		CommitObservations()
+
 		var dbStatement = "UPDATE game SET "
 		dbStatement += "round=" + strconv.Itoa(game.RoundNum)
 		dbStatement += ", nightPhase=" + nightBoolString
 		dbStatement += " WHERE id=" + gameID
+		quantumutilities.DbExec(c, db, dbStatement)
+	}
+
+	FillActionsWithObservations()
+	for _, p := range players {
+		var dbStatement = "UPDATE players SET "
+		dbStatement += "actions = '" + p.Actions + "' WHERE num=" + strconv.Itoa(p.Num) + " AND gameId=" + gameID
 		quantumutilities.DbExec(c, db, dbStatement)
 	}
 

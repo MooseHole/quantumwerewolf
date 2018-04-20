@@ -16,6 +16,7 @@ const tokenKilled = "#"
 const tokenEndAction = "|"
 const tokenGood = "^"
 const tokenEvil = "~"
+const tokenPending = "*"
 
 // Game holds a single game's information
 type Game struct {
@@ -157,7 +158,7 @@ func playerDeadPercent(player Player) int {
 	totalDeaths := 0
 
 	for _, o := range attackObservations {
-		if o.Target == player.Num {
+		if !o.Pending && o.Target == player.Num {
 			attacksOnMe = append(attacksOnMe, o)
 		}
 	}

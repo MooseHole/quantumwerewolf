@@ -213,7 +213,7 @@ func AttackTarget(universe uint64, attacker int, target int) bool {
 						wasTeammateDead := false
 						for _, teammateKilled := range killObservations {
 							// If higher ranked was dead when attack was made
-							if teammateKilled.Subject == teammateIndex && teammateKilled.Round > attacker {
+							if !teammateKilled.Pending && teammateKilled.Subject == teammateIndex && teammateKilled.Round > attacker {
 								wasTeammateDead = true
 								break
 							}
@@ -260,7 +260,7 @@ func AttackFriend(universe uint64, attacker int, target int) bool {
 						wasTeammateDead := false
 						for _, teammateKilled := range killObservations {
 							// If higher ranked was dead when attack was made
-							if teammateKilled.Subject == teammateIndex && teammateKilled.Round > attacker {
+							if !teammateKilled.Pending && teammateKilled.Subject == teammateIndex && teammateKilled.Round > attacker {
 								wasTeammateDead = true
 								break
 							}
@@ -287,7 +287,7 @@ func PeekOk(universe uint64, peeker int) bool {
 
 		FillObservations()
 		for _, peek := range peekObservations {
-			if roleTypes[evaluationUniverse[peeker]].CanPeek {
+			if !peek.Pending && roleTypes[evaluationUniverse[peeker]].CanPeek {
 				if roleTypes[evaluationUniverse[peek.Target]].Evil != peek.IsEvil {
 					return false
 				}
@@ -306,7 +306,7 @@ func AttackOk(universe uint64, attacker int) bool {
 
 	FillObservations()
 	for _, attack := range attackObservations {
-		if AttackFriend(universe, attacker, attack.Target) {
+		if !attack.Pending && AttackFriend(universe, attacker, attack.Target) {
 			return false
 		}
 	}
@@ -372,12 +372,11 @@ func collapseToFixedRole(playerNumber int) int {
 }
 
 // Peek returns true if the playernumber is evil
-func Peek(potentialSeer int, target int) string {
+func Peek(potentialSeer int, target int) bool {
 	UpdateRoleTotals()
 
 	if getPlayerByNumber(potentialSeer).Role.Totals[seer.ID] == 0 {
 		log.Printf("Attempted to peek with player %d but can not peek", potentialSeer)
-		return tokenEndAction
 	}
 
 	universeLength := len(multiverse.originalAssignments)
@@ -388,12 +387,12 @@ func Peek(potentialSeer int, target int) string {
 		evaluationUniverse = quantumutilities.Kthperm(evaluationUniverse, randomUniverse())
 		if evaluationUniverse[potentialSeer] == seer.ID {
 			if roleTypes[evaluationUniverse[target]].Evil {
-				return tokenEvil
+				return true
 			}
 
-			return tokenGood
+			return false
 		}
 	}
 
-	return tokenEndAction
+	return false
 }

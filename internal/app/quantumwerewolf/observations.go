@@ -14,6 +14,7 @@ type PeekObservation struct {
 	Round   int
 	Target  int
 	IsEvil  bool
+	Pending bool
 }
 
 // AttackObservation keeps track of who attacked whom
@@ -21,6 +22,7 @@ type AttackObservation struct {
 	Subject int
 	Round   int
 	Target  int
+	Pending bool
 }
 
 // LynchObservation keeps track of who lynched whom
@@ -28,6 +30,7 @@ type LynchObservation struct {
 	Subject int
 	Round   int
 	Target  int
+	Pending bool
 }
 
 // KillObservation keeps track of who was killed
@@ -35,6 +38,7 @@ type KillObservation struct {
 	Subject int
 	Round   int
 	Role    int
+	Pending bool
 }
 
 var peekObservations []PeekObservation
@@ -70,6 +74,145 @@ func FillObservations() {
 	dirtyObservations = false
 }
 
+// CommitObservations removes pending from all observations
+func CommitObservations() {
+	for _, o := range peekObservations {
+		o.Pending = false
+		addPeekObservation(o)
+	}
+	for _, o := range attackObservations {
+		o.Pending = false
+		addAttackObservation(o)
+	}
+	for _, o := range lynchObservations {
+		o.Pending = false
+		addLynchObservation(o)
+	}
+	for _, o := range killObservations {
+		o.Pending = false
+		addKillObservation(o)
+	}
+}
+
+// FillActionsWithObservations takes the existing observations and fills the player Actions with a representation of them
+func FillActionsWithObservations() {
+	for i := range players {
+		players[i].Actions = ""
+	}
+	for _, o := range peekObservations {
+		result := tokenGood
+		if o.IsEvil {
+			result = tokenEvil
+		}
+		pending := ""
+		if o.Pending {
+			pending = tokenPending
+		}
+		players[o.Subject].Actions += strconv.Itoa(o.Round) + tokenPeek + strconv.Itoa(o.Target) + result + pending + tokenEndAction
+	}
+	for _, o := range attackObservations {
+		pending := ""
+		if o.Pending {
+			pending = tokenPending
+		}
+		players[o.Subject].Actions += strconv.Itoa(o.Round) + tokenAttack + strconv.Itoa(o.Target) + pending + tokenEndAction
+	}
+	for _, o := range lynchObservations {
+		pending := ""
+		if o.Pending {
+			pending = tokenPending
+		}
+		players[o.Subject].Actions += strconv.Itoa(o.Round) + tokenLynch + strconv.Itoa(o.Target) + pending + tokenEndAction
+	}
+	for _, o := range killObservations {
+		pending := ""
+		if o.Pending {
+			pending = tokenPending
+		}
+		players[o.Subject].Actions += strconv.Itoa(o.Round) + tokenKilled + strconv.Itoa(o.Role) + pending + tokenEndAction
+	}
+}
+
+func addAttackObservation(newO AttackObservation) {
+	temp := make([]AttackObservation, 0, len(attackObservations)+1)
+	entryReplaced := false
+	for _, o := range attackObservations {
+		if o.Subject == newO.Subject && o.Round == newO.Round {
+			entryReplaced = true
+			temp = append(temp, newO)
+		} else {
+			temp = append(temp, o)
+		}
+	}
+	if !entryReplaced {
+		temp = append(temp, newO)
+	}
+	attackObservations = nil
+	for _, o := range temp {
+		attackObservations = append(attackObservations, o)
+	}
+}
+
+func addPeekObservation(newO PeekObservation) {
+	temp := make([]PeekObservation, 0, len(peekObservations)+1)
+	entryReplaced := false
+	for _, o := range peekObservations {
+		if o.Subject == newO.Subject && o.Round == newO.Round {
+			entryReplaced = true
+			temp = append(temp, newO)
+		} else {
+			temp = append(temp, o)
+		}
+	}
+	if !entryReplaced {
+		temp = append(temp, newO)
+	}
+	peekObservations = nil
+	for _, o := range temp {
+		peekObservations = append(peekObservations, o)
+	}
+}
+
+func addLynchObservation(newO LynchObservation) {
+	temp := make([]LynchObservation, 0, len(lynchObservations)+1)
+	entryReplaced := false
+	for _, o := range lynchObservations {
+		if o.Subject == newO.Subject && o.Round == newO.Round {
+			entryReplaced = true
+			temp = append(temp, newO)
+		} else {
+			temp = append(temp, o)
+		}
+	}
+	if !entryReplaced {
+		temp = append(temp, newO)
+	}
+	lynchObservations = nil
+	for _, o := range temp {
+		lynchObservations = append(lynchObservations, o)
+	}
+}
+
+func addKillObservation(newO KillObservation) {
+	temp := make([]KillObservation, 0, len(killObservations)+1)
+	entryReplaced := false
+	for _, o := range killObservations {
+		if o.Subject == newO.Subject && o.Round == newO.Round {
+			entryReplaced = true
+			temp = append(temp, newO)
+		} else {
+			temp = append(temp, o)
+		}
+	}
+	if !entryReplaced {
+		temp = append(temp, newO)
+	}
+	killObservations = nil
+	for _, o := range temp {
+		killObservations = append(killObservations, o)
+	}
+}
+
 func fillPeekObservation(subject int, action string) {
 	indexOfActionToken := strings.Index(action, tokenPeek)
 
@@ -82,7 +225,13 @@ func fillPeekObservation(subject int, action string) {
 	if err != nil {
 		log.Printf("Error converting round for peek observation: %v", err)
 	}
-	target, err := strconv.ParseInt(action[indexOfActionToken+1:len(action)-1], 10, 64)
+	pending := strings.Contains(action, tokenPending)
+	// Leave a space for the result token
+	endOfTarget := len(action) - 1
+	if pending {
+		endOfTarget--
+	}
+	target, err := strconv.ParseInt(action[indexOfActionToken+1:endOfTarget], 10, 64)
 	if err != nil {
 		log.Printf("Error converting target for peek observation: %v", err)
 	}
@@ -92,7 +241,7 @@ func fillPeekObservation(subject int, action string) {
 	observation.Round = int(round)
 	observation.Target = int(target)
 	observation.IsEvil = action[len(action)-1:len(action)] == tokenEvil
-	peekObservations = append(peekObservations, observation)
+	addPeekObservation(observation)
 }
 
 func fillAttackObservation(subject int, action string) {
@@ -107,7 +256,12 @@ func fillAttackObservation(subject int, action string) {
 	if err != nil {
 		log.Printf("Error converting round for attack observation: %v", err)
 	}
-	target, err := strconv.ParseInt(action[indexOfActionToken+1:len(action)], 10, 64)
+	pending := strings.Contains(action, tokenPending)
+	endOfTarget := len(action)
+	if pending {
+		endOfTarget--
+	}
+	target, err := strconv.ParseInt(action[indexOfActionToken+1:endOfTarget], 10, 64)
 	if err != nil {
 		log.Printf("Error converting target for attack observation: %v", err)
 	}
@@ -116,7 +270,8 @@ func fillAttackObservation(subject int, action string) {
 	observation.Subject = subject
 	observation.Round = int(round)
 	observation.Target = int(target)
-	attackObservations = append(attackObservations, observation)
+	observation.Pending = pending
+	addAttackObservation(observation)
 }
 
 func fillLynchObservation(subject int, action string) {
@@ -131,7 +286,12 @@ func fillLynchObservation(subject int, action string) {
 	if err != nil {
 		log.Printf("Error converting round for lynch observation: %v", err)
 	}
-	target, err := strconv.ParseInt(action[indexOfActionToken+1:len(action)], 10, 64)
+	pending := strings.Contains(action, tokenPending)
+	endOfTarget := len(action)
+	if pending {
+		endOfTarget--
+	}
+	target, err := strconv.ParseInt(action[indexOfActionToken+1:endOfTarget], 10, 64)
 	if err != nil {
 		log.Printf("Error converting target for lynch observation: %v", err)
 	}
@@ -140,7 +300,8 @@ func fillLynchObservation(subject int, action string) {
 	observation.Subject = subject
 	observation.Round = int(round)
 	observation.Target = int(target)
-	lynchObservations = append(lynchObservations, observation)
+	observation.Pending = pending
+	addLynchObservation(observation)
 }
 
 func fillKillObservation(subject int, action string) {
@@ -155,14 +316,20 @@ func fillKillObservation(subject int, action string) {
 	if err != nil {
 		log.Printf("Error converting round for kill observation: %v", err)
 	}
-	role, err := strconv.ParseInt(action[indexOfActionToken+1:len(action)], 10, 64)
+	pending := strings.Contains(action, tokenPending)
+	endOfRole := len(action)
+	if pending {
+		endOfRole--
+	}
+	role, err := strconv.ParseInt(action[indexOfActionToken+1:endOfRole], 10, 64)
 	if err != nil {
-		log.Printf("Error converting role for lynch observation: %v", err)
+		log.Printf("Error converting role for kill observation: %v", err)
 	}
 
 	observation := KillObservation{}
 	observation.Subject = subject
 	observation.Round = int(round)
 	observation.Role = int(role)
-	killObservations = append(killObservations, observation)
+	observation.Pending = pending
+	addKillObservation(observation)
 }
