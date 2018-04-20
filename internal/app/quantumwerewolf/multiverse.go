@@ -278,15 +278,17 @@ func AttackFriend(universe uint64, attacker int, target int) bool {
 
 // PeekOk returns false if a player is a seer and gets an untrue result
 func PeekOk(universe uint64, peeker int) bool {
-	universeLength := len(multiverse.originalAssignments)
-	evaluationUniverse := make([]int, universeLength)
-	copy(evaluationUniverse, multiverse.originalAssignments)
+	if getPlayerByNumber(peeker).Role.IsFixed && roleTypes[getPlayerByNumber(peeker).Role.Fixed].CanPeek {
+		universeLength := len(multiverse.originalAssignments)
+		evaluationUniverse := make([]int, universeLength)
+		copy(evaluationUniverse, multiverse.originalAssignments)
 
-	FillObservations()
-	for _, peek := range peekObservations {
-		if roleTypes[evaluationUniverse[peeker]].CanPeek {
-			if roleTypes[evaluationUniverse[peek.Target]].Evil != peek.IsEvil {
-				return false
+		FillObservations()
+		for _, peek := range peekObservations {
+			if roleTypes[evaluationUniverse[peeker]].CanPeek {
+				if roleTypes[evaluationUniverse[peek.Target]].Evil != peek.IsEvil {
+					return false
+				}
 			}
 		}
 	}
