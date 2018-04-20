@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"math"
 	"math/rand"
 	"quantumwerewolf/pkg/quantumutilities"
 	"strconv"
@@ -233,8 +234,8 @@ func AttackTarget(universe uint64, attacker int, target int) bool {
 	return attackSucceeds
 }
 
-// AttackFriend returns true if the attacker kills a teammate
-func AttackFriend(universe uint64, attacker int, target int) bool {
+// DominantAttacker returns the player that was the dominant attacker on the night in question in the given universe
+func DominantAttacker(universe uint64, night int, evilSide bool) Player {
 	universeLength := len(multiverse.originalAssignments)
 	evaluationUniverse := make([]int, universeLength)
 	evaluationRanks := make([]int, universeLength)
@@ -247,32 +248,63 @@ func AttackFriend(universe uint64, attacker int, target int) bool {
 	evaluationUniverse = quantumutilities.Kthperm(evaluationUniverse, universe)
 	evaluationRanks = quantumutilities.Kthperm(evaluationRanks, universe)
 
+	type Attacker struct {
+		player    Player
+		deadNight int
+		rank      int
+	}
+
+	attackers := make([]Attacker, 0, universeLength)
+	for i, r := range evaluationUniverse {
+		if roleTypes[r].CanAttack && roleTypes[r].Evil == evilSide {
+			var attacker Attacker
+			attacker.player = players[i]
+			attacker.rank = evaluationRanks[getPlayerIndex(attacker.player)]
+			attacker.deadNight = 10000 // Initialize to infinity
+			for _, o := range killObservations {
+				if o.Subject == attacker.player.Num {
+					attacker.deadNight = o.Round
+				}
+			}
+			attackers = append(attackers, attacker)
+		}
+	}
+
+	maxRank := 0
+	for _, a := range attackers {
+		if a.deadNight > night {
+			maxRank = int(math.Max(float64(maxRank), float64(a.rank)))
+		}
+	}
+
+	for _, a := range attackers {
+		if a.rank == maxRank {
+			return a.player
+		}
+	}
+
+	log.Printf("Attempted to get unknown dominant attacker  universe %d  night %d  evilSide %v", universe, night, evilSide)
+	var unknownPlayer Player
+	return unknownPlayer
+}
+
+// AttackFriend returns true if the attacker kills a teammate
+func AttackFriend(universe uint64, attacker int, target int, night int) bool {
+	universeLength := len(multiverse.originalAssignments)
+	evaluationUniverse := make([]int, universeLength)
+	copy(evaluationUniverse, multiverse.originalAssignments)
+	evaluationUniverse = quantumutilities.Kthperm(evaluationUniverse, universe)
+
 	attackedFriend := false
 	if roleTypes[evaluationUniverse[attacker]].CanAttack {
-		// If on same side as target
+		// If on same side as target this is not ok
 		if roleTypes[evaluationUniverse[target]].Evil == roleTypes[evaluationUniverse[attacker]].Evil {
 			attackedFriend = true
 
-			// Check if potential is highest ranked attacker in this universe
-			for teammateIndex := range evaluationUniverse {
-				// If same role ID
-				if evaluationUniverse[teammateIndex] == evaluationUniverse[attacker] {
-					// If someone else has higher rank
-					if evaluationRanks[teammateIndex] < evaluationRanks[attacker] {
-						wasTeammateDead := false
-						for _, teammateKilled := range killObservations {
-							// If higher ranked was dead when attack was made
-							if !teammateKilled.Pending && teammateKilled.Subject == teammateIndex && teammateKilled.Round > attacker {
-								wasTeammateDead = true
-								break
-							}
-						}
-						if !wasTeammateDead {
-							attackedFriend = false
-							break
-						}
-					}
-				}
+			// If the attacker is mot the dominant though
+			dominant := DominantAttacker(universe, night, roleTypes[evaluationUniverse[attacker]].Evil)
+			if dominant.Num != attacker {
+				attackedFriend = false
 			}
 		}
 	}
@@ -308,7 +340,7 @@ func AttackOk(universe uint64, attacker int) bool {
 
 	FillObservations()
 	for _, attack := range attackObservations {
-		if !attack.Pending && AttackFriend(universe, attacker, attack.Target) {
+		if !attack.Pending && AttackFriend(universe, attacker, attack.Target, attack.Round) {
 			return false
 		}
 	}
