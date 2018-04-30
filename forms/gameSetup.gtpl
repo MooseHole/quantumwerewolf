@@ -13,7 +13,8 @@
             <tr><td></td><td id="{{ $key }}Alert"></td><td></td></tr>
             {{ end }}
             <tr><th>Total Players:</th><td><span id="totalPlayers"></span></td></tr>
-            <tr><th>Symmetry (0-100)%:</th><td><input onkeyup="validateKeep()" type="text" name="keep" id="keepPercent"></td></tr>
+            <tr><th>Symmetry:</th><td><input oninput="validateKeep()" onchange="validateKeep()" value=100 type="range" min=0 max=100 name="keep" id="keepPercent"></td><td id="keepPercentage"></td></tr>
+            <tr><td>Universes:</td><td id="TotalUniverses"><input type="text" name="universes" id="universes" readonly></td></tr>
             <tr><td></td><td id="keepAlert"></td><td></td></tr>
             <tr><td></td><td><input type="submit" value="Start Game"></td></tr>
             </table>
@@ -66,6 +67,7 @@
                 keepField.value = rolesList.keepPercent
 
                 keepPercent = rolesList.keepPercent
+                validateKeep()
 
                 {{ range $key, $value := .Roles }}
                 document.getElementById({{ $key }}).innerHTML = {{ $value }}
@@ -123,9 +125,31 @@
                 return test
             }
 
+            function factorial(num) {
+                var rval=1;
+                for (var i = 2; i <= num; i++)
+                    rval = rval * i;
+                return rval;
+            }
+
+            function updateNumUniverses() {
+                var universes = factorial(numPlayers)
+                universes = universes * keepPercent / 100
+                if (universes > 100000) {
+                    universes = 100000
+                }
+                if (universes < 1) {
+                    universes = 1
+                }
+                universes = Math.round(universes)
+                document.getElementById('universes').value = universes
+                document.getElementById('keepPercentage').innerHTML = keepPercent + "%"
+            }
+
             function validateKeep() {
                 keepPercent = TryParseInt(keepField.value, 0)
-                return formatValidation((!isNaN(keepField.value) && keepPercent >= 0 && 100 >= keepPercent), "keepAlert", "keep", "Symmetry percent must be between 0 and 100 inclusive")
+                updateNumUniverses()
+//                return formatValidation((!isNaN(keepField.value) && keepPercent >= 0 && 100 >= keepPercent), "keepAlert", "keep", "Symmetry percent must be between 0 and 100 inclusive")
             }
 
             function validateRoleTotals() {

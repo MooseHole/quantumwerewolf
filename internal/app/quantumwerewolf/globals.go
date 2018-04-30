@@ -44,10 +44,11 @@ type RoleTracker struct {
 
 // GameSetup holds the game settings
 type GameSetup struct {
-	Name  string         `json:"gameName"`
-	Roles map[string]int `json:"roles"`
-	Total int            `json:"totalPlayers"`
-	Keep  int            `json:"keepPercent"`
+	Name      string         `json:"gameName"`
+	Roles     map[string]int `json:"roles"`
+	Total     int            `json:"totalPlayers"`
+	Keep      int            `json:"keepPercent"`
+	Universes uint64         `json:"universes"`
 }
 
 // Multiverse holds the state of all universes

@@ -122,6 +122,13 @@ func setRolesHandler(c *gin.Context) {
 	}
 	gameSetup.Keep = int(k)
 
+	u, err := strconv.ParseInt(c.Request.FormValue("universes")[0:], 10, 64)
+	if err != nil {
+		c.String(http.StatusInternalServerError,
+			fmt.Sprintf("Error converting universes: %v", err))
+	}
+	gameSetup.Universes = uint64(u)
+
 	CreateGame(c)
 	ResetVars()
 	c.HTML(http.StatusOK, "gameList.gtpl", nil)

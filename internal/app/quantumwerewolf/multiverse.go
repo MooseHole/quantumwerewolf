@@ -52,8 +52,7 @@ func CreateMultiverse() {
 
 	randSource := rand.NewSource(game.Seed)
 	multiverseRandom := rand.New(randSource)
-	possibleUniverses := quantumutilities.Factorial(gameSetup.Total)
-	multiverse.universes = quantumutilities.PermUint64Trunc(multiverseRandom, possibleUniverses, 100000)
+	multiverse.universes = quantumutilities.PermUint64Trunc(multiverseRandom, gameSetup.Universes, 100000)
 	UpdateRoleTotals()
 	collapseAll()
 }
