@@ -43,7 +43,7 @@ func showGame(c *gin.Context) {
 			actionMessages += fmt.Sprintf("%s attacked %s.<br>", getPlayerByNumber(o.Subject).Name, getPlayerByNumber(o.Target).Name)
 		}
 	}
-	for _, o := range lynchObservations {
+	for _, o := range voteObservations {
 		if !o.Pending && o.Round == game.RoundNum {
 			actionMessages += fmt.Sprintf("%s voted to lynch %s.<br>", getPlayerByNumber(o.Subject).Name, getPlayerByNumber(o.Target).Name)
 		}
@@ -57,11 +57,11 @@ func showGame(c *gin.Context) {
 	type ActionSelections struct {
 		Peek        map[string]string
 		Attack      map[string]string
-		Lynch       map[string]string
+		Vote       map[string]string
 		Peeked      map[string]string
 		PeekResult  map[string]string
 		Attacked    map[string]string
-		Lynched     map[string]string
+		Voted     map[string]string
 		Killed      map[string]string
 		GoodPercent int
 		EvilPercent int
@@ -80,7 +80,7 @@ func showGame(c *gin.Context) {
 		selection.Peeked = make(map[string]string)
 		selection.PeekResult = make(map[string]string)
 		selection.Attacked = make(map[string]string)
-		selection.Lynched = make(map[string]string)
+		selection.Voted = make(map[string]string)
 		selection.Killed = make(map[string]string)
 
 		for _, o := range killObservations {
@@ -107,20 +107,20 @@ func showGame(c *gin.Context) {
 			}
 		}
 
-		for _, o := range lynchObservations {
+		for _, o := range voteObservations {
 			if o.Subject == s.Num {
-				selection.Lynched[strconv.Itoa(o.Round)] = getPlayerByNumber(o.Target).Name
+				selection.Voted[strconv.Itoa(o.Round)] = getPlayerByNumber(o.Target).Name
 			}
 		}
 
 		// Set up next actions
 		selection.Peek = make(map[string]string)
 		selection.Attack = make(map[string]string)
-		selection.Lynch = make(map[string]string)
+		selection.Vote = make(map[string]string)
 
 		selection.Peek["--NONE--"] = ""
 		selection.Attack["--NONE--"] = ""
-		selection.Lynch["--NONE--"] = ""
+		selection.Vote["--NONE--"] = ""
 
 		// Don't allow dead players to do actions
 		if !playerIsDead {
@@ -170,7 +170,7 @@ func showGame(c *gin.Context) {
 					}
 				}
 
-				selection.Lynch[t.Name] = t.Name
+				selection.Vote[t.Name] = t.Name
 			}
 		}
 
@@ -279,7 +279,7 @@ func processActions(c *gin.Context) {
 	for _, p := range players {
 		var attackSelection = c.Request.FormValue(p.Name + "Attack")
 		var peekSelection = c.Request.FormValue(p.Name + "Peek")
-		var lynchSelection = c.Request.FormValue(p.Name + "Lynch")
+		var voteSelection = c.Request.FormValue(p.Name + "Vote")
 		if len(attackSelection) > 0 {
 			var observation AttackObservation
 			observation.Pending = true
@@ -297,13 +297,13 @@ func processActions(c *gin.Context) {
 			observation.IsEvil = false // Determined at commit time
 			addPeekObservation(observation)
 		}
-		if len(lynchSelection) > 0 {
-			var observation LynchObservation
+		if len(voteSelection) > 0 {
+			var observation VoteObservation
 			observation.Pending = true
 			observation.Round = game.RoundNum
 			observation.Subject = p.Num
-			observation.Target = getPlayerByName(lynchSelection).Num
-			addLynchObservation(observation)
+			observation.Target = getPlayerByName(voteSelection).Num
+			addVoteObservation(observation)
 		}
 	}
 
@@ -316,10 +316,10 @@ func processActions(c *gin.Context) {
 	}
 
 	if advanceRound {
-		var lynchTargets = make(map[int]int)
-		for _, o := range lynchObservations {
+		var voteTargets = make(map[int]int)
+		for _, o := range voteObservations {
 			if game.RoundNum == o.Round {
-				lynchTargets[o.Target]++
+				voteTargets[o.Target]++
 			}
 		}
 
@@ -330,15 +330,15 @@ func processActions(c *gin.Context) {
 			}
 		}
 
-		for t, n := range lynchTargets {
+		for t, n := range voteTargets {
 			if n > remainingPlayers/2 {
-				lynchedPlayer := getPlayerByNumber(t)
+				votedPlayer := getPlayerByNumber(t)
 
 				var observation KillObservation
 				observation.Pending = false
 				observation.Round = game.RoundNum
-				observation.Subject = lynchedPlayer.Num
-				observation.Role = collapseToFixedRole(lynchedPlayer.Num)
+				observation.Subject = votedPlayer.Num
+				observation.Role = collapseToFixedRole(votedPlayer.Num)
 				addKillObservation(observation)
 				break
 			}

@@ -25,8 +25,8 @@ type AttackObservation struct {
 	Pending bool
 }
 
-// LynchObservation keeps track of who lynched whom
-type LynchObservation struct {
+// VoteObservation keeps track of who voted to lynch whom
+type VoteObservation struct {
 	Subject int
 	Round   int
 	Target  int
@@ -43,7 +43,7 @@ type KillObservation struct {
 
 var peekObservations []PeekObservation
 var attackObservations []AttackObservation
-var lynchObservations []LynchObservation
+var voteObservations []VoteObservation
 var killObservations []KillObservation
 
 // ResetObservations destroys all saved observation instances
@@ -51,7 +51,7 @@ func ResetObservations() {
 	dirtyObservations = true
 	peekObservations = nil
 	attackObservations = nil
-	lynchObservations = nil
+	voteObservations = nil
 	killObservations = nil
 }
 
@@ -67,7 +67,7 @@ func FillObservations() {
 		for _, action := range actionStrings {
 			fillPeekObservation(p.Num, action)
 			fillAttackObservation(p.Num, action)
-			fillLynchObservation(p.Num, action)
+			fillVoteObservation(p.Num, action)
 			fillKillObservation(p.Num, action)
 		}
 	}
@@ -87,9 +87,9 @@ func CommitObservations() {
 		o.Pending = false
 		addAttackObservation(o)
 	}
-	for _, o := range lynchObservations {
+	for _, o := range voteObservations {
 		o.Pending = false
-		addLynchObservation(o)
+		addVoteObservation(o)
 	}
 	for _, o := range killObservations {
 		o.Pending = false
@@ -121,12 +121,12 @@ func FillActionsWithObservations() {
 		}
 		players[getPlayerIndex(getPlayerByNumber(o.Subject))].Actions += strconv.Itoa(o.Round) + tokenAttack + strconv.Itoa(o.Target) + pending + tokenEndAction
 	}
-	for _, o := range lynchObservations {
+	for _, o := range voteObservations {
 		pending := ""
 		if o.Pending {
 			pending = tokenPending
 		}
-		players[getPlayerIndex(getPlayerByNumber(o.Subject))].Actions += strconv.Itoa(o.Round) + tokenLynch + strconv.Itoa(o.Target) + pending + tokenEndAction
+		players[getPlayerIndex(getPlayerByNumber(o.Subject))].Actions += strconv.Itoa(o.Round) + tokenVote + strconv.Itoa(o.Target) + pending + tokenEndAction
 	}
 	for _, o := range killObservations {
 		pending := ""
@@ -177,10 +177,10 @@ func addPeekObservation(newO PeekObservation) {
 	}
 }
 
-func addLynchObservation(newO LynchObservation) {
-	temp := make([]LynchObservation, 0, len(lynchObservations)+1)
+func addVoteObservation(newO VoteObservation) {
+	temp := make([]VoteObservation, 0, len(voteObservations)+1)
 	entryReplaced := false
-	for _, o := range lynchObservations {
+	for _, o := range voteObservations {
 		if o.Subject == newO.Subject && o.Round == newO.Round {
 			entryReplaced = true
 			temp = append(temp, newO)
@@ -191,9 +191,9 @@ func addLynchObservation(newO LynchObservation) {
 	if !entryReplaced {
 		temp = append(temp, newO)
 	}
-	lynchObservations = nil
+	voteObservations = nil
 	for _, o := range temp {
-		lynchObservations = append(lynchObservations, o)
+		voteObservations = append(voteObservations, o)
 	}
 }
 
@@ -271,8 +271,8 @@ func fillAttackObservation(subject int, action string) {
 	addAttackObservation(observation)
 }
 
-func fillLynchObservation(subject int, action string) {
-	indexOfActionToken := strings.Index(action, tokenLynch)
+func fillVoteObservation(subject int, action string) {
+	indexOfActionToken := strings.Index(action, tokenVote)
 
 	// If not correct action type
 	if indexOfActionToken < 0 {
@@ -281,7 +281,7 @@ func fillLynchObservation(subject int, action string) {
 
 	round, err := strconv.ParseInt(action[0:indexOfActionToken], 10, 64)
 	if err != nil {
-		log.Printf("Error converting round for lynch observation: %v", err)
+		log.Printf("Error converting round for vote observation: %v", err)
 	}
 	pending := strings.Contains(action, tokenPending)
 	endOfTarget := len(action)
@@ -290,15 +290,15 @@ func fillLynchObservation(subject int, action string) {
 	}
 	target, err := strconv.ParseInt(action[indexOfActionToken+1:endOfTarget], 10, 64)
 	if err != nil {
-		log.Printf("Error converting target for lynch observation: %v", err)
+		log.Printf("Error converting target for vote observation: %v", err)
 	}
 
-	observation := LynchObservation{}
+	observation := VoteObservation{}
 	observation.Subject = subject
 	observation.Round = int(round)
 	observation.Target = int(target)
 	observation.Pending = pending
-	addLynchObservation(observation)
+	addVoteObservation(observation)
 }
 
 func fillKillObservation(subject int, action string) {

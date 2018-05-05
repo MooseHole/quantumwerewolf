@@ -11,8 +11,9 @@ import (
 // 0%Bob|2&Carol|3&Carol|4#| means the player peeked at Bob in round 0, voted to lynch Carol in rounds 2 and 3, and died in round 4
 const tokenAttack = "@"
 const tokenPeek = "%"
-const tokenLynch = "&"
+const tokenVote = "&"
 const tokenKilled = "#"
+const tokenLynched = "`"
 const tokenEndAction = "|"
 const tokenGood = "^"
 const tokenEvil = "~"

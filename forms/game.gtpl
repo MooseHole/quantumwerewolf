@@ -40,7 +40,7 @@
         </tr>
         <tr><th>Player</th>
         {{ range .Rounds }}
-        <th>Lynch</th><th>Attack</th><th>Peek</th><th>Died</th>
+        <th>Vote</th><th>Attack</th><th>Peek</th><th>Died</th>
         {{ end }}
         </tr>
         {{ range $name, $selections := .ActionSubjects }}
@@ -50,15 +50,15 @@
                 {{ $thisAttacked := index $selections.Attacked $roundNum }}
                 {{ $thisPeeked := index $selections.Peeked $roundNum }}
                 {{ $thisPeekResult := index $selections.PeekResult $roundNum }}
-                {{ $thisLynched := index $selections.Lynched $roundNum }}
+                {{ $thisVoted := index $selections.Voted $roundNum }}
                 {{ $thisKilled := index $selections.Killed $roundNum }}
                 
-                {{ if and (not (eq (len $selections.Lynch) 1)) (and (eq $.RoundNum $roundNum) (not $.IsNight)) }}
+                {{ if and (not (eq (len $selections.Vote) 1)) (and (eq $.RoundNum $roundNum) (not $.IsNight)) }}
                 <td>
-                    <select name="{{ $name }}Lynch">
-                    {{ range $name, $value :=  $selections.Lynch }}
+                    <select name="{{ $name }}Vote">
+                    {{ range $name, $value :=  $selections.Vote }}
                         <option value="{{ $value }}"
-                        {{ $thisSelection := index $selections.Lynched $roundNum }}
+                        {{ $thisSelection := index $selections.Voted $roundNum }}
                         {{ if eq $value $thisSelection }}
                         selected
                         {{ end }}
@@ -67,7 +67,7 @@
                     </select>
                 </td>
                 {{ else }}
-                <td>{{ $thisLynched }}</td>
+                <td>{{ $thisVoted }}</td>
                 {{ end }}
                 {{ if and (not (eq (len $selections.Attack) 1)) (and (eq $.RoundNum $roundNum) $.IsNight) }}
                 <td>

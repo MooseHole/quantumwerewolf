@@ -333,10 +333,6 @@ func PeekOk(universe uint64, peeker int) bool {
 
 // AttackOk returns false if a player is the dominant attacker and attacks a teammate
 func AttackOk(universe uint64, attacker int) bool {
-	universeLength := len(multiverse.originalAssignments)
-	evaluationUniverse := make([]int, universeLength)
-	copy(evaluationUniverse, multiverse.originalAssignments)
-
 	FillObservations()
 	for _, attack := range attackObservations {
 		if !attack.Pending && AttackFriend(universe, attacker, attack.Target, attack.Round) {
@@ -363,8 +359,23 @@ func collapseForAttack(attacker int) bool {
 	return universesEliminated
 }
 
-// collapseForPriorDeaths eliminates universes where a lynchee was attacked befoe
+// collapseForPriorDeaths eliminates universes where a lynchee was attacked before
 func collapseForPriorDeaths() bool {
+	/*	FillObservations()
+		for _, attack := range attackObservations {
+			if !attack.Pending && attack.Target ==  {
+				for _, v := range multiverse.universes {
+					universeAttacker := DominantAttacker(v, attack.Round, roleTypes[evaluationUniverse[attack.Subject]].Evil)
+
+				}
+			}
+			func DominantAttacker(universe uint64, night int, evilSide bool) Player {
+
+			 AttackFriend(universe, attacker, attack.Target, attack.Round) {
+				return false
+			}
+		}
+	*/
 	// TODO fill this in
 	return false
 }
