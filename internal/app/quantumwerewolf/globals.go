@@ -13,7 +13,7 @@ const tokenAttack = "@"
 const tokenPeek = "%"
 const tokenVote = "&"
 const tokenKilled = "#"
-const tokenLynched = "`"
+const tokenLynched = "+"
 const tokenEndAction = "|"
 const tokenGood = "^"
 const tokenEvil = "~"
@@ -175,10 +175,19 @@ func playerIsDead(player Player) bool {
 }
 
 func playerDeadPercent(player Player) int {
+	// Dead if marked dead
 	if playerIsDead(player) {
 		return 100
 	}
 
+	// Dead if lynched
+	for _, o := range lynchObservations {
+		if !o.Pending && o.Subject == player.Num {
+			return 100
+		}
+	}
+
+	// Figure out percentage from attacks
 	attacksOnMe := make([]AttackObservation, 0, len(attackObservations))
 	totalUniverses := 0
 	totalDeaths := 0

@@ -361,23 +361,32 @@ func collapseForAttack(attacker int) bool {
 
 // collapseForPriorDeaths eliminates universes where a lynchee was attacked before
 func collapseForPriorDeaths() bool {
-	/*	FillObservations()
-		for _, attack := range attackObservations {
-			if !attack.Pending && attack.Target ==  {
-				for _, v := range multiverse.universes {
-					universeAttacker := DominantAttacker(v, attack.Round, roleTypes[evaluationUniverse[attack.Subject]].Evil)
+	newUniverses := make([]uint64, 0, len(multiverse.universes))
+	universesEliminated := false
 
+	for _, v := range multiverse.universes {
+		eliminate := false
+		for _, lynch := range lynchObservations {
+			for _, kill := range killObservations {
+				if lynch.Subject == kill.Subject && lynch.Round != kill.Round {
+					eliminate = true
+					break
 				}
 			}
-			func DominantAttacker(universe uint64, night int, evilSide bool) Player {
-
-			 AttackFriend(universe, attacker, attack.Target, attack.Round) {
-				return false
+			if eliminate {
+				break
 			}
 		}
-	*/
-	// TODO fill this in
-	return false
+
+		if !eliminate {
+			newUniverses = append(newUniverses, v)
+		} else {
+			universesEliminated = true
+		}
+	}
+
+	universesEliminated = eliminateUniverses(universesEliminated, newUniverses)
+	return universesEliminated
 }
 
 func collapseForPeek(peeker int) bool {

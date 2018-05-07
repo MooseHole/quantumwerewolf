@@ -53,16 +53,22 @@ func showGame(c *gin.Context) {
 			actionMessages += fmt.Sprintf("%s died and was a %s.<br>", getPlayerByNumber(o.Subject).Name, roleTypes[o.Role].Name)
 		}
 	}
+	for _, o := range lynchObservations {
+		if !o.Pending && o.Round == game.RoundNum || (o.Round == game.RoundNum-1 && !game.RoundNight) {
+			actionMessages += fmt.Sprintf("%s got lynched.<br>", getPlayerByNumber(o.Subject).Name)
+		}
+	}
 
 	type ActionSelections struct {
 		Peek        map[string]string
 		Attack      map[string]string
-		Vote       map[string]string
+		Vote        map[string]string
 		Peeked      map[string]string
 		PeekResult  map[string]string
 		Attacked    map[string]string
-		Voted     map[string]string
+		Voted       map[string]string
 		Killed      map[string]string
+		Lynched     map[string]string
 		GoodPercent int
 		EvilPercent int
 		DeadPercent int
@@ -129,6 +135,12 @@ func showGame(c *gin.Context) {
 
 				// Don't add actions for dead targets
 				for _, o := range killObservations {
+					if !o.Pending && o.Subject == t.Num {
+						skipTarget = true
+						break
+					}
+				}
+				for _, o := range lynchObservations {
 					if !o.Pending && o.Subject == t.Num {
 						skipTarget = true
 						break
@@ -334,12 +346,11 @@ func processActions(c *gin.Context) {
 			if n > remainingPlayers/2 {
 				votedPlayer := getPlayerByNumber(t)
 
-				var observation KillObservation
+				var observation LynchObservation
 				observation.Pending = false
 				observation.Round = game.RoundNum
 				observation.Subject = votedPlayer.Num
-				observation.Role = collapseToFixedRole(votedPlayer.Num)
-				addKillObservation(observation)
+				addLynchObservation(observation)
 				break
 			}
 		}
