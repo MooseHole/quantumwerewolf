@@ -5,6 +5,7 @@
     </head>
     <body>
         Game: {{ .Name }}<br>
+        {{ .WinMessage }}<br>
         Remaining Universes: {{ len .Universes }}<br>
         Number of Players: {{ .TotalPlayers }}<br>
         {{ range $name, $value := .Roles }}

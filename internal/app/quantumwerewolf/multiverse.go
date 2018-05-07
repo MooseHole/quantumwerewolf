@@ -70,6 +70,10 @@ func UpdateRoleTotals() {
 		return
 	}
 
+	if len(multiverse.universes) == 0 {
+		return
+	}
+
 	updateFixedRoles()
 
 	for _, p := range players {

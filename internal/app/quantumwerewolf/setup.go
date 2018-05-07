@@ -143,7 +143,7 @@ func CreateGame(c *gin.Context) {
 	dbStatement += ", name text"
 	dbStatement += ", players integer"
 	dbStatement += ", roles bytea"
-	dbStatement += ", keepPercent integer"
+	dbStatement += ", universes integer"
 	dbStatement += ", round integer"
 	dbStatement += ", nightPhase boolean"
 	dbStatement += ", randomSeed integer"
@@ -163,12 +163,12 @@ func CreateGame(c *gin.Context) {
 	quantumutilities.HandleErr(c, err, "Error getting Roles as bytes")
 	roleBytesString := fmt.Sprintf("'\\x%x'", roleBlob)
 	dbStatement = "INSERT INTO game ("
-	dbStatement += "name, players, roles, keepPercent, round, nightPhase, randomSeed"
+	dbStatement += "name, players, roles, universes, round, nightPhase, randomSeed"
 	dbStatement += ") VALUES ("
 	dbStatement += "'" + gameSetup.Name + "'"
 	dbStatement += ", " + strconv.Itoa(gameSetup.Total)
 	dbStatement += ", " + roleBytesString
-	dbStatement += ", " + strconv.Itoa(gameSetup.Keep)
+	dbStatement += ", " + strconv.FormatUint(gameSetup.Universes, 10)
 	dbStatement += ", " + strconv.Itoa(game.RoundNum)
 	dbStatement += ", TRUE"
 	dbStatement += ", " + strconv.Itoa(int(rand.Int31()))

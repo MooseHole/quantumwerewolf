@@ -140,6 +140,10 @@ func playerCanAttack(player Player) bool {
 }
 
 func playerEvilPercent(player Player) int {
+	if len(multiverse.universes) == 0 {
+		return 0
+	}
+
 	UpdateRoleTotals()
 
 	amountEvil := 0
@@ -172,6 +176,64 @@ func playerIsDead(player Player) bool {
 	}
 
 	return false
+}
+
+// First bool is true if a team won
+// Second bool is true if winning team is evil
+func checkWin() (bool, bool) {
+	if len(multiverse.universes) == 0 {
+		return false, false
+	}
+
+	goodPlayers := 0
+	evilPlayers := 0
+	goodMustKillPlayers := 0
+	evilMustKillPlayers := 0
+
+	UpdateRoleTotals()
+
+	for _, p := range players {
+		if !playerIsDead(p) {
+			amountEvil := 0
+			amountGood := 0
+			amountEvilMustKill := 0
+			amountGoodMustKill := 0
+			for k, v := range p.Role.Totals {
+				mustKill := roleTypes[k].EnemyMustKill
+				if roleTypes[k].Evil {
+					amountEvil += v
+					if mustKill {
+						amountGoodMustKill += v
+					}
+				} else {
+					amountGood += v
+					if mustKill {
+						amountEvilMustKill += v
+					}
+				}
+			}
+
+			if amountEvil > 0 && amountGood > 0 {
+				return false, false
+			}
+
+			if amountGood > 0 && amountEvilMustKill > 0 {
+				evilMustKillPlayers++
+			}
+
+			if amountEvil > 0 && amountGoodMustKill > 0 {
+				goodMustKillPlayers++
+			}
+		}
+	}
+
+	if evilMustKillPlayers == 0 && goodPlayers <= evilPlayers {
+		return true, true
+	}
+	if goodMustKillPlayers == 0 && goodPlayers >= evilPlayers {
+		return true, false
+	}
+	return false, false
 }
 
 func playerDeadPercent(player Player) int {

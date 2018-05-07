@@ -7,7 +7,7 @@ type Role struct {
 	CanPeek       bool
 	CanAttack     bool
 	Evil          bool
-	GoodMustKill  bool
+	EnemyMustKill bool
 	DefaultAmount float32
 }
 
@@ -32,7 +32,7 @@ func setupRoles() {
 	villager.CanPeek = false
 	villager.CanAttack = false
 	villager.Evil = false
-	villager.GoodMustKill = false
+	villager.EnemyMustKill = false
 	villager.DefaultAmount = 0
 
 	seer.Name = "Seer"
@@ -40,7 +40,7 @@ func setupRoles() {
 	seer.CanPeek = true
 	seer.CanAttack = false
 	seer.Evil = false
-	seer.GoodMustKill = false
+	seer.EnemyMustKill = false
 	seer.DefaultAmount = 1 // Defaults to 1 of these
 
 	wolf.Name = "Wolf"
@@ -48,7 +48,7 @@ func setupRoles() {
 	wolf.CanPeek = false
 	wolf.CanAttack = true
 	wolf.Evil = true
-	wolf.GoodMustKill = true
+	wolf.EnemyMustKill = true
 	wolf.DefaultAmount = 1.0 / 3.0 // Defaults to 1/3 of total players
 
 	roleTypes = make(map[int]Role)

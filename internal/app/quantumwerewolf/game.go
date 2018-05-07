@@ -199,6 +199,16 @@ func showGame(c *gin.Context) {
 		universes[int(u)] = getUniverseString(u)
 	}
 
+	winner, evilWins := checkWin()
+	winMessage := ""
+	if winner {
+		if evilWins {
+			winMessage = "EVIL WINS!"
+		} else {
+			winMessage = "GOOD WINS!"
+		}
+	}
+
 	c.HTML(http.StatusOK, "game.gtpl", gin.H{
 		"GameID":         game.Number,
 		"Name":           gameSetup.Name,
@@ -213,13 +223,14 @@ func showGame(c *gin.Context) {
 		"PlayersByNum":   playersByNum,
 		"ActionMessages": actionMessages,
 		"ActionSubjects": actionSubjects,
+		"WinMessage":     winMessage,
 	})
 }
 
 func rebuildGame(c *gin.Context, gameID int) {
 	ResetVars()
 
-	gameQuery := "SELECT id, name, players, roles, keepPercent, round, nightPhase, randomSeed FROM game"
+	gameQuery := "SELECT id, name, players, roles, universes, round, nightPhase, randomSeed FROM game"
 	gameQuery += " WHERE id=" + strconv.Itoa(gameID)
 	gameQuery += " LIMIT 1"
 
@@ -230,7 +241,7 @@ func rebuildGame(c *gin.Context, gameID int) {
 
 	if row.Next() {
 		rolesByteArray := make([]byte, 0, 100)
-		err = row.Scan(&game.Number, &gameSetup.Name, &gameSetup.Total, &rolesByteArray, &gameSetup.Keep, &game.RoundNum, &game.RoundNight, &game.Seed)
+		err = row.Scan(&game.Number, &gameSetup.Name, &gameSetup.Total, &rolesByteArray, &gameSetup.Universes, &game.RoundNum, &game.RoundNight, &game.Seed)
 		row.Close()
 
 		if quantumutilities.HandleErr(c, err, "Error scanning game variables ["+gameQuery+"]") {
