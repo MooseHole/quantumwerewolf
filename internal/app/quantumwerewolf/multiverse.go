@@ -154,25 +154,46 @@ func getFixedRole(playerNumber int) int {
 func collapseAll() {
 	dirtyMultiverse = true
 	UpdateRoleTotals()
-	anyEliminations := false
-	for _, p := range players {
-		if p.Role.IsFixed {
-			anyEliminations = collapseForFixedRole(p.Num, p.Role.Fixed)
-		}
+	anyEliminations := true
 
-		if playerCanAttack(p) {
-			anyEliminations = anyEliminations || collapseForAttack(p.Num)
-		}
-
-		if playerCanPeek(p) {
-			anyEliminations = anyEliminations || collapseForPeek(p.Num)
+	for anyEliminations {
+		anyEliminations = false
+		for _, p := range players {
+			if p.Role.IsFixed {
+				if collapseForFixedRole(p.Num, p.Role.Fixed) {
+					anyEliminations = true
+				}
+			}
 		}
 	}
-
-	anyEliminations = anyEliminations || collapseForPriorDeaths()
-
-	if anyEliminations {
-		collapseAll()
+	anyEliminations = true
+	for anyEliminations {
+		anyEliminations = false
+		for _, p := range players {
+			if playerCanAttack(p) {
+				if collapseForAttack(p.Num) {
+					anyEliminations = true
+				}
+			}
+		}
+	}
+	anyEliminations = true
+	for anyEliminations {
+		anyEliminations = false
+		for _, p := range players {
+			if playerCanPeek(p) {
+				if collapseForPeek(p.Num) {
+					anyEliminations = true
+				}
+			}
+		}
+	}
+	anyEliminations = true
+	for anyEliminations {
+		anyEliminations = false
+		if collapseForPriorDeaths() {
+			anyEliminations = true
+		}
 	}
 }
 
@@ -329,10 +350,11 @@ func PeekOk(universe uint64, peeker int) bool {
 		universeLength := len(multiverse.originalAssignments)
 		evaluationUniverse := make([]int, universeLength)
 		copy(evaluationUniverse, multiverse.originalAssignments)
+		evaluationUniverse = quantumutilities.Kthperm(evaluationUniverse, universe)
 
 		FillObservations()
 		for _, peek := range peekObservations {
-			if !peek.Pending && roleTypes[evaluationUniverse[peeker]].CanPeek {
+			if !peek.Pending && peek.Subject == peeker && roleTypes[evaluationUniverse[peeker]].CanPeek {
 				if roleTypes[evaluationUniverse[peek.Target]].Evil != peek.IsEvil {
 					return false
 				}
@@ -428,6 +450,7 @@ func eliminateUniverses(universesEliminated bool, newUniverses []uint64) bool {
 		return true
 	}
 
+	log.Printf("Attempted to remove all universes")
 	return false
 }
 
