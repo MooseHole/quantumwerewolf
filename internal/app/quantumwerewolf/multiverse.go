@@ -7,6 +7,7 @@ import (
 	"math"
 	"math/rand"
 	"quantumwerewolf/pkg/quantumutilities"
+	"sort"
 	"strconv"
 )
 
@@ -44,15 +45,22 @@ func getUniverseString(universe uint64) string {
 func CreateMultiverse() {
 	dirtyMultiverse = true
 	setupRoles()
-	for _, v := range roleTypes {
-		for j := 0; j < gameSetup.Roles[v.Name]; j++ {
-			multiverse.originalAssignments = append(multiverse.originalAssignments, v.ID)
+
+	// Make sure to iterate through roleTypes in the same order each time
+	keys := make([]int, 0)
+	for k := range roleTypes {
+		keys = append(keys, k)
+	}
+	sort.Ints(keys)
+	for _, k := range keys {
+		for j := 0; j < gameSetup.Roles[roleTypes[k].Name]; j++ {
+			multiverse.originalAssignments = append(multiverse.originalAssignments, roleTypes[k].ID)
 		}
 	}
 
 	randSource := rand.NewSource(game.Seed)
-	multiverseRandom := rand.New(randSource)
-	multiverse.universes = quantumutilities.PermUint64Trunc(multiverseRandom, gameSetup.Universes, 100000)
+	multiverse.rando = rand.New(randSource)
+	multiverse.universes = quantumutilities.PermUint64Trunc(multiverse.rando, gameSetup.Universes, 100000)
 	UpdateRoleTotals()
 	collapseAll()
 }
@@ -111,7 +119,7 @@ func UpdateRoleTotals() {
 }
 
 func randomUniverse() uint64 {
-	universeNumber := multiverse.universes[uint64(rand.Int63n(int64(len(multiverse.universes))))]
+	universeNumber := multiverse.universes[uint64(multiverse.rando.Int63n(int64(len(multiverse.universes))))]
 	return universeNumber
 }
 
@@ -131,7 +139,7 @@ func randomPeekUniverse(peeker int) (uint64, error) {
 	if len(temp) < 1 {
 		return 0, errors.New("No valid peek universe found")
 	}
-	return temp[uint64(rand.Int63n(int64(len(temp))))], nil
+	return temp[uint64(multiverse.rando.Int63n(int64(len(temp))))], nil
 }
 
 func getFixedRole(playerNumber int) int {

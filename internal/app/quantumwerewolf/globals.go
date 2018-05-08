@@ -58,6 +58,7 @@ type GameSetup struct {
 type Multiverse struct {
 	universes           []uint64
 	originalAssignments []int
+	rando               *rand.Rand
 }
 
 var multiverse Multiverse
@@ -80,6 +81,7 @@ func ResetVars() {
 	game.Seed = rand.Int63()
 	multiverse.universes = nil
 	multiverse.originalAssignments = nil
+	multiverse.rando = nil
 	ResetObservations()
 }
 
