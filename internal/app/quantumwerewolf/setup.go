@@ -14,7 +14,7 @@ import (
 
 func getPlayerHandler(c *gin.Context) {
 	//Convert the "players" variable to json
-	playerListBytes, err := json.Marshal(players)
+	playerListBytes, err := json.Marshal(Players)
 
 	// If there is an error, print it to the console, and return a server
 	// error response to the user
@@ -28,17 +28,17 @@ func getPlayerHandler(c *gin.Context) {
 }
 
 func getRolesHandler(c *gin.Context) {
-	//Convert the "gameSetup" variable to json
-	roleListBytes, err := json.Marshal(gameSetup)
+	//Convert the "GameSetup" variable to json
+	roleListBytes, err := json.Marshal(GameSetup)
 
 	// If there is an error, print it to the console, and return a server
 	// error response to the user
 	if err != nil {
 		c.String(http.StatusInternalServerError,
-			fmt.Sprintf("Error getting gameSetup: %v", err))
+			fmt.Sprintf("Error getting GameSetup: %v", err))
 		return
 	}
-	// If all goes well, write the JSON list of gameSetup to the response
+	// If all goes well, write the JSON list of GameSetup to the response
 	c.Writer.Write(roleListBytes)
 }
 
@@ -60,8 +60,8 @@ func createPlayerHandler(c *gin.Context) {
 		return
 	}
 
-	gameSetup.Total++
-	if gameSetup.Total > 2 {
+	GameSetup.Total++
+	if GameSetup.Total > 2 {
 		amountAssigned := 0
 		for _, v := range roleTypes {
 			// ID 0 is reserved for Villagers
@@ -71,21 +71,21 @@ func createPlayerHandler(c *gin.Context) {
 				if v.DefaultAmount >= 1 {
 					assign = int(v.DefaultAmount)
 				} else {
-					assign = int(float32(gameSetup.Total) * v.DefaultAmount)
+					assign = int(float32(GameSetup.Total) * v.DefaultAmount)
 				}
-				gameSetup.Roles[v.Name] = assign
+				GameSetup.Roles[v.Name] = assign
 				amountAssigned += assign
 			}
 		}
 
-		gameSetup.Roles[roleTypes[0].Name] = gameSetup.Total - amountAssigned
+		GameSetup.Roles[roleTypes[0].Name] = GameSetup.Total - amountAssigned
 	}
 
 	// Get the information about the player from the form info
 	player.Name = c.Request.Form.Get("playerName")
 
 	// Append our existing list of players with a new entry
-	players = append(players, player)
+	Players = append(Players, player)
 
 	//Finally, we redirect the user to the original HTMl page
 	c.HTML(http.StatusOK, "playerSetup.gtpl", nil)
@@ -95,11 +95,11 @@ func setRolesHandler(c *gin.Context) {
 	setupRoles()
 
 	err := c.Request.ParseForm()
-	if quantumutilities.HandleErr(c, err, "Error setting gameSetup") {
+	if quantumutilities.HandleErr(c, err, "Error setting GameSetup") {
 		return
 	}
 
-	gameSetup.Name = c.Request.FormValue("gameName")
+	GameSetup.Name = c.Request.FormValue("gameName")
 
 	specialRoles := 0
 	for _, v := range roleTypes {
@@ -109,25 +109,25 @@ func setRolesHandler(c *gin.Context) {
 				c.String(http.StatusInternalServerError,
 					fmt.Sprintf("Error converting seers: %v", err))
 			}
-			gameSetup.Roles[v.Name] = int(value)
+			GameSetup.Roles[v.Name] = int(value)
 			specialRoles += int(value)
 		}
 	}
-	gameSetup.Roles[roleTypes[0].Name] = gameSetup.Total - specialRoles
+	GameSetup.Roles[roleTypes[0].Name] = GameSetup.Total - specialRoles
 
 	k, err := strconv.ParseInt(c.Request.FormValue("keep")[0:], 10, 64)
 	if err != nil {
 		c.String(http.StatusInternalServerError,
 			fmt.Sprintf("Error converting keep: %v", err))
 	}
-	gameSetup.Keep = int(k)
+	GameSetup.Keep = int(k)
 
 	u, err := strconv.ParseInt(c.Request.FormValue("universes")[0:], 10, 64)
 	if err != nil {
 		c.String(http.StatusInternalServerError,
 			fmt.Sprintf("Error converting universes: %v", err))
 	}
-	gameSetup.Universes = uint64(u)
+	GameSetup.Universes = uint64(u)
 
 	CreateGame(c)
 	ResetVars()
@@ -159,26 +159,26 @@ func CreateGame(c *gin.Context) {
 	dbStatement += ")"
 	quantumutilities.DbExec(c, db, dbStatement)
 
-	roleBlob, err := quantumutilities.GetBytes(gameSetup.Roles)
+	roleBlob, err := quantumutilities.GetBytes(GameSetup.Roles)
 	quantumutilities.HandleErr(c, err, "Error getting Roles as bytes")
 	roleBytesString := fmt.Sprintf("'\\x%x'", roleBlob)
 	dbStatement = "INSERT INTO game ("
 	dbStatement += "name, players, roles, universes, round, nightPhase, randomSeed"
 	dbStatement += ") VALUES ("
-	dbStatement += "'" + gameSetup.Name + "'"
-	dbStatement += ", " + strconv.Itoa(gameSetup.Total)
+	dbStatement += "'" + GameSetup.Name + "'"
+	dbStatement += ", " + strconv.Itoa(GameSetup.Total)
 	dbStatement += ", " + roleBytesString
-	dbStatement += ", " + strconv.FormatUint(gameSetup.Universes, 10)
-	dbStatement += ", " + strconv.Itoa(game.RoundNum)
+	dbStatement += ", " + strconv.FormatUint(GameSetup.Universes, 10)
+	dbStatement += ", " + strconv.Itoa(Game.RoundNum)
 	dbStatement += ", TRUE"
 	dbStatement += ", " + strconv.Itoa(int(rand.Int31()))
 	dbStatement += ") RETURNING id"
 	var gameID = quantumutilities.DbExecReturn(c, db, dbStatement)
 
 	// Assign random player numbers
-	perm := rand.Perm(len(players))
-	log.Printf("len(players) %d", len(players))
-	for i, p := range players {
+	perm := rand.Perm(len(Players))
+	log.Printf("len(players) %d", len(Players))
+	for i, p := range Players {
 		dbStatement = "INSERT INTO players ("
 		dbStatement += "name, num, gameid, actions"
 		dbStatement += ") VALUES ("

@@ -11,26 +11,26 @@ import (
 )
 
 func showGame(c *gin.Context) {
-	playersByName := make([]Player, gameSetup.Total, gameSetup.Total)
-	playersByNum := make([]Player, gameSetup.Total, gameSetup.Total)
-	for i, v := range players {
+	playersByName := make([]Player, GameSetup.Total, GameSetup.Total)
+	playersByNum := make([]Player, GameSetup.Total, GameSetup.Total)
+	for i, v := range Players {
 		playersByName[i] = v
 		playersByNum[i] = v
 	}
 	sort.Slice(playersByName, func(i, j int) bool { return playersByName[i].Name < playersByNum[j].Name })
 	sort.Slice(playersByNum, func(i, j int) bool { return playersByNum[i].Num < playersByNum[j].Num })
 	var roundString = ""
-	if game.RoundNight {
+	if Game.RoundNight {
 		roundString += "Night "
 	} else {
 		roundString += "Day "
 	}
-	roundString += strconv.Itoa(game.RoundNum)
+	roundString += strconv.Itoa(Game.RoundNum)
 
 	FillObservations()
 	actionMessages := ""
 	for _, o := range peekObservations {
-		if !o.Pending && o.Round == game.RoundNum-1 {
+		if !o.Pending && o.Round == Game.RoundNum-1 {
 			resultString := "good"
 			if o.IsEvil {
 				resultString = "evil"
@@ -39,22 +39,22 @@ func showGame(c *gin.Context) {
 		}
 	}
 	for _, o := range attackObservations {
-		if !o.Pending && o.Round == game.RoundNum-1 {
+		if !o.Pending && o.Round == Game.RoundNum-1 {
 			actionMessages += fmt.Sprintf("%s attacked %s.<br>", getPlayerByNumber(o.Subject).Name, getPlayerByNumber(o.Target).Name)
 		}
 	}
 	for _, o := range voteObservations {
-		if !o.Pending && o.Round == game.RoundNum {
+		if !o.Pending && o.Round == Game.RoundNum {
 			actionMessages += fmt.Sprintf("%s voted to lynch %s.<br>", getPlayerByNumber(o.Subject).Name, getPlayerByNumber(o.Target).Name)
 		}
 	}
 	for _, o := range killObservations {
-		if !o.Pending && o.Round == game.RoundNum || (o.Round == game.RoundNum-1 && !game.RoundNight) {
+		if !o.Pending && o.Round == Game.RoundNum || (o.Round == Game.RoundNum-1 && !Game.RoundNight) {
 			actionMessages += fmt.Sprintf("%s died and was a %s.<br>", getPlayerByNumber(o.Subject).Name, roleTypes[o.Role].Name)
 		}
 	}
 	for _, o := range lynchObservations {
-		if !o.Pending && o.Round == game.RoundNum || (o.Round == game.RoundNum-1 && !game.RoundNight) {
+		if !o.Pending && o.Round == Game.RoundNum || (o.Round == Game.RoundNum-1 && !Game.RoundNight) {
 			actionMessages += fmt.Sprintf("%s got lynched.<br>", getPlayerByNumber(o.Subject).Name)
 		}
 	}
@@ -76,7 +76,7 @@ func showGame(c *gin.Context) {
 	actionSubjects := make(map[string]ActionSelections)
 	FillObservations()
 
-	for _, s := range players {
+	for _, s := range Players {
 		var selection ActionSelections
 		var playerIsDead = false
 
@@ -130,7 +130,7 @@ func showGame(c *gin.Context) {
 
 		// Don't allow dead players to do actions
 		if !playerIsDead {
-			for _, t := range players {
+			for _, t := range Players {
 				skipTarget := false
 
 				// Don't add actions for dead targets
@@ -189,13 +189,13 @@ func showGame(c *gin.Context) {
 		actionSubjects[s.Name] = selection
 	}
 
-	rounds := make([]string, game.RoundNum+1)
+	rounds := make([]string, Game.RoundNum+1)
 	for i := range rounds {
 		rounds[i] = strconv.Itoa(i)
 	}
 
 	universes := make(map[int]string)
-	for _, u := range multiverse.universes {
+	for _, u := range Multiverse.Universes {
 		universes[int(u)] = getUniverseString(u)
 	}
 
@@ -210,15 +210,15 @@ func showGame(c *gin.Context) {
 	}
 
 	c.HTML(http.StatusOK, "game.gtpl", gin.H{
-		"GameID":         game.Number,
-		"Name":           gameSetup.Name,
-		"TotalPlayers":   gameSetup.Total,
-		"Roles":          gameSetup.Roles,
-		"RoundNum":       strconv.Itoa(game.RoundNum),
+		"GameID":         Game.Number,
+		"Name":           GameSetup.Name,
+		"TotalPlayers":   GameSetup.Total,
+		"Roles":          GameSetup.Roles,
+		"RoundNum":       strconv.Itoa(Game.RoundNum),
 		"Round":          roundString,
 		"Rounds":         rounds,
 		"Universes":      universes,
-		"IsNight":        game.RoundNight,
+		"IsNight":        Game.RoundNight,
 		"PlayersByName":  playersByName,
 		"PlayersByNum":   playersByNum,
 		"ActionMessages": actionMessages,
@@ -241,14 +241,14 @@ func rebuildGame(c *gin.Context, gameID int) {
 
 	if row.Next() {
 		rolesByteArray := make([]byte, 0, 100)
-		err = row.Scan(&game.Number, &gameSetup.Name, &gameSetup.Total, &rolesByteArray, &gameSetup.Universes, &game.RoundNum, &game.RoundNight, &game.Seed)
+		err = row.Scan(&Game.Number, &GameSetup.Name, &GameSetup.Total, &rolesByteArray, &GameSetup.Universes, &Game.RoundNum, &Game.RoundNight, &Game.Seed)
 		row.Close()
 
 		if quantumutilities.HandleErr(c, err, "Error scanning game variables ["+gameQuery+"]") {
 			return
 		}
 
-		err = quantumutilities.GetInterface(rolesByteArray, &gameSetup.Roles)
+		err = quantumutilities.GetInterface(rolesByteArray, &GameSetup.Roles)
 		if quantumutilities.HandleErr(c, err, "Error getting game roles interface ["+gameQuery+"]") {
 			return
 		}
@@ -257,14 +257,14 @@ func rebuildGame(c *gin.Context, gameID int) {
 
 	playerQuery := "SELECT name, num, actions FROM players"
 	playerQuery += " WHERE gameid=" + strconv.Itoa(gameID)
-	playerQuery += " LIMIT " + strconv.Itoa(gameSetup.Total)
+	playerQuery += " LIMIT " + strconv.Itoa(GameSetup.Total)
 
 	row, err = db.Query(playerQuery)
 	if quantumutilities.HandleErr(c, err, "Error selecting players ["+playerQuery+"]") {
 		return
 	}
 
-	players = nil
+	Players = nil
 	for row.Next() {
 		var player Player
 		err = row.Scan(&player.Name, &player.Num, &player.Actions)
@@ -272,7 +272,7 @@ func rebuildGame(c *gin.Context, gameID int) {
 			return
 		}
 		player.Role.Totals = make(map[int]int)
-		players = append(players, player)
+		Players = append(Players, player)
 	}
 	row.Close()
 
@@ -281,7 +281,7 @@ func rebuildGame(c *gin.Context, gameID int) {
 
 func setGame(c *gin.Context) {
 	err := c.Request.ParseForm()
-	if quantumutilities.HandleErr(c, err, "Error setting gameSetup") {
+	if quantumutilities.HandleErr(c, err, "Error setting GameSetup") {
 		return
 	}
 
@@ -299,14 +299,14 @@ func processActions(c *gin.Context) {
 	var gameID = c.Request.FormValue("gameId")
 	gameIDNum, err := strconv.ParseInt(gameID, 10, 32)
 
-	for _, p := range players {
+	for _, p := range Players {
 		var attackSelection = c.Request.FormValue(p.Name + "Attack")
 		var peekSelection = c.Request.FormValue(p.Name + "Peek")
 		var voteSelection = c.Request.FormValue(p.Name + "Vote")
 		if len(attackSelection) > 0 {
 			var observation AttackObservation
 			observation.Pending = true
-			observation.Round = game.RoundNum
+			observation.Round = Game.RoundNum
 			observation.Subject = p.Num
 			observation.Target = getPlayerByName(attackSelection).Num
 			addAttackObservation(observation)
@@ -314,7 +314,7 @@ func processActions(c *gin.Context) {
 		if len(peekSelection) > 0 {
 			var observation PeekObservation
 			observation.Pending = true
-			observation.Round = game.RoundNum
+			observation.Round = Game.RoundNum
 			observation.Subject = p.Num
 			observation.Target = getPlayerByName(peekSelection).Num
 			observation.IsEvil = false // Determined at commit time
@@ -323,7 +323,7 @@ func processActions(c *gin.Context) {
 		if len(voteSelection) > 0 {
 			var observation VoteObservation
 			observation.Pending = true
-			observation.Round = game.RoundNum
+			observation.Round = Game.RoundNum
 			observation.Subject = p.Num
 			observation.Target = getPlayerByName(voteSelection).Num
 			addVoteObservation(observation)
@@ -341,13 +341,13 @@ func processActions(c *gin.Context) {
 	if advanceRound {
 		var voteTargets = make(map[int]int)
 		for _, o := range voteObservations {
-			if game.RoundNum == o.Round {
+			if Game.RoundNum == o.Round {
 				voteTargets[o.Target]++
 			}
 		}
 
 		remainingPlayers := 0
-		for _, p := range players {
+		for _, p := range Players {
 			if !playerIsDead(p) {
 				remainingPlayers++
 			}
@@ -359,7 +359,7 @@ func processActions(c *gin.Context) {
 
 				var observation LynchObservation
 				observation.Pending = false
-				observation.Round = game.RoundNum
+				observation.Round = Game.RoundNum
 				observation.Subject = votedPlayer.Num
 				addLynchObservation(observation)
 				break
@@ -372,12 +372,12 @@ func processActions(c *gin.Context) {
 		UpdateRoleTotals()
 		collapseAll()
 
-		for _, p := range players {
+		for _, p := range Players {
 			deadPercent := playerDeadPercent(p)
 			if deadPercent == 100 {
 				var observation KillObservation
 				observation.Pending = true
-				observation.Round = game.RoundNum
+				observation.Round = Game.RoundNum
 				observation.Subject = p.Num
 				observation.Role = collapseToFixedRole(p.Num)
 				observation.Pending = false
@@ -386,24 +386,24 @@ func processActions(c *gin.Context) {
 		}
 
 		var nightBoolString = ""
-		if game.RoundNight {
-			game.RoundNum++
-			game.RoundNight = false
+		if Game.RoundNight {
+			Game.RoundNum++
+			Game.RoundNight = false
 			nightBoolString = "FALSE"
 		} else {
-			game.RoundNight = true
+			Game.RoundNight = true
 			nightBoolString = "TRUE"
 		}
 
 		var dbStatement = "UPDATE game SET "
-		dbStatement += "round=" + strconv.Itoa(game.RoundNum)
+		dbStatement += "round=" + strconv.Itoa(Game.RoundNum)
 		dbStatement += ", nightPhase=" + nightBoolString
 		dbStatement += " WHERE id=" + gameID
 		quantumutilities.DbExec(c, db, dbStatement)
 	}
 
 	FillActionsWithObservations()
-	for _, p := range players {
+	for _, p := range Players {
 		var dbStatement = "UPDATE players SET "
 		dbStatement += "actions = '" + p.Actions + "' WHERE num=" + strconv.Itoa(p.Num) + " AND gameId=" + gameID
 		quantumutilities.DbExec(c, db, dbStatement)

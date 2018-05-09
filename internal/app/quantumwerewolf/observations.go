@@ -71,7 +71,7 @@ func FillObservations() {
 	}
 
 	ResetObservations()
-	for _, p := range players {
+	for _, p := range Players {
 		actionStrings := strings.Split(p.Actions, tokenEndAction)
 		for _, action := range actionStrings {
 			fillPeekObservation(p.Num, action)
@@ -113,8 +113,8 @@ func CommitObservations() {
 
 // FillActionsWithObservations takes the existing observations and fills the player Actions with a representation of them
 func FillActionsWithObservations() {
-	for i := range players {
-		players[i].Actions = ""
+	for i := range Players {
+		Players[i].Actions = ""
 	}
 	for _, o := range peekObservations {
 		result := tokenGood
@@ -126,35 +126,35 @@ func FillActionsWithObservations() {
 			pending = tokenPending
 		}
 
-		players[getPlayerIndex(getPlayerByNumber(o.Subject))].Actions += strconv.Itoa(o.Round) + tokenPeek + strconv.Itoa(o.Target) + result + pending + tokenEndAction
+		Players[getPlayerIndex(getPlayerByNumber(o.Subject))].Actions += strconv.Itoa(o.Round) + tokenPeek + strconv.Itoa(o.Target) + result + pending + tokenEndAction
 	}
 	for _, o := range attackObservations {
 		pending := ""
 		if o.Pending {
 			pending = tokenPending
 		}
-		players[getPlayerIndex(getPlayerByNumber(o.Subject))].Actions += strconv.Itoa(o.Round) + tokenAttack + strconv.Itoa(o.Target) + pending + tokenEndAction
+		Players[getPlayerIndex(getPlayerByNumber(o.Subject))].Actions += strconv.Itoa(o.Round) + tokenAttack + strconv.Itoa(o.Target) + pending + tokenEndAction
 	}
 	for _, o := range voteObservations {
 		pending := ""
 		if o.Pending {
 			pending = tokenPending
 		}
-		players[getPlayerIndex(getPlayerByNumber(o.Subject))].Actions += strconv.Itoa(o.Round) + tokenVote + strconv.Itoa(o.Target) + pending + tokenEndAction
+		Players[getPlayerIndex(getPlayerByNumber(o.Subject))].Actions += strconv.Itoa(o.Round) + tokenVote + strconv.Itoa(o.Target) + pending + tokenEndAction
 	}
 	for _, o := range killObservations {
 		pending := ""
 		if o.Pending {
 			pending = tokenPending
 		}
-		players[getPlayerIndex(getPlayerByNumber(o.Subject))].Actions += strconv.Itoa(o.Round) + tokenKilled + strconv.Itoa(o.Role) + pending + tokenEndAction
+		Players[getPlayerIndex(getPlayerByNumber(o.Subject))].Actions += strconv.Itoa(o.Round) + tokenKilled + strconv.Itoa(o.Role) + pending + tokenEndAction
 	}
 	for _, o := range lynchObservations {
 		pending := ""
 		if o.Pending {
 			pending = tokenPending
 		}
-		players[getPlayerIndex(getPlayerByNumber(o.Subject))].Actions += strconv.Itoa(o.Round) + tokenLynched + pending + tokenEndAction
+		Players[getPlayerIndex(getPlayerByNumber(o.Subject))].Actions += strconv.Itoa(o.Round) + tokenLynched + pending + tokenEndAction
 	}
 }
 

@@ -19,8 +19,8 @@ const tokenGood = "^"
 const tokenEvil = "~"
 const tokenPending = "*"
 
-// Game holds a single game's information
-type Game struct {
+// GameSettings holds a single game's information
+type GameSettings struct {
 	Name       string `json:"gameName"`
 	Number     int    `json:"gameNumber"`
 	RoundNum   int
@@ -43,8 +43,8 @@ type RoleTracker struct {
 	Fixed   int         `json:"fixed"`
 }
 
-// GameSetup holds the game settings
-type GameSetup struct {
+// GameSetupSettings holds the game settings
+type GameSetupSettings struct {
 	Name      string         `json:"gameName"`
 	Roles     map[string]int `json:"roles"`
 	Total     int            `json:"totalPlayers"`
@@ -52,41 +52,48 @@ type GameSetup struct {
 	Universes uint64         `json:"universes"`
 }
 
-// Multiverse holds the state of all universes
-// universes contains the active universe permutation numbers
+// MultiverseDefinition holds the state of all Universes
+// Universes contains the active universe permutation numbers
 // originalAssignments contains the permutation of the 0th universe
-type Multiverse struct {
-	universes           []uint64
+type MultiverseDefinition struct {
+	Universes           []uint64
 	originalAssignments []int
 	rando               *rand.Rand
 }
 
-var multiverse Multiverse
-var players []Player
-var gameSetup GameSetup
-var game Game
+// Multiverse is the global definition of the multiverse
+var Multiverse MultiverseDefinition
+
+// Players is the global slice of Player instances
+var Players []Player
+
+// GameSetup is the global GameSetup settings
+var GameSetup GameSetupSettings
+
+// Game is the global GameSettings instance
+var Game GameSettings
 
 // ResetVars reinitializes all global variables
 func ResetVars() {
 	rand.Seed(time.Now().UTC().UnixNano())
-	players = nil
-	gameSetup.Name = ""
-	gameSetup.Roles = make(map[string]int)
-	gameSetup.Total = 0
-	gameSetup.Keep = 100
-	game.Name = ""
-	game.Number = -1
-	game.RoundNight = true
-	game.RoundNum = 0
-	game.Seed = rand.Int63()
-	multiverse.universes = nil
-	multiverse.originalAssignments = nil
-	multiverse.rando = nil
+	Players = nil
+	GameSetup.Name = ""
+	GameSetup.Roles = make(map[string]int)
+	GameSetup.Total = 0
+	GameSetup.Keep = 100
+	Game.Name = ""
+	Game.Number = -1
+	Game.RoundNight = true
+	Game.RoundNum = 0
+	Game.Seed = rand.Int63()
+	Multiverse.Universes = nil
+	Multiverse.originalAssignments = nil
+	Multiverse.rando = nil
 	ResetObservations()
 }
 
 func getPlayerByName(playerName string) Player {
-	for _, p := range players {
+	for _, p := range Players {
 		if p.Name == playerName {
 			return p
 		}
@@ -98,7 +105,7 @@ func getPlayerByName(playerName string) Player {
 }
 
 func getPlayerByNumber(playerNumber int) Player {
-	for _, p := range players {
+	for _, p := range Players {
 		if p.Num == playerNumber {
 			return p
 		}
@@ -110,7 +117,7 @@ func getPlayerByNumber(playerNumber int) Player {
 }
 
 func getPlayerIndex(player Player) int {
-	for i, p := range players {
+	for i, p := range Players {
 		if p.Num == player.Num {
 			return i
 		}
@@ -142,7 +149,7 @@ func playerCanAttack(player Player) bool {
 }
 
 func playerEvilPercent(player Player) int {
-	if len(multiverse.universes) == 0 {
+	if len(Multiverse.Universes) == 0 {
 		return 0
 	}
 
@@ -155,7 +162,7 @@ func playerEvilPercent(player Player) int {
 		}
 	}
 
-	totalUniverses := len(multiverse.universes)
+	totalUniverses := len(Multiverse.Universes)
 	returnPercent := (amountEvil * 100) / totalUniverses
 	if returnPercent >= 100 && amountEvil < totalUniverses {
 		returnPercent = 99
@@ -183,7 +190,7 @@ func playerIsDead(player Player) bool {
 // First bool is true if a team won
 // Second bool is true if winning team is evil
 func checkWin() (bool, bool) {
-	if len(multiverse.universes) == 0 {
+	if len(Multiverse.Universes) == 0 {
 		return false, false
 	}
 
@@ -194,7 +201,7 @@ func checkWin() (bool, bool) {
 
 	UpdateRoleTotals()
 
-	for _, p := range players {
+	for _, p := range Players {
 		if !playerIsDead(p) {
 			amountEvil := 0
 			amountGood := 0
@@ -268,7 +275,7 @@ func playerDeadPercent(player Player) int {
 		}
 	}
 
-	for _, v := range multiverse.universes {
+	for _, v := range Multiverse.Universes {
 		totalUniverses++
 		for _, o := range attacksOnMe {
 			if AttackTarget(v, o.Subject, player.Num) {

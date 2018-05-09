@@ -13,9 +13,9 @@ func getGamesHandler(c *gin.Context) {
 		return
 	}
 
-	var games []Game
+	var games []GameSettings
 	for rows.Next() {
-		var thisGame Game
+		var thisGame GameSettings
 		err = rows.Scan(&thisGame.Number, &thisGame.Name)
 		if quantumutilities.HandleErr(c, err, "Error scanning games") {
 			return
