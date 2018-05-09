@@ -277,6 +277,7 @@ func rebuildGame(c *gin.Context, gameID int) {
 	row.Close()
 
 	CreateMultiverse()
+	collapseAll()
 }
 
 func setGame(c *gin.Context) {
