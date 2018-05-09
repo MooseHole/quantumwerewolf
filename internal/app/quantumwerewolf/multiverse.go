@@ -179,12 +179,8 @@ func collapseAll() {
 	anyEliminations = true
 	for anyEliminations {
 		anyEliminations = false
-		for _, p := range Players {
-			if playerCanAttack(p) {
-				if CollapseForAttack(p.Num) {
-					anyEliminations = true
-				}
-			}
+		if CollapseForAttack() {
+			anyEliminations = true
 		}
 	}
 	anyEliminations = true
@@ -213,6 +209,7 @@ func CollapseForFixedRole(playerNumber int, fixedRoleID int) bool {
 			newUniverses = append(newUniverses, v)
 		} else {
 			universesEliminated = true
+			log.Printf("CollapseForFixedRole(playerNumber %d, fixedRoleId %d) eliminated universe %d", playerNumber, fixedRoleID, v)
 		}
 	}
 
@@ -370,10 +367,10 @@ func PeekOk(universe uint64, peeker int) bool {
 }
 
 // AttackOk returns false if a player is the dominant attacker and attacks a teammate
-func AttackOk(universe uint64, attacker int) bool {
+func AttackOk(universe uint64) bool {
 	FillObservations()
 	for _, attack := range attackObservations {
-		if !attack.Pending && AttackFriend(universe, attacker, attack.Target, attack.Round) {
+		if !attack.Pending && AttackFriend(universe, attack.Subject, attack.Target, attack.Round) {
 			return false
 		}
 	}
@@ -382,14 +379,15 @@ func AttackOk(universe uint64, attacker int) bool {
 }
 
 // CollapseForAttack eliminates universes where the attacker attacked a teammate
-func CollapseForAttack(attacker int) bool {
+func CollapseForAttack() bool {
 	newUniverses := make([]uint64, 0, len(Multiverse.Universes))
 	universesEliminated := false
 
 	for _, v := range Multiverse.Universes {
-		if AttackOk(v, attacker) {
+		if AttackOk(v) {
 			newUniverses = append(newUniverses, v)
 		} else {
+			log.Printf("CollapseForAttack() eliminated universe %d", v)
 			universesEliminated = true
 		}
 	}
@@ -420,6 +418,7 @@ func collapseForPriorDeaths() bool {
 		if !eliminate {
 			newUniverses = append(newUniverses, v)
 		} else {
+			log.Printf("collapseForPriorDeaths() eliminated universe %d", v)
 			universesEliminated = true
 		}
 	}
@@ -436,6 +435,7 @@ func collapseForPeek(peeker int) bool {
 		if PeekOk(v, peeker) {
 			newUniverses = append(newUniverses, v)
 		} else {
+			log.Printf("collapseForPeek(peeker %d) eliminated universe %d", peeker, v)
 			universesEliminated = true
 		}
 	}
