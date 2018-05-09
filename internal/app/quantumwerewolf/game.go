@@ -373,17 +373,15 @@ func processActions(c *gin.Context) {
 		collapseAll()
 
 		for _, p := range players {
-			if !p.Role.IsFixed {
-				deadPercent := playerDeadPercent(p)
-				if deadPercent == 100 {
-					var observation KillObservation
-					observation.Pending = true
-					observation.Round = game.RoundNum
-					observation.Subject = p.Num
-					observation.Role = collapseToFixedRole(p.Num)
-					observation.Pending = false
-					addKillObservation(observation)
-				}
+			deadPercent := playerDeadPercent(p)
+			if deadPercent == 100 {
+				var observation KillObservation
+				observation.Pending = true
+				observation.Round = game.RoundNum
+				observation.Subject = p.Num
+				observation.Role = collapseToFixedRole(p.Num)
+				observation.Pending = false
+				addKillObservation(observation)
 			}
 		}
 

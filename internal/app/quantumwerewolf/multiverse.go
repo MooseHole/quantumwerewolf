@@ -450,7 +450,10 @@ func eliminateUniverses(universesEliminated bool, newUniverses []uint64) bool {
 		return true
 	}
 
-	log.Printf("Attempted to remove all universes")
+	if universesEliminated {
+		log.Printf("Attempted to remove all universes")
+	}
+
 	return false
 }
 
@@ -466,17 +469,18 @@ func Peek(peeker int, target int) bool {
 	UpdateRoleTotals()
 
 	if playerCanPeek(getPlayerByNumber(peeker)) {
-		log.Printf("Attempted to peek with player %d but can not peek", peeker)
-	}
+		peekUniverse, err := randomPeekUniverse(peeker)
+		if err != nil {
+			log.Printf("Attempted to peek with player %d but had error: %v", peeker, err)
+			return false
+		}
 
-	peekUniverse, err := randomPeekUniverse(peeker)
-	if err != nil {
-		log.Printf("Attempted to peek with player %d but had error: %v", peeker, err)
+		evaluationUniverse := make([]int, len(multiverse.originalAssignments))
+		copy(evaluationUniverse, multiverse.originalAssignments)
+		evaluationUniverse = quantumutilities.Kthperm(evaluationUniverse, peekUniverse)
+		return roleTypes[evaluationUniverse[target]].Evil
+	} else {
+		log.Printf("Attempted to peek with player %d but can not peek", peeker)
 		return false
 	}
-
-	evaluationUniverse := make([]int, len(multiverse.originalAssignments))
-	copy(evaluationUniverse, multiverse.originalAssignments)
-	evaluationUniverse = quantumutilities.Kthperm(evaluationUniverse, peekUniverse)
-	return roleTypes[evaluationUniverse[target]].Evil
 }

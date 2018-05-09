@@ -61,6 +61,7 @@ func ResetObservations() {
 	attackObservations = nil
 	voteObservations = nil
 	killObservations = nil
+	lynchObservations = nil
 }
 
 // FillObservations fills all observations with current player actions

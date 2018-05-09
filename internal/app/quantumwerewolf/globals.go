@@ -219,12 +219,18 @@ func checkWin() (bool, bool) {
 				return false, false
 			}
 
-			if amountGood > 0 && amountEvilMustKill > 0 {
-				evilMustKillPlayers++
+			if amountGood > 0 {
+				goodPlayers++
+				if amountEvilMustKill > 0 {
+					evilMustKillPlayers++
+				}
 			}
 
-			if amountEvil > 0 && amountGoodMustKill > 0 {
-				goodMustKillPlayers++
+			if amountEvil > 0 {
+				evilPlayers++
+				if amountGoodMustKill > 0 {
+					goodMustKillPlayers++
+				}
 			}
 		}
 	}
