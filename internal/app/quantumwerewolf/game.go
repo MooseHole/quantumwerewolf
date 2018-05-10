@@ -381,8 +381,10 @@ func processActions(c *gin.Context) {
 		// Take all observations out of pending
 		CommitObservations()
 
-		UpdateRoleTotals()
-		CollapseAll()
+		for i := 0; i < len(Players); i++ {
+			UpdateRoleTotals()
+			CollapseAll()
+		}
 
 		for _, p := range Players {
 			deadPercent := playerDeadPercent(p)
