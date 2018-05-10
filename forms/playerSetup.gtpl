@@ -62,7 +62,7 @@
 
             function validatePlayerForm() {
                 var playerName = document.forms["playerForm"]["playerName"].value;
-                test = (playerName.length != 0 && (/^[a-z0-9]+$/i.test(playerName)))
+                test = (playerName.length != 0 && (/^[a-z0-9 ]+$/i.test(playerName)))
                 formatValidation(test, "playerNameAlert", "playerNameField", "Must input a valid name")
                 if (test)
                 {
