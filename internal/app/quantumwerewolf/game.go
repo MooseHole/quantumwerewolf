@@ -72,22 +72,29 @@ func showGame(c *gin.Context) {
 		GoodPercent int
 		EvilPercent int
 		DeadPercent int
+		Percents    map[string]int
 	}
 	actionSubjects := make(map[string]ActionSelections)
 	FillObservations()
 
-	for _, s := range Players {
+	firstActionSubjectName := ""
+	for i, s := range Players {
 		var selection ActionSelections
 		var playerIsDead = false
 
-		selection.GoodPercent = playerGoodPercent(s)
-		selection.EvilPercent = playerEvilPercent(s)
-		selection.DeadPercent = playerDeadPercent(s)
+		selection.Percents = make(map[string]int)
 		selection.Peeked = make(map[string]string)
 		selection.PeekResult = make(map[string]string)
 		selection.Attacked = make(map[string]string)
 		selection.Voted = make(map[string]string)
 		selection.Killed = make(map[string]string)
+
+		selection.Percents["Good"] = playerGoodPercent(s)
+		selection.Percents["Evil"] = playerEvilPercent(s)
+		selection.Percents["Dead"] = playerDeadPercent(s)
+		for _, v := range roleTypes {
+			selection.Percents[v.Name] = playerRolePercent(s, v.ID)
+		}
 
 		for _, o := range killObservations {
 			if o.Subject == s.Num {
@@ -187,6 +194,9 @@ func showGame(c *gin.Context) {
 		}
 
 		actionSubjects[s.Name] = selection
+		if i == 0 {
+			firstActionSubjectName = s.Name
+		}
 	}
 
 	rounds := make([]string, Game.RoundNum+1)
@@ -224,6 +234,7 @@ func showGame(c *gin.Context) {
 		"ActionMessages": actionMessages,
 		"ActionSubjects": actionSubjects,
 		"WinMessage":     winMessage,
+		"FirstName":      firstActionSubjectName,
 	})
 }
 

@@ -148,6 +148,26 @@ func playerCanAttack(player Player) bool {
 	return false
 }
 
+func playerRolePercent(player Player, roleID int) int {
+	if len(Multiverse.Universes) == 0 {
+		return 0
+	}
+
+	UpdateRoleTotals()
+
+	amountRole := player.Role.Totals[roleID]
+	totalUniverses := len(Multiverse.Universes)
+
+	returnPercent := (amountRole * 100) / totalUniverses
+	if returnPercent >= 100 && amountRole < totalUniverses {
+		returnPercent = 99
+	}
+	if returnPercent <= 0 && amountRole > 0 {
+		returnPercent = 1
+	}
+	return returnPercent
+}
+
 func playerEvilPercent(player Player) int {
 	if len(Multiverse.Universes) == 0 {
 		return 0

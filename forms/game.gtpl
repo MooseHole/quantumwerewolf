@@ -20,10 +20,44 @@
         <table>
         <tr><th>Player</th><th>Good</th><th>Evil</th><th>Dead</th></tr>
         {{ range $name, $selections := .ActionSubjects }}
-        <tr><td>{{ $name }}</td><td>{{ $selections.GoodPercent }}%</td><td>{{ $selections.EvilPercent }}%</td><td>{{ $selections.DeadPercent }}%</td></tr>
+            {{ $thisGood := index $selections.Percents "Good" }}
+            {{ $thisEvil := index $selections.Percents "Evil" }}
+            {{ $thisDead := index $selections.Percents "Dead" }}
+            <tr><td>{{ $name }}</td><td>{{ $thisGood }}%</td><td>{{ $thisEvil }}%</td><td>{{ $thisDead }}%</td></tr>
         {{ end }}
         </table>
-
+        <p>
+        [table]
+        <table>
+        <tr><td>[tr][td][b]Player[/b][/td]</td><td>[td][b]Good[/b][/td]</td><td>[td][b]Evil[/b][/td]</td><td>[td][b]Dead[/b][/td][/tr]</td></tr>
+        {{ range $name, $selections := .ActionSubjects }}
+            {{ $thisGood := index $selections.Percents "Good" }}
+            {{ $thisEvil := index $selections.Percents "Evil" }}
+            {{ $thisDead := index $selections.Percents "Dead" }}
+            <tr><td>[tr][td]{{ $name }}[/td]</td><td>[td]{{ $thisGood }}%[/td]</td><td>[td]{{ $thisEvil }}%[/td]</td><td>[td]{{ $thisDead }}%[/td][/tr]</td></tr>
+        {{ end }}
+        </table>
+        [/table]
+        <p>
+        <table>
+        {{ range $name, $selections := .ActionSubjects }}
+            {{ if eq $name $.FirstName }}
+                <tr><th>Player</th>
+                {{ range $percentName, $percentSelection := $selections.Percents }}
+                    <th>{{ $percentName }}</th>
+                {{ end }}
+                </tr>
+            {{ end }}
+        {{ end }}
+        {{ range $name, $selections := .ActionSubjects }}
+            <tr><td>{{ $name }}</td>
+            {{ range $percentName, $percentSelection := $selections.Percents }}
+                <td>{{ $percentSelection }}%</td>
+            {{ end }}
+            </tr>
+        {{ end }}
+        </tr>
+        </table>
         <p>
         <b>Action Messages</b><br>
         {{ .ActionMessages }}
