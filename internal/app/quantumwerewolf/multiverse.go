@@ -169,12 +169,8 @@ func CollapseAll() {
 	anyEliminations = true
 	for anyEliminations {
 		anyEliminations = false
-		for _, p := range Players {
-			if playerCanPeek(p) {
-				if CollapseForPeek(p.Num) {
-					anyEliminations = true
-				}
-			}
+		if CollapseForPeek() {
+			anyEliminations = true
 		}
 	}
 	anyEliminations = true
@@ -345,7 +341,7 @@ func AttackFriend(universe uint64, attacker int, target int, night int) bool {
 }
 
 // PeekOk returns false if a player is a seer and gets an untrue result
-func PeekOk(universe uint64, peeker int) bool {
+func PeekOk(universe uint64) bool {
 	universeLength := len(Multiverse.originalAssignments)
 	evaluationUniverse := make([]int, universeLength)
 	copy(evaluationUniverse, Multiverse.originalAssignments)
@@ -353,8 +349,8 @@ func PeekOk(universe uint64, peeker int) bool {
 
 	FillObservations()
 	for _, peek := range peekObservations {
-		// If this peek was by the peeker and peekr can peek in this universe
-		if !peek.Pending && peek.Subject == peeker && roleTypes[evaluationUniverse[peeker]].CanPeek {
+		// If the peeker can peek in this universe
+		if !peek.Pending && roleTypes[evaluationUniverse[peek.Subject]].CanPeek {
 			// If finding in this universe is not reality
 			if roleTypes[evaluationUniverse[peek.Target]].Evil != peek.IsEvil {
 				return false
@@ -427,15 +423,15 @@ func CollapseForPriorDeaths() bool {
 }
 
 // CollapseForPeek eliminates universes where the peeker is a seer and got the wrong result
-func CollapseForPeek(peeker int) bool {
+func CollapseForPeek() bool {
 	newUniverses := make([]uint64, 0, len(Multiverse.Universes))
 	universesEliminated := false
 
 	for _, v := range Multiverse.Universes {
-		if PeekOk(v, peeker) {
+		if PeekOk(v) {
 			newUniverses = append(newUniverses, v)
 		} else {
-			log.Printf("CollapseForPeek(peeker %d) eliminated universe %d", peeker, v)
+			log.Printf("CollapseForPeek() eliminated universe %d", v)
 			universesEliminated = true
 		}
 	}

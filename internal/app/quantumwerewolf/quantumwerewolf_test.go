@@ -31,8 +31,9 @@ func TestCollapseForFixedRole(t *testing.T) {
 	quantumwerewolf.GameSetup.Roles["Wolf"] = 1
 	quantumwerewolf.CreateMultiverse()
 
-	if len(quantumwerewolf.Multiverse.Universes) != 6 {
-		t.Errorf("CreateMultiverse did not generate correct number of universes.  expected %d != actual %d", 6, len(quantumwerewolf.Multiverse.Universes))
+	expectedUniverses := 6
+	if len(quantumwerewolf.Multiverse.Universes) != expectedUniverses {
+		t.Errorf("CreateMultiverse did not generate correct number of universes.  expected %d != actual %d", expectedUniverses, len(quantumwerewolf.Multiverse.Universes))
 	}
 
 	quantumwerewolf.Players[0].Actions = "0%2^|0@1|"
@@ -41,21 +42,12 @@ func TestCollapseForFixedRole(t *testing.T) {
 	quantumwerewolf.ResetObservations()
 	quantumwerewolf.FillObservations()
 	quantumwerewolf.CollapseAll()
-	expectedUniverses := 6
+	expectedUniverses = 3
 	if len(quantumwerewolf.Multiverse.Universes) != expectedUniverses {
 		t.Errorf("CollapseAll did not generate correct number of universes.  expected %d != actual %d", expectedUniverses, len(quantumwerewolf.Multiverse.Universes))
 	}
 
 	quantumwerewolf.Players[1].Actions = "0%2~|0@0|0#0|"
-	quantumwerewolf.ResetObservations()
-	quantumwerewolf.FillObservations()
-	quantumwerewolf.CollapseAll()
-	expectedUniverses = 2
-	if len(quantumwerewolf.Multiverse.Universes) != expectedUniverses {
-		t.Errorf("CollapseAll did not generate correct number of universes.  expected %d != actual %d", expectedUniverses, len(quantumwerewolf.Multiverse.Universes))
-	}
-
-	quantumwerewolf.Players[2].Actions = "0%0~|0@1|1#1|"
 	quantumwerewolf.ResetObservations()
 	quantumwerewolf.FillObservations()
 	quantumwerewolf.CollapseAll()
