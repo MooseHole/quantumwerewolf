@@ -61,7 +61,7 @@ func CreateMultiverse() {
 	Multiverse.rando = rand.New(randSource)
 	Multiverse.Universes = quantumutilities.PermUint64Trunc(Multiverse.rando, GameSetup.Universes, 100000)
 	UpdateRoleTotals()
-	collapseAll()
+	CollapseAll()
 }
 
 func updateFixedRoles() {
@@ -150,7 +150,8 @@ func getFixedRole(playerNumber int) int {
 	return foundUniverse[playerNumber]
 }
 
-func collapseAll() {
+// CollapseAll removes universes that are inconsistent for any reason
+func CollapseAll() {
 	dirtyMultiverse = true
 	UpdateRoleTotals()
 	anyEliminations := true
@@ -170,7 +171,7 @@ func collapseAll() {
 		anyEliminations = false
 		for _, p := range Players {
 			if playerCanPeek(p) {
-				if collapseForPeek(p.Num) {
+				if CollapseForPeek(p.Num) {
 					anyEliminations = true
 				}
 			}
@@ -186,7 +187,7 @@ func collapseAll() {
 	anyEliminations = true
 	for anyEliminations {
 		anyEliminations = false
-		if collapseForPriorDeaths() {
+		if CollapseForPriorDeaths() {
 			anyEliminations = true
 		}
 	}
@@ -345,20 +346,18 @@ func AttackFriend(universe uint64, attacker int, target int, night int) bool {
 
 // PeekOk returns false if a player is a seer and gets an untrue result
 func PeekOk(universe uint64, peeker int) bool {
-	if getPlayerByNumber(peeker).Role.IsFixed && roleTypes[getPlayerByNumber(peeker).Role.Fixed].CanPeek {
-		universeLength := len(Multiverse.originalAssignments)
-		evaluationUniverse := make([]int, universeLength)
-		copy(evaluationUniverse, Multiverse.originalAssignments)
-		evaluationUniverse = quantumutilities.Kthperm(evaluationUniverse, universe)
+	universeLength := len(Multiverse.originalAssignments)
+	evaluationUniverse := make([]int, universeLength)
+	copy(evaluationUniverse, Multiverse.originalAssignments)
+	evaluationUniverse = quantumutilities.Kthperm(evaluationUniverse, universe)
 
-		FillObservations()
-		for _, peek := range peekObservations {
-			// If this peek was by the peeker and peekr can peek in this universe
-			if !peek.Pending && peek.Subject == peeker && roleTypes[evaluationUniverse[peeker]].CanPeek {
-				// If finding in this universe is not reality
-				if roleTypes[evaluationUniverse[peek.Target]].Evil != peek.IsEvil {
-					return false
-				}
+	FillObservations()
+	for _, peek := range peekObservations {
+		// If this peek was by the peeker and peekr can peek in this universe
+		if !peek.Pending && peek.Subject == peeker && roleTypes[evaluationUniverse[peeker]].CanPeek {
+			// If finding in this universe is not reality
+			if roleTypes[evaluationUniverse[peek.Target]].Evil != peek.IsEvil {
+				return false
 			}
 		}
 	}
@@ -396,8 +395,8 @@ func CollapseForAttack() bool {
 	return universesEliminated
 }
 
-// collapseForPriorDeaths eliminates universes where a lynchee was attacked before
-func collapseForPriorDeaths() bool {
+// CollapseForPriorDeaths eliminates universes where a lynchee was attacked before
+func CollapseForPriorDeaths() bool {
 	newUniverses := make([]uint64, 0, len(Multiverse.Universes))
 	universesEliminated := false
 
@@ -418,7 +417,7 @@ func collapseForPriorDeaths() bool {
 		if !eliminate {
 			newUniverses = append(newUniverses, v)
 		} else {
-			log.Printf("collapseForPriorDeaths() eliminated universe %d", v)
+			log.Printf("CollapseForPriorDeaths() eliminated universe %d", v)
 			universesEliminated = true
 		}
 	}
@@ -427,7 +426,8 @@ func collapseForPriorDeaths() bool {
 	return universesEliminated
 }
 
-func collapseForPeek(peeker int) bool {
+// CollapseForPeek eliminates universes where the peeker is a seer and got the wrong result
+func CollapseForPeek(peeker int) bool {
 	newUniverses := make([]uint64, 0, len(Multiverse.Universes))
 	universesEliminated := false
 
@@ -435,7 +435,7 @@ func collapseForPeek(peeker int) bool {
 		if PeekOk(v, peeker) {
 			newUniverses = append(newUniverses, v)
 		} else {
-			log.Printf("collapseForPeek(peeker %d) eliminated universe %d", peeker, v)
+			log.Printf("CollapseForPeek(peeker %d) eliminated universe %d", peeker, v)
 			universesEliminated = true
 		}
 	}
@@ -463,9 +463,10 @@ func eliminateUniverses(universesEliminated bool, newUniverses []uint64) bool {
 }
 
 func collapseToFixedRole(playerNumber int) int {
+	CollapseAll()
 	roleID := getFixedRole(playerNumber)
 	CollapseForFixedRole(playerNumber, roleID)
-	collapseAll()
+	CollapseAll()
 	return roleID
 }
 

@@ -38,20 +38,29 @@ func TestCollapseForFixedRole(t *testing.T) {
 	quantumwerewolf.Players[0].Actions = "0%2^|0@1|"
 	quantumwerewolf.Players[1].Actions = "0%2~|0@0|"
 	quantumwerewolf.Players[2].Actions = "0%0~|0@1|"
-
-	quantumwerewolf.CollapseForAttack(2)
-	if len(quantumwerewolf.Multiverse.Universes) != 6 {
-		t.Errorf("CollapseForAttack did not generate correct number of universes.  expected %d != actual %d", 6, len(quantumwerewolf.Multiverse.Universes))
+	quantumwerewolf.ResetObservations()
+	quantumwerewolf.FillObservations()
+	quantumwerewolf.CollapseAll()
+	expectedUniverses := 6
+	if len(quantumwerewolf.Multiverse.Universes) != expectedUniverses {
+		t.Errorf("CollapseAll did not generate correct number of universes.  expected %d != actual %d", expectedUniverses, len(quantumwerewolf.Multiverse.Universes))
 	}
 
 	quantumwerewolf.Players[1].Actions = "0%2~|0@0|0#0|"
-
-	quantumwerewolf.CollapseForFixedRole(1, 0)
-	if len(quantumwerewolf.Multiverse.Universes) != 2 {
-		t.Errorf("collapseForFixedRole did not generate correct number of universes.  expected %d != actual %d", 2, len(quantumwerewolf.Multiverse.Universes))
+	quantumwerewolf.ResetObservations()
+	quantumwerewolf.FillObservations()
+	quantumwerewolf.CollapseAll()
+	expectedUniverses = 2
+	if len(quantumwerewolf.Multiverse.Universes) != expectedUniverses {
+		t.Errorf("CollapseAll did not generate correct number of universes.  expected %d != actual %d", expectedUniverses, len(quantumwerewolf.Multiverse.Universes))
 	}
-	quantumwerewolf.CollapseForAttack(2)
-	if len(quantumwerewolf.Multiverse.Universes) != 2 {
-		t.Errorf("CollapseForAttack did not generate correct number of universes.  expected %d != actual %d", 2, len(quantumwerewolf.Multiverse.Universes))
+
+	quantumwerewolf.Players[2].Actions = "0%0~|0@1|1#1|"
+	quantumwerewolf.ResetObservations()
+	quantumwerewolf.FillObservations()
+	quantumwerewolf.CollapseAll()
+	expectedUniverses = 1
+	if len(quantumwerewolf.Multiverse.Universes) != expectedUniverses {
+		t.Errorf("CollapseAll did not generate correct number of universes.  expected %d != actual %d", expectedUniverses, len(quantumwerewolf.Multiverse.Universes))
 	}
 }

@@ -277,7 +277,7 @@ func rebuildGame(c *gin.Context, gameID int) {
 	row.Close()
 
 	CreateMultiverse()
-	collapseAll()
+	CollapseAll()
 }
 
 func setGame(c *gin.Context) {
@@ -371,7 +371,7 @@ func processActions(c *gin.Context) {
 		CommitObservations()
 
 		UpdateRoleTotals()
-		collapseAll()
+		CollapseAll()
 
 		for _, p := range Players {
 			deadPercent := playerDeadPercent(p)
