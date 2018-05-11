@@ -57,16 +57,16 @@ func Factorial(n int) uint64 {
 // S is an int slice that contains the values to be permutated
 // k is the index of the permutation to get
 func Kthperm(S []int, k uint64) []int {
+	E := append([]int(nil), S...)
 	var P []int
-	for len(S) > 0 {
-		f := Factorial(len(S) - 1)
+	for len(E) > 0 {
+		f := Factorial(len(E) - 1)
 		i := int(math.Floor(float64(k) / float64(f)))
-		x := S[i]
+		x := E[i]
 		k = k % f
 		P = append(P, x)
-		S = append(S[:i], S[i+1:]...)
+		E = append(E[:i], E[i+1:]...)
 	}
-
 	return P
 }
 
