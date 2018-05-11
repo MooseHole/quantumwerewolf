@@ -193,7 +193,6 @@ func CollapseAll() {
 // Param playerNumber: The number of the player to collapse for
 // Param fixedRoleId: The role id that the player is fixed to
 func CollapseForFixedRole(playerNumber int, fixedRoleID int) bool {
-	FillObservations()
 	newUniverses := make([]uint64, 0, len(Multiverse.Universes))
 	universesEliminated := false
 
@@ -355,13 +354,31 @@ func AttackOk(universe uint64) bool {
 	return true
 }
 
-// CollapseForAttack eliminates universes where the attacker attacked a teammate
-func CollapseForAttack() bool {
+func priorDeathOk(universe uint64) bool {
+	eliminate := false
+	for _, lynch := range lynchObservations {
+		for _, kill := range killObservations {
+			if lynch.Subject == kill.Subject && lynch.Round != kill.Round {
+				eliminate = true
+				break
+			}
+		}
+		if eliminate {
+			break
+		}
+	}
+
+	return !eliminate
+}
+
+type collapseCheck func(uint64) bool
+
+func collapse(check collapseCheck) bool {
 	newUniverses := make([]uint64, 0, len(Multiverse.Universes))
 	universesEliminated := false
 
 	for _, v := range Multiverse.Universes {
-		if AttackOk(v) {
+		if check(v) {
 			newUniverses = append(newUniverses, v)
 		} else {
 			universesEliminated = true
@@ -374,49 +391,17 @@ func CollapseForAttack() bool {
 
 // CollapseForPriorDeaths eliminates universes where a lynchee was attacked before
 func CollapseForPriorDeaths() bool {
-	newUniverses := make([]uint64, 0, len(Multiverse.Universes))
-	universesEliminated := false
-
-	for _, v := range Multiverse.Universes {
-		eliminate := false
-		for _, lynch := range lynchObservations {
-			for _, kill := range killObservations {
-				if lynch.Subject == kill.Subject && lynch.Round != kill.Round {
-					eliminate = true
-					break
-				}
-			}
-			if eliminate {
-				break
-			}
-		}
-
-		if !eliminate {
-			newUniverses = append(newUniverses, v)
-		} else {
-			universesEliminated = true
-		}
-	}
-
-	universesEliminated = eliminateUniverses(universesEliminated, newUniverses)
-	return universesEliminated
+	return collapse(priorDeathOk)
 }
 
 // CollapseForPeek eliminates universes where the peeker is a seer and got the wrong result
 func CollapseForPeek() bool {
-	newUniverses := make([]uint64, 0, len(Multiverse.Universes))
-	universesEliminated := false
+	return collapse(PeekOk)
+}
 
-	for _, v := range Multiverse.Universes {
-		if PeekOk(v) {
-			newUniverses = append(newUniverses, v)
-		} else {
-			universesEliminated = true
-		}
-	}
-
-	universesEliminated = eliminateUniverses(universesEliminated, newUniverses)
-	return universesEliminated
+// CollapseForAttack eliminates universes where the attacker attacked a teammate
+func CollapseForAttack() bool {
+	return collapse(AttackOk)
 }
 
 func eliminateUniverses(universesEliminated bool, newUniverses []uint64) bool {
