@@ -28,12 +28,14 @@ func showGame(c *gin.Context) {
 	roundString += strconv.Itoa(Game.RoundNum)
 
 	FillObservations()
-	actionMessages := make([]string, 0)
-	for _, p := range Players {
-		actionMessages = append(actionMessages, "")
-		actionMessages = append(actionMessages, p.Name)
-		for round := 0; round < Game.RoundNum; round++ {
+	actionMessages := make(map[int][]string)
 
+	for _, p := range Players {
+		actionMessages[p.Num] = make([]string, 0)
+		actionMessages[p.Num] = append(actionMessages[p.Num], p.Name)
+		actionMessages[p.Num] = append(actionMessages[p.Num], "["+GameSetup.Name+"] "+roundString)
+		actionMessages[p.Num] = append(actionMessages[p.Num], "You are player number "+strconv.Itoa(p.Num))
+		for round := 0; round < Game.RoundNum; round++ {
 			for _, o := range peekObservations {
 				if !o.Pending && o.Round == round && o.Subject == p.Num {
 					resultString := "good"
@@ -41,31 +43,31 @@ func showGame(c *gin.Context) {
 						resultString = "evil"
 					}
 					message := fmt.Sprintf("%s peeked at %s on night %d and found them %s.", getPlayerByNumber(o.Subject).Name, getPlayerByNumber(o.Target).Name, o.Round, resultString)
-					actionMessages = append(actionMessages, message)
+					actionMessages[p.Num] = append(actionMessages[p.Num], message)
 				}
 			}
 			for _, o := range attackObservations {
 				if !o.Pending && o.Round == round && o.Subject == p.Num {
 					message := fmt.Sprintf("%s attacked %s on night %d.", getPlayerByNumber(o.Subject).Name, getPlayerByNumber(o.Target).Name, o.Round)
-					actionMessages = append(actionMessages, message)
+					actionMessages[p.Num] = append(actionMessages[p.Num], message)
 				}
 			}
 			for _, o := range voteObservations {
 				if !o.Pending && o.Round == round && o.Subject == p.Num {
 					message := fmt.Sprintf("%s voted to lynch %s on day %d.", getPlayerByNumber(o.Subject).Name, getPlayerByNumber(o.Target).Name, o.Round)
-					actionMessages = append(actionMessages, message)
+					actionMessages[p.Num] = append(actionMessages[p.Num], message)
 				}
 			}
 			for _, o := range lynchObservations {
 				if !o.Pending && o.Round == round && o.Subject == p.Num {
 					message := fmt.Sprintf("%s got lynched on day %d.", getPlayerByNumber(o.Subject).Name, o.Round)
-					actionMessages = append(actionMessages, message)
+					actionMessages[p.Num] = append(actionMessages[p.Num], message)
 				}
 			}
 			for _, o := range killObservations {
 				if !o.Pending && o.Round == round && o.Subject == p.Num {
 					message := fmt.Sprintf("%s died in round %d and was a %s.", getPlayerByNumber(o.Subject).Name, o.Round, roleTypes[o.Role].Name)
-					actionMessages = append(actionMessages, message)
+					actionMessages[p.Num] = append(actionMessages[p.Num], message)
 				}
 			}
 		}
@@ -230,6 +232,27 @@ func showGame(c *gin.Context) {
 		}
 
 		actionSubjects[s.Num] = selection
+	}
+
+	if Game.RoundNight {
+		for k, v := range actionSubjects {
+			if len(v.Attack) > 1 {
+				actionMessages[k] = append(actionMessages[k], "You may attack one of the following:")
+				for _, a := range v.Attack {
+					if len(a) > 0 {
+						actionMessages[k] = append(actionMessages[k], a)
+					}
+				}
+			}
+			if len(v.Peek) > 1 {
+				actionMessages[k] = append(actionMessages[k], "You may peek at one of the following:")
+				for _, a := range v.Peek {
+					if len(a) > 0 {
+						actionMessages[k] = append(actionMessages[k], a)
+					}
+				}
+			}
+		}
 	}
 
 	rounds := make([]string, Game.RoundNum+1)

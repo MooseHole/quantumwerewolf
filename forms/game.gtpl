@@ -22,10 +22,6 @@
         {{ end }}
         [/table]
         <p>
-        <b>Actions</b><br>
-        {{ range .PlayersByNum }}
-            Player {{ .Num }} ({{ .Name }}): {{ .Actions }}<br>
-        {{ end }}
         <table>
         <tr><th>Player</th><th>Good</th><th>Evil</th><th>Dead</th><th>Name</th><th>Role</th></tr>
         {{ range $num, $selections := .ActionSubjects }}
@@ -57,8 +53,11 @@
         </table>
         <p>
         <b>Action Messages</b><br>
-        {{ range .ActionMessages }}
-            {{ . }}<br>
+        {{ range $num, $messages := .ActionMessages }}
+            {{ range $messages }}
+                {{ . }}<br>
+            {{ end }}
+            ------------------<br>
         {{ end }}
         <p>
         <b>Actions for {{ .Round }}</b><br>
@@ -67,19 +66,19 @@
         <input type="submit">
         <input type="checkbox" name="advance" value="true">Advance to next round<br>
         <table border=1 name="ActionsTable" id="ActionsTable">
-        <tr><th></th>
+        <tr><th></th><th></th>
         {{ range .Rounds }}
         <th colspan=4>Round {{ . }}</th>
         {{ end }}
         </tr>
-        <tr><th>Player</th>
+        <tr><th>Player</th><th>Name</th>
         {{ range .Rounds }}
         <th>Vote</th><th>Attack</th><th>Peek</th><th>Died</th>
         {{ end }}
         </tr>
-        {{ range $name, $selections := .ActionSubjects }}
+        {{ range $num, $selections := .ActionSubjects }}
         <tr>
-            <td>{{ $name }}</td>
+            <td>{{ $num }}</td><td>{{ $selections.Name }}</td>
             {{ range $roundNum := $.Rounds }}
                 {{ $thisAttacked := index $selections.Attacked $roundNum }}
                 {{ $thisPeeked := index $selections.Peeked $roundNum }}
@@ -87,9 +86,9 @@
                 {{ $thisVoted := index $selections.Voted $roundNum }}
                 {{ $thisKilled := index $selections.Killed $roundNum }}
                 
-                {{ if and (not (eq (len $selections.Vote) 1)) (and (eq $.RoundNum $roundNum) (not $.IsNight)) }}
                 <td>
-                    <select name="{{ $name }}Vote">
+                {{ if and (not (eq (len $selections.Vote) 1)) (and (eq $.RoundNum $roundNum) (not $.IsNight)) }}
+                    <select name="{{ $num }}Vote">
                     {{ range $name, $value :=  $selections.Vote }}
                         <option value="{{ $value }}"
                         {{ $thisSelection := index $selections.Voted $roundNum }}
@@ -99,13 +98,13 @@
                         >{{ $name }}</option>
                     {{ end }}
                     </select>
-                </td>
                 {{ else }}
-                <td>{{ $thisVoted }}</td>
+                    {{ $thisVoted }}
                 {{ end }}
+                </td>
                 {{ if and (not (eq (len $selections.Attack) 1)) (and (eq $.RoundNum $roundNum) $.IsNight) }}
                 <td>
-                    <select name="{{ $name }}Attack">
+                    <select name="{{ $num }}Attack">
                     {{ range $name, $value :=  $selections.Attack }}
                         <option value="{{ $value }}"
                         {{ $thisSelection := index $selections.Attacked $roundNum }}
@@ -121,7 +120,7 @@
                 {{ end }}
                 {{ if and (not (eq (len $selections.Peek) 1)) (and (eq $.RoundNum $roundNum) $.IsNight) }}
                 <td>
-                    <select name="{{ $name }}Peek">
+                    <select name="{{ $num }}Peek">
                     {{ range $name, $value :=  $selections.Peek }}
                         <option value="{{ $value }}"
                         {{ $thisSelection := index $selections.Peeked $roundNum }}
@@ -142,6 +141,12 @@
         </table>
         </form>
 
+        <b>Actions</b><br>
+        {{ range .PlayersByNum }}
+            Player {{ .Num }} ({{ .Name }}): {{ .Actions }}<br>
+        {{ end }}
+        <p>
+        <b>Multiverse</b><br>
         {{ range $num, $output := .Universes }}
         {{ $output  }} {{ $num }}<br>
         {{ end }}
