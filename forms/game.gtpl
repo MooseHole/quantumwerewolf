@@ -11,46 +11,43 @@
         {{ range $name, $value := .Roles }}
         Number of {{ $name }}: {{ $value }}<br>
         {{ end }}
-        Round: {{ .Round }}<p>
+        Round: {{ .Round }}
+        <p>
+        [table][tr][td][b]Player[/b][/td][td][b]Good[/b][/td][td][b]Evil[/b][/td][td][b]Dead[/b][/td][td][b]Name[/b][/td][td][b]Role[/b][/td][/tr]
+        {{ range $num, $selections := .ActionSubjects }}
+            {{ $thisGood := index $selections.Percents "Good" }}
+            {{ $thisEvil := index $selections.Percents "Evil" }}
+            {{ $thisDead := index $selections.Percents "Dead" }}
+            [tr][td]{{ $num }}[/td][td]{{ $thisGood }}%[/td][td]{{ $thisEvil }}%[/td][td]{{ $thisDead }}%[/td][td]{{ $selections.RevealName }}[/td][td]{{ $selections.RevealRole }}[/td][/tr]
+        {{ end }}
+        [/table]
+        <p>
         <b>Actions</b><br>
         {{ range .PlayersByNum }}
             Player {{ .Num }} ({{ .Name }}): {{ .Actions }}<br>
-        {{ end }}    
-        <p>
+        {{ end }}
         <table>
-        <tr><th>Player</th><th>Good</th><th>Evil</th><th>Dead</th></tr>
-        {{ range $name, $selections := .ActionSubjects }}
+        <tr><th>Player</th><th>Good</th><th>Evil</th><th>Dead</th><th>Name</th><th>Role</th></tr>
+        {{ range $num, $selections := .ActionSubjects }}
             {{ $thisGood := index $selections.Percents "Good" }}
             {{ $thisEvil := index $selections.Percents "Evil" }}
             {{ $thisDead := index $selections.Percents "Dead" }}
-            <tr><td>{{ $name }}</td><td>{{ $thisGood }}%</td><td>{{ $thisEvil }}%</td><td>{{ $thisDead }}%</td></tr>
+            <tr><td>{{ $num }}</td><td>{{ $thisGood }}%</td><td>{{ $thisEvil }}%</td><td>{{ $thisDead }}%</td><td>{{ $selections.RevealName }}</td><td>{{ $selections.RevealRole }}</td></tr>
         {{ end }}
         </table>
         <p>
-        [table]
         <table>
-        <tr><td>[tr][td][b]Player[/b][/td]</td><td>[td][b]Good[/b][/td]</td><td>[td][b]Evil[/b][/td]</td><td>[td][b]Dead[/b][/td][/tr]</td></tr>
-        {{ range $name, $selections := .ActionSubjects }}
-            {{ $thisGood := index $selections.Percents "Good" }}
-            {{ $thisEvil := index $selections.Percents "Evil" }}
-            {{ $thisDead := index $selections.Percents "Dead" }}
-            <tr><td>[tr][td]{{ $name }}[/td]</td><td>[td]{{ $thisGood }}%[/td]</td><td>[td]{{ $thisEvil }}%[/td]</td><td>[td]{{ $thisDead }}%[/td][/tr]</td></tr>
-        {{ end }}
-        </table>
-        [/table]
-        <p>
-        <table>
-        {{ range $name, $selections := .ActionSubjects }}
-            {{ if eq $name $.FirstName }}
-                <tr><th>Player</th>
+        {{ range $num, $selections := .ActionSubjects }}
+            {{ if eq $num 0 }}
+                <tr><th>Player</th><th>Name</th>
                 {{ range $percentName, $percentSelection := $selections.Percents }}
                     <th>{{ $percentName }}</th>
                 {{ end }}
                 </tr>
             {{ end }}
         {{ end }}
-        {{ range $name, $selections := .ActionSubjects }}
-            <tr><td>{{ $name }}</td>
+        {{ range $num, $selections := .ActionSubjects }}
+            <tr><td>{{ $num }}</td><td>{{ $selections.Name }}</td>
             {{ range $percentName, $percentSelection := $selections.Percents }}
                 <td>{{ $percentSelection }}%</td>
             {{ end }}
@@ -60,7 +57,9 @@
         </table>
         <p>
         <b>Action Messages</b><br>
-        {{ .ActionMessages }}
+        {{ range .ActionMessages }}
+            {{ . }}<br>
+        {{ end }}
         <p>
         <b>Actions for {{ .Round }}</b><br>
         <form name="Actions" id="Actions" action="/processActions" method="post">

@@ -28,57 +28,78 @@ func showGame(c *gin.Context) {
 	roundString += strconv.Itoa(Game.RoundNum)
 
 	FillObservations()
-	actionMessages := ""
-	for _, o := range peekObservations {
-		if !o.Pending && o.Round == Game.RoundNum-1 {
-			resultString := "good"
-			if o.IsEvil {
-				resultString = "evil"
+	actionMessages := make([]string, 0)
+	for _, p := range Players {
+		actionMessages = append(actionMessages, "")
+		actionMessages = append(actionMessages, p.Name)
+		for round := 0; round < Game.RoundNum; round++ {
+
+			for _, o := range peekObservations {
+				if !o.Pending && o.Round == round && o.Subject == p.Num {
+					resultString := "good"
+					if o.IsEvil {
+						resultString = "evil"
+					}
+					message := fmt.Sprintf("%s peeked at %s on night %d and found them %s.", getPlayerByNumber(o.Subject).Name, getPlayerByNumber(o.Target).Name, o.Round, resultString)
+					actionMessages = append(actionMessages, message)
+				}
 			}
-			actionMessages += fmt.Sprintf("%s peeked at %s and found them %s.<br>", getPlayerByNumber(o.Subject).Name, getPlayerByNumber(o.Target).Name, resultString)
-		}
-	}
-	for _, o := range attackObservations {
-		if !o.Pending && o.Round == Game.RoundNum-1 {
-			actionMessages += fmt.Sprintf("%s attacked %s.<br>", getPlayerByNumber(o.Subject).Name, getPlayerByNumber(o.Target).Name)
-		}
-	}
-	for _, o := range voteObservations {
-		if !o.Pending && o.Round == Game.RoundNum {
-			actionMessages += fmt.Sprintf("%s voted to lynch %s.<br>", getPlayerByNumber(o.Subject).Name, getPlayerByNumber(o.Target).Name)
-		}
-	}
-	for _, o := range killObservations {
-		if !o.Pending && o.Round == Game.RoundNum || (o.Round == Game.RoundNum-1 && !Game.RoundNight) {
-			actionMessages += fmt.Sprintf("%s died and was a %s.<br>", getPlayerByNumber(o.Subject).Name, roleTypes[o.Role].Name)
-		}
-	}
-	for _, o := range lynchObservations {
-		if !o.Pending && o.Round == Game.RoundNum || (o.Round == Game.RoundNum-1 && !Game.RoundNight) {
-			actionMessages += fmt.Sprintf("%s got lynched.<br>", getPlayerByNumber(o.Subject).Name)
+			for _, o := range attackObservations {
+				if !o.Pending && o.Round == round && o.Subject == p.Num {
+					message := fmt.Sprintf("%s attacked %s on night %d.", getPlayerByNumber(o.Subject).Name, getPlayerByNumber(o.Target).Name, o.Round)
+					actionMessages = append(actionMessages, message)
+				}
+			}
+			for _, o := range voteObservations {
+				if !o.Pending && o.Round == round && o.Subject == p.Num {
+					message := fmt.Sprintf("%s voted to lynch %s on day %d.", getPlayerByNumber(o.Subject).Name, getPlayerByNumber(o.Target).Name, o.Round)
+					actionMessages = append(actionMessages, message)
+				}
+			}
+			for _, o := range lynchObservations {
+				if !o.Pending && o.Round == round && o.Subject == p.Num {
+					message := fmt.Sprintf("%s got lynched on day %d.", getPlayerByNumber(o.Subject).Name, o.Round)
+					actionMessages = append(actionMessages, message)
+				}
+			}
+			for _, o := range killObservations {
+				if !o.Pending && o.Round == round && o.Subject == p.Num {
+					message := fmt.Sprintf("%s died in round %d and was a %s.", getPlayerByNumber(o.Subject).Name, o.Round, roleTypes[o.Role].Name)
+					actionMessages = append(actionMessages, message)
+				}
+			}
 		}
 	}
 
 	type ActionSelections struct {
-		Peek        map[string]string
-		Attack      map[string]string
-		Vote        map[string]string
-		Peeked      map[string]string
-		PeekResult  map[string]string
-		Attacked    map[string]string
-		Voted       map[string]string
-		Killed      map[string]string
-		Lynched     map[string]string
-		GoodPercent int
-		EvilPercent int
-		DeadPercent int
-		Percents    map[string]int
+		Name       string
+		RevealName string
+		RevealRole string
+		Peek       map[string]string
+		Attack     map[string]string
+		Vote       map[string]string
+		Peeked     map[string]string
+		PeekResult map[string]string
+		Attacked   map[string]string
+		Voted      map[string]string
+		Killed     map[string]string
+		Lynched    map[string]string
+		Percents   map[string]int
 	}
-	actionSubjects := make(map[string]ActionSelections)
+	actionSubjects := make(map[int]ActionSelections)
 	FillObservations()
 
-	firstActionSubjectName := ""
-	for i, s := range Players {
+	winner, evilWins := checkWin()
+	winMessage := ""
+	if winner {
+		if evilWins {
+			winMessage = "EVIL WINS!"
+		} else {
+			winMessage = "GOOD WINS!"
+		}
+	}
+
+	for _, s := range playersByNum {
 		var selection ActionSelections
 		var playerIsDead = false
 
@@ -89,6 +110,9 @@ func showGame(c *gin.Context) {
 		selection.Voted = make(map[string]string)
 		selection.Killed = make(map[string]string)
 
+		selection.Name = s.Name
+		selection.RevealName = "--Hidden--"
+		selection.RevealRole = "--Undetermined--"
 		selection.Percents["Good"] = playerGoodPercent(s)
 		selection.Percents["Evil"] = playerEvilPercent(s)
 		selection.Percents["Dead"] = playerDeadPercent(s)
@@ -100,6 +124,18 @@ func showGame(c *gin.Context) {
 			if o.Subject == s.Num {
 				selection.Killed[strconv.Itoa(o.Round)] = roleTypes[o.Role].Name
 				playerIsDead = true
+				break
+			}
+		}
+
+		if s.Role.IsFixed {
+			selection.RevealRole = "--Resolved--"
+		}
+
+		if winner || playerIsDead {
+			selection.RevealName = s.Name
+			if s.Role.IsFixed {
+				selection.RevealRole = roleTypes[s.Role.Fixed].Name
 			}
 		}
 
@@ -135,8 +171,8 @@ func showGame(c *gin.Context) {
 		selection.Attack["--NONE--"] = ""
 		selection.Vote["--NONE--"] = ""
 
-		// Don't allow dead players to do actions
 		if !playerIsDead {
+			// Don't allow dead players to do actions
 			for _, t := range Players {
 				skipTarget := false
 
@@ -193,10 +229,7 @@ func showGame(c *gin.Context) {
 			}
 		}
 
-		actionSubjects[s.Name] = selection
-		if i == 0 {
-			firstActionSubjectName = s.Name
-		}
+		actionSubjects[s.Num] = selection
 	}
 
 	rounds := make([]string, Game.RoundNum+1)
@@ -207,16 +240,6 @@ func showGame(c *gin.Context) {
 	universes := make(map[int]string)
 	for _, u := range Multiverse.Universes {
 		universes[int(u)] = getUniverseString(u)
-	}
-
-	winner, evilWins := checkWin()
-	winMessage := ""
-	if winner {
-		if evilWins {
-			winMessage = "EVIL WINS!"
-		} else {
-			winMessage = "GOOD WINS!"
-		}
 	}
 
 	c.HTML(http.StatusOK, "game.gtpl", gin.H{
@@ -234,7 +257,6 @@ func showGame(c *gin.Context) {
 		"ActionMessages": actionMessages,
 		"ActionSubjects": actionSubjects,
 		"WinMessage":     winMessage,
-		"FirstName":      firstActionSubjectName,
 	})
 }
 
@@ -312,9 +334,9 @@ func processActions(c *gin.Context) {
 	gameIDNum, err := strconv.ParseInt(gameID, 10, 32)
 
 	for _, p := range Players {
-		var attackSelection = c.Request.FormValue(p.Name + "Attack")
-		var peekSelection = c.Request.FormValue(p.Name + "Peek")
-		var voteSelection = c.Request.FormValue(p.Name + "Vote")
+		var attackSelection = c.Request.FormValue(strconv.Itoa(p.Num) + "Attack")
+		var peekSelection = c.Request.FormValue(strconv.Itoa(p.Num) + "Peek")
+		var voteSelection = c.Request.FormValue(strconv.Itoa(p.Num) + "Vote")
 		if len(attackSelection) > 0 {
 			var observation AttackObservation
 			observation.Pending = true

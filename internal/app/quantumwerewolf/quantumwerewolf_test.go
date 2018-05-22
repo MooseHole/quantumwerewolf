@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestCollapseForFixedRole(t *testing.T) {
+func TestCollapseAll(t *testing.T) {
 	quantumwerewolf.ResetVars()
 	quantumwerewolf.Game.Name = "test"
 	quantumwerewolf.Game.Number = 0
