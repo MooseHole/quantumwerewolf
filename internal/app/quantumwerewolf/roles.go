@@ -1,5 +1,9 @@
 package quantumwerewolf
 
+import (
+	"image/color"
+)
+
 // Role holds attributes of each role type
 type Role struct {
 	Name          string
@@ -9,6 +13,7 @@ type Role struct {
 	Evil          bool
 	EnemyMustKill bool
 	DefaultAmount float32
+	Color         color.RGBA
 }
 
 // RoleTypes is an interface
@@ -34,6 +39,7 @@ func setupRoles() {
 	villager.Evil = false
 	villager.EnemyMustKill = false
 	villager.DefaultAmount = 0
+	villager.Color = color.RGBA{0, 255, 0, 255}
 
 	seer.Name = "Seer"
 	seer.ID = 1
@@ -42,6 +48,7 @@ func setupRoles() {
 	seer.Evil = false
 	seer.EnemyMustKill = false
 	seer.DefaultAmount = 1 // Defaults to 1 of these
+	seer.Color = color.RGBA{0, 0, 255, 255}
 
 	wolf.Name = "Wolf"
 	wolf.ID = -1
@@ -50,6 +57,7 @@ func setupRoles() {
 	wolf.Evil = true
 	wolf.EnemyMustKill = true
 	wolf.DefaultAmount = 1.0 / 3.0 // Defaults to 1/3 of total players
+	wolf.Color = color.RGBA{255, 0, 0, 255}
 
 	roleTypes = make(map[int]Role)
 	roleTypes[villager.ID] = villager
@@ -59,5 +67,5 @@ func setupRoles() {
 }
 
 func getRoleTypes() Role {
-	return Role{"Test", -2, false, true, false, true, 1.0}
+	return Role{"Test", -2, false, true, false, true, 1.0, color.RGBA{0, 0, 0, 0}}
 }

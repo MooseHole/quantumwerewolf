@@ -1,7 +1,12 @@
 package quantumwerewolf
 
 import (
+	"bytes"
+	"encoding/base64"
 	"fmt"
+	"image"
+	"image/color"
+	"image/png"
 	"net/http"
 	"quantumwerewolf/pkg/quantumutilities"
 	"sort"
@@ -280,6 +285,7 @@ func showGame(c *gin.Context) {
 		"ActionMessages": actionMessages,
 		"ActionSubjects": actionSubjects,
 		"WinMessage":     winMessage,
+		"Graph":          multiverseProgression(c, Game.Number),
 	})
 }
 
@@ -333,7 +339,49 @@ func rebuildGame(c *gin.Context, gameID int) {
 	row.Close()
 
 	CreateMultiverse()
-	CollapseAll()
+}
+
+func multiverseProgression(c *gin.Context, gameID int) string {
+	rebuildGame(c, gameID)
+	progression := make(map[int][]uint64)
+	deadAmount := make(map[int][]int)
+	progression[-1] = append(progression[-1], Multiverse.Universes...)
+	for i := 0; i < len(Players); i++ {
+		deadAmount[-1] = append(deadAmount[-1], playerDeadPercent(getPlayerByNumber(i)))
+	}
+	for round := 0; round <= Game.RoundNum; round++ {
+		CollapseAllUpTo(round)
+		for i := 0; i < len(Players); i++ {
+			deadAmount[round] = append(deadAmount[round], playerDeadPercent(getPlayerByNumber(i)))
+		}
+		progression[round] = append(progression[round], Multiverse.Universes...)
+	}
+
+	img := image.NewRGBA(image.Rect(0, 0, Game.RoundNum+1, len(Players)))
+	for round := -1; round <= Game.RoundNum; round++ {
+		totalRed := make([]int, len(Players))
+		totalGreen := make([]int, len(Players))
+		totalBlue := make([]int, len(Players))
+		for _, universeNum := range progression[round] {
+			universe := quantumutilities.Kthperm(Multiverse.originalAssignments, universeNum)
+			for i, role := range universe {
+				totalRed[i] += int(roleTypes[role].Color.R)
+				totalGreen[i] += int(roleTypes[role].Color.G)
+				totalBlue[i] += int(roleTypes[role].Color.B)
+			}
+		}
+		for i := 0; i < len(Players); i++ {
+			myColor := color.RGBA{uint8((totalRed[i] / len(progression[round])) * (100 - deadAmount[round][i]/2) / 100), uint8((totalGreen[i] / len(progression[round])) * (100 - deadAmount[round][i]/2) / 100), uint8((totalBlue[i] / len(progression[round])) * (100 - deadAmount[round][i]/2) / 100), 255}
+			img.Set(round+1, i, myColor)
+		}
+	}
+
+	out := new(bytes.Buffer)
+	err := png.Encode(out, img)
+	quantumutilities.HandleErr(c, err, "Error processing multiverse graph")
+
+	base64Img := base64.StdEncoding.EncodeToString(out.Bytes())
+	return base64Img
 }
 
 func setGame(c *gin.Context) {
@@ -345,6 +393,7 @@ func setGame(c *gin.Context) {
 	gameID, err := strconv.ParseInt(c.Query("gameId")[0:], 10, 32)
 
 	rebuildGame(c, int(gameID))
+	CollapseAll()
 }
 
 func processActions(c *gin.Context) {
@@ -466,5 +515,6 @@ func processActions(c *gin.Context) {
 	}
 
 	rebuildGame(c, int(gameIDNum))
+	CollapseAll()
 	showGame(c)
 }

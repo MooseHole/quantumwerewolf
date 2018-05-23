@@ -59,7 +59,6 @@ func CreateMultiverse() {
 	Multiverse.rando = rand.New(randSource)
 	Multiverse.Universes = quantumutilities.PermUint64Trunc(Multiverse.rando, GameSetup.Universes, 100000)
 	UpdateRoleTotals()
-	CollapseAll()
 }
 
 func updateFixedRoles() {
@@ -141,47 +140,55 @@ func getFixedRole(playerNumber int) int {
 
 // CollapseAll removes universes that are inconsistent for any reason
 func CollapseAll() {
+	CollapseAllUpTo(Game.RoundNum)
+}
+
+// CollapseAllUpTo removes universes that are inconsistent for any reason up to the input round
+func CollapseAllUpTo(maxRound int) {
 	dirtyMultiverse = true
 	UpdateRoleTotals()
-	collapsed := true
 
-	for i := 0; collapsed && i < len(Players); i++ {
-		collapsed = false
+	for round := 0; round < maxRound; round++ {
+		collapsed := true
 
-		anyEliminations := true
-		for anyEliminations {
-			anyEliminations = false
-			for _, p := range Players {
-				if p.Role.IsFixed {
-					if CollapseForFixedRole(p.Num, p.Role.Fixed) {
-						anyEliminations = true
-						collapsed = true
+		for i := 0; collapsed && i < len(Players); i++ {
+			collapsed = false
+
+			anyEliminations := true
+			for anyEliminations {
+				anyEliminations = false
+				for _, p := range Players {
+					if p.Role.IsFixed {
+						if CollapseForFixedRole(p.Num, p.Role.Fixed) {
+							anyEliminations = true
+							collapsed = true
+						}
 					}
 				}
 			}
-		}
-		anyEliminations = true
-		for anyEliminations {
-			anyEliminations = false
-			if CollapseForPeek() {
-				anyEliminations = true
-				collapsed = true
+			anyEliminations = true
+			for anyEliminations {
+				anyEliminations = false
+				if CollapseForPeek(round) {
+					anyEliminations = true
+					collapsed = true
+				}
 			}
-		}
-		anyEliminations = true
-		for anyEliminations {
-			anyEliminations = false
-			if CollapseForAttack() {
-				anyEliminations = true
-				collapsed = true
+			anyEliminations = true
+			for anyEliminations {
+				anyEliminations = false
+				if CollapseForAttack(round) {
+					anyEliminations = true
+					collapsed = true
+				}
 			}
-		}
-		anyEliminations = true
-		for anyEliminations {
-			anyEliminations = false
-			if CollapseForPriorDeaths() {
-				anyEliminations = true
-				collapsed = true
+			anyEliminations = true
+			for anyEliminations {
+				anyEliminations = false
+				if CollapseForPriorDeaths(round) {
+					anyEliminations = true
+					collapsed = true
+				}
 			}
 		}
 	}
@@ -324,14 +331,14 @@ func AttackFriend(universe uint64, attacker int, target int, night int) bool {
 }
 
 // PeekOk returns false if a player is a seer and gets an untrue result
-func PeekOk(universe uint64) bool {
+func PeekOk(round int, universe uint64) bool {
 	evaluationUniverse := make([]int, 0, len(Multiverse.originalAssignments))
 	evaluationUniverse = quantumutilities.Kthperm(Multiverse.originalAssignments, universe)
 
 	FillObservations()
 	for _, peek := range peekObservations {
 		// If the peeker can peek in this universe
-		if !peek.Pending && roleTypes[evaluationUniverse[peek.Subject]].CanPeek {
+		if peek.Round == round && !peek.Pending && roleTypes[evaluationUniverse[peek.Subject]].CanPeek {
 			// If finding in this universe is not reality
 			if roleTypes[evaluationUniverse[peek.Target]].Evil != peek.IsEvil {
 				return false
@@ -343,10 +350,10 @@ func PeekOk(universe uint64) bool {
 }
 
 // AttackOk returns false if a player is the dominant attacker and attacks a teammate
-func AttackOk(universe uint64) bool {
+func AttackOk(round int, universe uint64) bool {
 	FillObservations()
 	for _, attack := range attackObservations {
-		if !attack.Pending && AttackFriend(universe, attack.Subject, attack.Target, attack.Round) {
+		if attack.Round == round && !attack.Pending && AttackFriend(universe, attack.Subject, attack.Target, attack.Round) {
 			return false
 		}
 	}
@@ -354,13 +361,17 @@ func AttackOk(universe uint64) bool {
 	return true
 }
 
-func priorDeathOk(universe uint64) bool {
+func priorDeathOk(round int, universe uint64) bool {
 	eliminate := false
 	for _, lynch := range lynchObservations {
-		for _, kill := range killObservations {
-			if lynch.Subject == kill.Subject && lynch.Round != kill.Round {
-				eliminate = true
-				break
+		if lynch.Round == round {
+			for _, kill := range killObservations {
+				if kill.Round <= round {
+					if lynch.Subject == kill.Subject && lynch.Round != kill.Round {
+						eliminate = true
+						break
+					}
+				}
 			}
 		}
 		if eliminate {
@@ -371,14 +382,14 @@ func priorDeathOk(universe uint64) bool {
 	return !eliminate
 }
 
-type collapseCheck func(uint64) bool
+type collapseCheck func(int, uint64) bool
 
-func collapse(check collapseCheck) bool {
+func collapse(round int, check collapseCheck) bool {
 	newUniverses := make([]uint64, 0, len(Multiverse.Universes))
 	universesEliminated := false
 
 	for _, v := range Multiverse.Universes {
-		if check(v) {
+		if check(round, v) {
 			newUniverses = append(newUniverses, v)
 		} else {
 			universesEliminated = true
@@ -390,18 +401,18 @@ func collapse(check collapseCheck) bool {
 }
 
 // CollapseForPriorDeaths eliminates universes where a lynchee was attacked before
-func CollapseForPriorDeaths() bool {
-	return collapse(priorDeathOk)
+func CollapseForPriorDeaths(round int) bool {
+	return collapse(round, priorDeathOk)
 }
 
 // CollapseForPeek eliminates universes where the peeker is a seer and got the wrong result
-func CollapseForPeek() bool {
-	return collapse(PeekOk)
+func CollapseForPeek(round int) bool {
+	return collapse(round, PeekOk)
 }
 
 // CollapseForAttack eliminates universes where the attacker attacked a teammate
-func CollapseForAttack() bool {
-	return collapse(AttackOk)
+func CollapseForAttack(round int) bool {
+	return collapse(round, AttackOk)
 }
 
 func eliminateUniverses(universesEliminated bool, newUniverses []uint64) bool {

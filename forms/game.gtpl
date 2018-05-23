@@ -4,6 +4,7 @@
     <title>Game</title>
     </head>
     <body>
+        <img src="data:image/png;base64,{{ .Graph }}" width="200" height="200">
         Game: {{ .Name }}<br>
         {{ .WinMessage }}<br>
         Remaining Universes: {{ len .Universes }}<br>
