@@ -122,7 +122,7 @@ func showGame(c *gin.Context) {
 		selection.RevealRole = "--Undetermined--"
 		selection.Percents["Good"] = playerGoodPercent(s)
 		selection.Percents["Evil"] = playerEvilPercent(s)
-		selection.Percents["Dead"] = playerDeadPercent(s)
+		selection.Percents["Dead"] = PlayerDeadPercent(s)
 		for _, v := range roleTypes {
 			selection.Percents[v.Name] = playerRolePercent(s, v.ID)
 		}
@@ -347,12 +347,12 @@ func multiverseProgression(c *gin.Context, gameID int) string {
 	deadAmount := make(map[int][]int)
 	progression[-1] = append(progression[-1], Multiverse.Universes...)
 	for i := 0; i < len(Players); i++ {
-		deadAmount[-1] = append(deadAmount[-1], playerDeadPercent(getPlayerByNumber(i)))
+		deadAmount[-1] = append(deadAmount[-1], PlayerDeadPercent(getPlayerByNumber(i)))
 	}
 	for round := 0; round <= Game.RoundNum; round++ {
 		CollapseAllUpTo(round)
 		for i := 0; i < len(Players); i++ {
-			deadAmount[round] = append(deadAmount[round], playerDeadPercent(getPlayerByNumber(i)))
+			deadAmount[round] = append(deadAmount[round], PlayerDeadPercent(getPlayerByNumber(i)))
 		}
 		progression[round] = append(progression[round], Multiverse.Universes...)
 	}
@@ -477,15 +477,16 @@ func processActions(c *gin.Context) {
 
 		CollapseAll()
 
+		// Immediately kill anybody who is dead
 		for _, p := range Players {
-			deadPercent := playerDeadPercent(p)
+			// TODO: Issue 3: PlayerDeadPercent did not give 100% dead when it should have.
+			deadPercent := PlayerDeadPercent(p)
 			if deadPercent == 100 {
 				var observation KillObservation
-				observation.Pending = true
+				observation.Pending = false
 				observation.Round = Game.RoundNum
 				observation.Subject = p.Num
 				observation.Role = collapseToFixedRole(p.Num)
-				observation.Pending = false
 				addKillObservation(observation)
 			}
 		}

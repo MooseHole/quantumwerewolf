@@ -271,7 +271,8 @@ func checkWin() (bool, bool) {
 	return false, false
 }
 
-func playerDeadPercent(player Player) int {
+// PlayerDeadPercent returns the percentage of deadness for the input player
+func PlayerDeadPercent(player Player) int {
 	// Dead if marked dead
 	if playerIsDead(player) {
 		return 100
