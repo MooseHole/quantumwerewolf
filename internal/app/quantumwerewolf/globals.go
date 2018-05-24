@@ -198,8 +198,8 @@ func playerGoodPercent(player Player) int {
 }
 
 func playerIsDead(player Player) bool {
-	for _, o := range killObservations {
-		if o.Subject == player.Num {
+	for _, o := range observations {
+		if o.getSubject() == player.Num && o.getType() == "KillObservation" {
 			return true
 		}
 	}
@@ -279,19 +279,20 @@ func PlayerDeadPercent(player Player) int {
 	}
 
 	// Dead if lynched
-	for _, o := range lynchObservations {
-		if !o.Pending && o.Subject == player.Num {
+	for _, o := range observations {
+		if !o.getPending() && o.getSubject() == player.Num && o.getType() == "LynchObservation" {
 			return 100
 		}
 	}
 
 	// Figure out percentage from attacks
-	attacksOnMe := make([]AttackObservation, 0, len(attackObservations))
+	attacksOnMe := make([]observation, 0, len(observations))
 	totalUniverses := 0
 	totalDeaths := 0
 
-	for _, o := range attackObservations {
-		if !o.Pending && o.Target == player.Num {
+	for _, o := range observations {
+		target, _ := o.getTarget()
+		if !o.getPending() && o.getType() == "AttackObservation" && target == player.Num {
 			attacksOnMe = append(attacksOnMe, o)
 		}
 	}
@@ -299,7 +300,7 @@ func PlayerDeadPercent(player Player) int {
 	for _, v := range Multiverse.Universes {
 		totalUniverses++
 		for _, o := range attacksOnMe {
-			if AttackTarget(v, o.Subject, player.Num) {
+			if AttackTarget(v, o.getSubject(), player.Num) {
 				totalDeaths++
 				break
 			}

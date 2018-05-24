@@ -62,8 +62,13 @@ func CreateMultiverse() {
 }
 
 func updateFixedRoles() {
-	for _, o := range killObservations {
-		CollapseForFixedRole(o.Subject, o.Role)
+	for _, o := range observations {
+		if o.getType() == "KillObservation" {
+			role, err := o.getRole()
+			if err == nil {
+				CollapseForFixedRole(o.getSubject(), role)
+			}
+		}
 	}
 }
 
@@ -239,9 +244,9 @@ func AttackTarget(universe uint64, attacker int, target int) bool {
 					// If someone else has higher rank
 					if evaluationRanks[teammateIndex] < evaluationRanks[attacker] {
 						wasTeammateDead := false
-						for _, teammateKilled := range killObservations {
+						for _, teammateKilled := range observations {
 							// If higher ranked was dead when attack was made
-							if !teammateKilled.Pending && teammateKilled.Subject == teammateIndex && teammateKilled.Round > attacker {
+							if !teammateKilled.getPending() && teammateKilled.getSubject() == teammateIndex && teammateKilled.getRound() > attacker && teammateKilled.getType() == "KillObservation" {
 								wasTeammateDead = true
 								break
 							}
@@ -282,9 +287,9 @@ func DominantAttacker(universe uint64, night int, evilSide bool) Player {
 			attacker.player = Players[i]
 			attacker.rank = evaluationRanks[getPlayerIndex(attacker.player)]
 			attacker.deadNight = 10000 // Initialize to infinity
-			for _, o := range killObservations {
-				if o.Subject == attacker.player.Num {
-					attacker.deadNight = o.Round
+			for _, o := range observations {
+				if o.getSubject() == attacker.player.Num && o.getType() == "KillObservation" {
+					attacker.deadNight = o.getRound()
 				}
 			}
 			attackers = append(attackers, attacker)
@@ -336,11 +341,13 @@ func PeekOk(round int, universe uint64) bool {
 	evaluationUniverse = quantumutilities.Kthperm(Multiverse.originalAssignments, universe)
 
 	FillObservations()
-	for _, peek := range peekObservations {
+	for _, peek := range observations {
 		// If the peeker can peek in this universe
-		if peek.Round == round && !peek.Pending && roleTypes[evaluationUniverse[peek.Subject]].CanPeek {
+		if peek.getRound() == round && !peek.getPending() && roleTypes[evaluationUniverse[peek.getSubject()]].CanPeek && peek.getType() == "PeekObservation" {
 			// If finding in this universe is not reality
-			if roleTypes[evaluationUniverse[peek.Target]].Evil != peek.IsEvil {
+			target, _ := peek.getTarget()
+			isEvil, _ := peek.getIsEvil()
+			if roleTypes[evaluationUniverse[target]].Evil != isEvil {
 				return false
 			}
 		}
@@ -352,8 +359,9 @@ func PeekOk(round int, universe uint64) bool {
 // AttackOk returns false if a player is the dominant attacker and attacks a teammate
 func AttackOk(round int, universe uint64) bool {
 	FillObservations()
-	for _, attack := range attackObservations {
-		if attack.Round == round && !attack.Pending && AttackFriend(universe, attack.Subject, attack.Target, attack.Round) {
+	for _, attack := range observations {
+		target, _ := attack.getTarget()
+		if attack.getRound() == round && !attack.getPending() && attack.getType() == "AttackObservation" && AttackFriend(universe, attack.getSubject(), target, attack.getRound()) {
 			return false
 		}
 	}
@@ -363,11 +371,11 @@ func AttackOk(round int, universe uint64) bool {
 
 func priorDeathOk(round int, universe uint64) bool {
 	eliminate := false
-	for _, lynch := range lynchObservations {
-		if lynch.Round == round {
-			for _, kill := range killObservations {
-				if kill.Round <= round {
-					if lynch.Subject == kill.Subject && lynch.Round != kill.Round {
+	for _, lynch := range observations {
+		if lynch.getRound() == round && lynch.getType() == "LynchObservation" {
+			for _, kill := range observations {
+				if kill.getRound() <= round {
+					if lynch.getSubject() == kill.getSubject() && lynch.getRound() != kill.getRound() {
 						eliminate = true
 						break
 					}

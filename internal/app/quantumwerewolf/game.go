@@ -3,7 +3,6 @@ package quantumwerewolf
 import (
 	"bytes"
 	"encoding/base64"
-	"fmt"
 	"image"
 	"image/color"
 	"image/png"
@@ -41,38 +40,9 @@ func showGame(c *gin.Context) {
 		actionMessages[p.Num] = append(actionMessages[p.Num], "["+GameSetup.Name+"] "+roundString)
 		actionMessages[p.Num] = append(actionMessages[p.Num], "You are player number "+strconv.Itoa(p.Num))
 		for round := 0; round < Game.RoundNum; round++ {
-			for _, o := range peekObservations {
-				if !o.Pending && o.Round == round && o.Subject == p.Num {
-					resultString := "good"
-					if o.IsEvil {
-						resultString = "evil"
-					}
-					message := fmt.Sprintf("%s peeked at %s on night %d and found them %s.", getPlayerByNumber(o.Subject).Name, getPlayerByNumber(o.Target).Name, o.Round, resultString)
-					actionMessages[p.Num] = append(actionMessages[p.Num], message)
-				}
-			}
-			for _, o := range attackObservations {
-				if !o.Pending && o.Round == round && o.Subject == p.Num {
-					message := fmt.Sprintf("%s attacked %s on night %d.", getPlayerByNumber(o.Subject).Name, getPlayerByNumber(o.Target).Name, o.Round)
-					actionMessages[p.Num] = append(actionMessages[p.Num], message)
-				}
-			}
-			for _, o := range voteObservations {
-				if !o.Pending && o.Round == round && o.Subject == p.Num {
-					message := fmt.Sprintf("%s voted to lynch %s on day %d.", getPlayerByNumber(o.Subject).Name, getPlayerByNumber(o.Target).Name, o.Round)
-					actionMessages[p.Num] = append(actionMessages[p.Num], message)
-				}
-			}
-			for _, o := range lynchObservations {
-				if !o.Pending && o.Round == round && o.Subject == p.Num {
-					message := fmt.Sprintf("%s got lynched on day %d.", getPlayerByNumber(o.Subject).Name, o.Round)
-					actionMessages[p.Num] = append(actionMessages[p.Num], message)
-				}
-			}
-			for _, o := range killObservations {
-				if !o.Pending && o.Round == round && o.Subject == p.Num {
-					message := fmt.Sprintf("%s died in round %d and was a %s.", getPlayerByNumber(o.Subject).Name, o.Round, roleTypes[o.Role].Name)
-					actionMessages[p.Num] = append(actionMessages[p.Num], message)
+			for _, o := range observations {
+				if !o.getPending() && o.getRound() == round && o.getSubject() == p.Num {
+					actionMessages[p.Num] = append(actionMessages[p.Num], o.actionMessage())
 				}
 			}
 		}
@@ -127,11 +97,14 @@ func showGame(c *gin.Context) {
 			selection.Percents[v.Name] = playerRolePercent(s, v.ID)
 		}
 
-		for _, o := range killObservations {
-			if o.Subject == s.Num {
-				selection.Killed[strconv.Itoa(o.Round)] = roleTypes[o.Role].Name
-				playerIsDead = true
-				break
+		for _, o := range observations {
+			if o.getSubject() == s.Num && o.getType() == "KillObservation" {
+				role, err := o.getRole()
+				if err == nil {
+					selection.Killed[strconv.Itoa(o.getRound())] = roleTypes[role].Name
+					playerIsDead = true
+					break
+				}
 			}
 		}
 
@@ -146,26 +119,28 @@ func showGame(c *gin.Context) {
 			}
 		}
 
-		for _, o := range peekObservations {
-			if o.Subject == s.Num {
-				var resultString = "=good"
-				if o.IsEvil {
-					resultString = "=evil"
+		for _, o := range observations {
+			if o.getSubject() == s.Num {
+				target, err := o.getTarget()
+				if err == nil {
+					switch observationType := o.getType(); observationType {
+					case "PeekObservation":
+						var resultString = "=good"
+						isEvil, err := o.getIsEvil()
+						if isEvil {
+							resultString = "=evil"
+						}
+						if err != nil {
+							resultString = "=??"
+						}
+						selection.Peeked[strconv.Itoa(o.getRound())] = getPlayerByNumber(target).Name
+						selection.PeekResult[strconv.Itoa(o.getRound())] = resultString
+					case "AttackObservation":
+						selection.Attacked[strconv.Itoa(o.getRound())] = getPlayerByNumber(target).Name
+					case "VoteObservation":
+						selection.Voted[strconv.Itoa(o.getRound())] = getPlayerByNumber(target).Name
+					}
 				}
-				selection.Peeked[strconv.Itoa(o.Round)] = getPlayerByNumber(o.Target).Name
-				selection.PeekResult[strconv.Itoa(o.Round)] = resultString
-			}
-		}
-
-		for _, o := range attackObservations {
-			if o.Subject == s.Num {
-				selection.Attacked[strconv.Itoa(o.Round)] = getPlayerByNumber(o.Target).Name
-			}
-		}
-
-		for _, o := range voteObservations {
-			if o.Subject == s.Num {
-				selection.Voted[strconv.Itoa(o.Round)] = getPlayerByNumber(o.Target).Name
 			}
 		}
 
@@ -184,16 +159,12 @@ func showGame(c *gin.Context) {
 				skipTarget := false
 
 				// Don't add actions for dead targets
-				for _, o := range killObservations {
-					if !o.Pending && o.Subject == t.Num {
-						skipTarget = true
-						break
-					}
-				}
-				for _, o := range lynchObservations {
-					if !o.Pending && o.Subject == t.Num {
-						skipTarget = true
-						break
+				for _, o := range observations {
+					if !o.getPending() && o.getSubject() == t.Num {
+						if o.getType() == "KillObservation" || o.getType() == "LynchObservation" {
+							skipTarget = true
+							break
+						}
 					}
 				}
 
@@ -208,10 +179,13 @@ func showGame(c *gin.Context) {
 
 				if playerCanPeek(s) {
 					hasPeeked := false
-					for _, o := range peekObservations {
-						if !o.Pending && o.Subject == s.Num && o.Target == t.Num {
-							hasPeeked = true
-							break
+					for _, o := range observations {
+						target, err := o.getTarget()
+						if err == nil {
+							if !o.getPending() && o.getSubject() == s.Num && target == t.Num {
+								hasPeeked = true
+								break
+							}
 						}
 					}
 					if !hasPeeked {
@@ -221,10 +195,13 @@ func showGame(c *gin.Context) {
 
 				if playerCanAttack(s) {
 					hasAttacked := false
-					for _, o := range attackObservations {
-						if !o.Pending && o.Subject == s.Num && o.Target == t.Num {
-							hasAttacked = true
-							break
+					for _, o := range observations {
+						target, err := o.getTarget()
+						if err == nil {
+							if !o.getPending() && o.getSubject() == s.Num && target == t.Num {
+								hasAttacked = true
+								break
+							}
 						}
 					}
 					if !hasAttacked {
@@ -415,7 +392,7 @@ func processActions(c *gin.Context) {
 			observation.Round = Game.RoundNum
 			observation.Subject = p.Num
 			observation.Target = getPlayerByName(attackSelection).Num
-			addAttackObservation(observation)
+			observation.add()
 		}
 		if len(peekSelection) > 0 {
 			var observation PeekObservation
@@ -424,7 +401,7 @@ func processActions(c *gin.Context) {
 			observation.Subject = p.Num
 			observation.Target = getPlayerByName(peekSelection).Num
 			observation.IsEvil = false // Determined at commit time
-			addPeekObservation(observation)
+			observation.add()
 		}
 		if len(voteSelection) > 0 {
 			var observation VoteObservation
@@ -432,7 +409,7 @@ func processActions(c *gin.Context) {
 			observation.Round = Game.RoundNum
 			observation.Subject = p.Num
 			observation.Target = getPlayerByName(voteSelection).Num
-			addVoteObservation(observation)
+			observation.add()
 		}
 	}
 
@@ -446,9 +423,12 @@ func processActions(c *gin.Context) {
 
 	if advanceRound {
 		var voteTargets = make(map[int]int)
-		for _, o := range voteObservations {
-			if Game.RoundNum == o.Round {
-				voteTargets[o.Target]++
+		for _, o := range observations {
+			if o.getType() == "VoteObservation" && Game.RoundNum == o.getRound() {
+				target, err := o.getTarget()
+				if err == nil {
+					voteTargets[target]++
+				}
 			}
 		}
 
@@ -467,7 +447,7 @@ func processActions(c *gin.Context) {
 				observation.Pending = false
 				observation.Round = Game.RoundNum
 				observation.Subject = votedPlayer.Num
-				addLynchObservation(observation)
+				observation.add()
 				break
 			}
 		}
@@ -487,7 +467,7 @@ func processActions(c *gin.Context) {
 				observation.Round = Game.RoundNum
 				observation.Subject = p.Num
 				observation.Role = collapseToFixedRole(p.Num)
-				addKillObservation(observation)
+				observation.add()
 			}
 		}
 
