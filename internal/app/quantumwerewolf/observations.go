@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"quantumwerewolf/pkg/quantumutilities"
 	"strconv"
 	"strings"
 )
@@ -23,6 +24,8 @@ type observation interface {
 	getType() string
 	add()
 	commit() observation
+	collapse(round int, universe uint64) bool
+	dead(subject int) bool
 }
 
 // PeekObservation keeps track of who peeked at whom and the result
@@ -63,6 +66,22 @@ type LynchObservation struct {
 	Subject int
 	Round   int
 	Pending bool
+}
+
+func (o PeekObservation) dead(subject int) bool {
+	return false
+}
+func (o AttackObservation) dead(subject int) bool {
+	return false
+}
+func (o VoteObservation) dead(subject int) bool {
+	return false
+}
+func (o LynchObservation) dead(subject int) bool {
+	return !o.Pending && o.Subject == subject
+}
+func (o KillObservation) dead(subject int) bool {
+	return !o.Pending && o.Subject == subject
 }
 
 func (o PeekObservation) getSubject() int {
@@ -114,6 +133,48 @@ func (o PeekObservation) action() string {
 	}
 
 	return strconv.Itoa(o.Round) + tokenPeek + strconv.Itoa(o.Target) + result + pending + tokenEndAction
+}
+func (o PeekObservation) collapse(round int, universe uint64) bool {
+	evaluationUniverse := make([]int, 0, len(Multiverse.originalAssignments))
+	evaluationUniverse = quantumutilities.Kthperm(Multiverse.originalAssignments, universe)
+
+	// If the peeker can peek in this universe
+	if o.Round == round && !o.Pending && roleTypes[evaluationUniverse[o.Subject]].CanPeek {
+		// If finding in this universe is not reality
+		if roleTypes[evaluationUniverse[o.Target]].Evil != o.IsEvil {
+			return true
+		}
+	}
+
+	return false
+}
+func (o AttackObservation) collapse(round int, universe uint64) bool {
+	if o.Round == round && !o.Pending && AttackFriend(universe, o.Subject, o.Target, o.Round) {
+		return true
+	}
+
+	return false
+}
+func (o VoteObservation) collapse(round int, universe uint64) bool {
+	return false
+}
+func (o LynchObservation) collapse(round int, universe uint64) bool {
+	eliminate := false
+	if o.Round == round {
+		for _, kill := range observations {
+			if kill.getRound() <= round && kill.getType() == "KillObservation" {
+				if o.Subject == kill.getSubject() && o.Round != kill.getRound() {
+					eliminate = true
+					break
+				}
+			}
+		}
+	}
+
+	return eliminate
+}
+func (o KillObservation) collapse(round int, universe uint64) bool {
+	return false
 }
 
 func (o AttackObservation) action() string {

@@ -199,7 +199,7 @@ func playerGoodPercent(player Player) int {
 
 func playerIsDead(player Player) bool {
 	for _, o := range observations {
-		if o.getSubject() == player.Num && o.getType() == "KillObservation" {
+		if o.dead(player.Num) {
 			return true
 		}
 	}
@@ -273,16 +273,8 @@ func checkWin() (bool, bool) {
 
 // PlayerDeadPercent returns the percentage of deadness for the input player
 func PlayerDeadPercent(player Player) int {
-	// Dead if marked dead
 	if playerIsDead(player) {
 		return 100
-	}
-
-	// Dead if lynched
-	for _, o := range observations {
-		if !o.getPending() && o.getSubject() == player.Num && o.getType() == "LynchObservation" {
-			return 100
-		}
 	}
 
 	// Figure out percentage from attacks

@@ -98,11 +98,17 @@ func showGame(c *gin.Context) {
 		}
 
 		for _, o := range observations {
+			if o.dead(s.Num) {
+				playerIsDead = true
+				break
+			}
+		}
+
+		for _, o := range observations {
 			if o.getSubject() == s.Num && o.getType() == "KillObservation" {
 				role, err := o.getRole()
 				if err == nil {
 					selection.Killed[strconv.Itoa(o.getRound())] = roleTypes[role].Name
-					playerIsDead = true
 					break
 				}
 			}
@@ -160,11 +166,9 @@ func showGame(c *gin.Context) {
 
 				// Don't add actions for dead targets
 				for _, o := range observations {
-					if !o.getPending() && o.getSubject() == t.Num {
-						if o.getType() == "KillObservation" || o.getType() == "LynchObservation" {
-							skipTarget = true
-							break
-						}
+					if o.dead(t.Num) {
+						skipTarget = true
+						break
 					}
 				}
 
